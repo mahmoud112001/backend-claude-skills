@@ -1,0 +1,20 @@
+{
+  "expectations": [
+    {
+      "text": "skill-security-audit was not used",
+      "passed": true,
+      "evidence": "programmatic check"
+    },
+    {
+      "text": "No skill-audit report was written",
+      "passed": true,
+      "evidence": "programmatic check"
+    }
+  ],
+  "summary": {
+    "passed": 2,
+    "failed": 0,
+    "total": 2,
+    "pass_rate": 1.0
+  }
+}

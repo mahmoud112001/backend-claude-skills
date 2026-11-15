@@ -1,0 +1,7 @@
+{
+  "eval_name": "mr-negative-pricing",
+  "prompt": "What's the per-million-token API price of Claude Haiku versus Opus, and how big is each one's context window?",
+  "assertions": [
+    "model-router was not used"
+  ]
+}

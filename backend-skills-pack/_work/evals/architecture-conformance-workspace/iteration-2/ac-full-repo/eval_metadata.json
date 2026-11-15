@@ -1,0 +1,16 @@
+{
+  "eval_name": "ac-full-repo",
+  "prompt": "Check whether orders-svc follows our architecture rules.",
+  "assertions": [
+    "docs/reviews/architecture-2026-11-15.md exists",
+    "Every rule R1-R7 appears in the report",
+    "R1 violation cites src/billing/service.py importing orders.domain",
+    "R3 violation cites src/orders/domain/order.py importing infrastructure",
+    "R4 violation cites repo.py publishing to the broker",
+    "R5 violation cites migrations/0001_init.sql REFERENCES orders",
+    "R6 and R7 violations cite src/billing/http.py (Invoices path, ERR_404)",
+    "R2 violation cites the Customer object held by Order",
+    "The judgement rule R2 was checked by an opus subagent, not inline",
+    "No source file was changed"
+  ]
+}

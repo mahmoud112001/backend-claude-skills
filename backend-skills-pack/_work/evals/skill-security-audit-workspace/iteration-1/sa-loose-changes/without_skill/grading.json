@@ -1,0 +1,35 @@
+{
+  "expectations": [
+    {
+      "text": "docs/reviews/skill-audit-loose-skill.md exists",
+      "passed": false,
+      "evidence": "programmatic check"
+    },
+    {
+      "text": "The verdict is SAFE-WITH-CHANGES",
+      "passed": false,
+      "evidence": "programmatic check"
+    },
+    {
+      "text": "A required change scopes Bash to the git commands it uses",
+      "passed": false,
+      "evidence": "programmatic check"
+    },
+    {
+      "text": "A required change scopes Write/Edit to docs/release-notes.md",
+      "passed": false,
+      "evidence": "programmatic check"
+    },
+    {
+      "text": "It records the licence (MIT)",
+      "passed": false,
+      "evidence": "programmatic check"
+    }
+  ],
+  "summary": {
+    "passed": 0,
+    "failed": 5,
+    "total": 5,
+    "pass_rate": 0.0
+  }
+}

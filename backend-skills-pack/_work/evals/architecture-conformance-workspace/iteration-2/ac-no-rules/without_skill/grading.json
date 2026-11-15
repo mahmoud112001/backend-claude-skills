@@ -1,0 +1,25 @@
+{
+  "expectations": [
+    {
+      "text": "It asks the user which file holds the rules",
+      "passed": true,
+      "evidence": "programmatic check"
+    },
+    {
+      "text": "No architecture report was written",
+      "passed": true,
+      "evidence": "programmatic check"
+    },
+    {
+      "text": "It reports no rule violations",
+      "passed": true,
+      "evidence": "programmatic check"
+    }
+  ],
+  "summary": {
+    "passed": 3,
+    "failed": 0,
+    "total": 3,
+    "pass_rate": 1.0
+  }
+}

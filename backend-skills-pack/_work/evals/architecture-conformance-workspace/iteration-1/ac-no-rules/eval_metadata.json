@@ -1,0 +1,9 @@
+{
+  "eval_name": "ac-no-rules",
+  "prompt": "Does src/billing in orders-svc follow our DDD architecture? Run the conformance check.",
+  "assertions": [
+    "It asks the user which file holds the rules",
+    "No architecture report was written",
+    "It reports no rule violations"
+  ]
+}

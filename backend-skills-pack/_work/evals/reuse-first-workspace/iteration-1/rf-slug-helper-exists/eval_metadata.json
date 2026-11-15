@@ -1,0 +1,11 @@
+{
+  "eval_name": "rf-slug-helper-exists",
+  "prompt": "In orders-svc I'm adding an export endpoint that needs URL-safe slugs from order titles like 'Cafe Order #12'. I'm about to write a slug function. Before I do, check whether we already have something, or whether I should add a library.",
+  "assertions": [
+    "The reply's verdict is REUSE (first non-empty line starts with REUSE)",
+    "The reply points to src/shared/text.py slugify",
+    "The reply is at most 10 lines",
+    "The reply does not recommend adding python-slugify or another library",
+    "No file in the repo was changed"
+  ]
+}

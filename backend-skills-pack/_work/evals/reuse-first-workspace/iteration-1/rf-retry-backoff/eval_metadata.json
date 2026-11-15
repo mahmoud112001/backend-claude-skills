@@ -1,0 +1,11 @@
+{
+  "eval_name": "rf-retry-backoff",
+  "prompt": "orders-svc calls the broker over HTTP (src/orders/infrastructure/broker.py). I want retries with exponential backoff. Should I add tenacity or backoff, or write my own?",
+  "assertions": [
+    "The reply's verdict is REUSE",
+    "The reply names urllib3 Retry (via requests HTTPAdapter)",
+    "The reply does not recommend adding tenacity or backoff",
+    "The reply is at most 10 lines",
+    "No file in the repo was changed"
+  ]
+}

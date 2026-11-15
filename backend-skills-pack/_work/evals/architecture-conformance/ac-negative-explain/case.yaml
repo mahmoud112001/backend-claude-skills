@@ -1,0 +1,5 @@
+schema_version: "1.1"
+name: ac-negative-explain
+expected_outcome: |
+  An explanation; architecture-conformance is not used; no report.
+  should_trigger: false

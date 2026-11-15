@@ -1,0 +1,5 @@
+schema_version: "1.1"
+name: mr-route-mixed
+expected_outcome: |
+  rename: sonnet; outbox design: opus/fable; TODO list: haiku or grep; skill model field, which affects only that skill's turn.
+  should_trigger: true

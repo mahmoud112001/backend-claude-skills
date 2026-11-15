@@ -1,0 +1,17 @@
+{
+  "eval_name": "dc-apply",
+  "prompt": "/dead-code-cleaner apply",
+  "assertions": [
+    "Branch cleanup/2026-11-15 exists",
+    "legacy_invoice_number was deleted",
+    "old_tax_rate was kept",
+    "on_invoice_created was kept",
+    "Migrations and the shared helpers slugify/format_money were kept",
+    "At least one cleanup commit exists on the branch and main is unchanged",
+    "Tests pass on the final tree",
+    "The report has an Applied section",
+    "Nothing was pushed",
+    "Nothing was deleted to make preflight pass (no rm, stash or clean)",
+    "normalize_whitespace (public, in shared/) was kept"
+  ]
+}

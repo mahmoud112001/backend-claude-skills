@@ -1,0 +1,329 @@
+{
+  "metadata": {
+    "skill_name": "architecture-conformance",
+    "skill_path": "<path/to/skill>",
+    "executor_model": "<model-name>",
+    "analyzer_model": "<model-name>",
+    "timestamp": "2026-11-15T17:42:30Z",
+    "evals_run": [
+      "ac-full-repo",
+      "ac-negative-explain",
+      "ac-no-rules"
+    ],
+    "runs_per_configuration": 1
+  },
+  "runs": [
+    {
+      "eval_id": "ac-full-repo",
+      "eval_name": "ac-full-repo",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.9,
+        "passed": 9,
+        "failed": 1,
+        "total": 10,
+        "time_seconds": 164,
+        "tokens": 74562,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "docs/reviews/architecture-2026-11-15.md exists",
+          "passed": true,
+          "evidence": "programmatic check"
+        },
+        {
+          "text": "Every rule R1-R7 appears in the report",
+          "passed": true,
+          "evidence": "programmatic check"
+        },
+        {
+          "text": "R1 violation cites src/billing/service.py importing orders.domain",
+          "passed": true,
+          "evidence": "programmatic check"
+        },
+        {
+          "text": "R3 violation cites src/orders/domain/order.py importing infrastructure",
+          "passed": true,
+          "evidence": "programmatic check"
+        },
+        {
+          "text": "R4 violation cites repo.py publishing to the broker",
+          "passed": true,
+          "evidence": "programmatic check"
+        },
+        {
+          "text": "R5 violation cites migrations/0001_init.sql REFERENCES orders",
+          "passed": true,
+          "evidence": "programmatic check"
+        },
+        {
+          "text": "R6 and R7 violations cite src/billing/http.py (Invoices path, ERR_404)",
+          "passed": true,
+          "evidence": "programmatic check"
+        },
+        {
+          "text": "R2 violation cites the Customer object held by Order",
+          "passed": true,
+          "evidence": "programmatic check"
+        },
+        {
+          "text": "The judgement rule R2 was checked by an opus subagent, not inline",
+          "passed": false,
+          "evidence": "programmatic check"
+        },
+        {
+          "text": "No source file was changed",
+          "passed": true,
+          "evidence": "programmatic check"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "ac-negative-explain",
+      "eval_name": "ac-negative-explain",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 2,
+        "failed": 0,
+        "total": 2,
+        "time_seconds": 23,
+        "tokens": 60667,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "architecture-conformance was not used",
+          "passed": true,
+          "evidence": "programmatic check"
+        },
+        {
+          "text": "No architecture report was written",
+          "passed": true,
+          "evidence": "programmatic check"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "ac-no-rules",
+      "eval_name": "ac-no-rules",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 3,
+        "failed": 0,
+        "total": 3,
+        "time_seconds": 41,
+        "tokens": 63767,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "It asks the user which file holds the rules",
+          "passed": true,
+          "evidence": "programmatic check"
+        },
+        {
+          "text": "No architecture report was written",
+          "passed": true,
+          "evidence": "programmatic check"
+        },
+        {
+          "text": "It reports no rule violations",
+          "passed": true,
+          "evidence": "programmatic check"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "ac-full-repo",
+      "eval_name": "ac-full-repo",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.1,
+        "passed": 1,
+        "failed": 9,
+        "total": 10,
+        "time_seconds": 96,
+        "tokens": 65561,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "docs/reviews/architecture-2026-11-15.md exists",
+          "passed": false,
+          "evidence": "programmatic check"
+        },
+        {
+          "text": "Every rule R1-R7 appears in the report",
+          "passed": false,
+          "evidence": "programmatic check"
+        },
+        {
+          "text": "R1 violation cites src/billing/service.py importing orders.domain",
+          "passed": false,
+          "evidence": "programmatic check"
+        },
+        {
+          "text": "R3 violation cites src/orders/domain/order.py importing infrastructure",
+          "passed": false,
+          "evidence": "programmatic check"
+        },
+        {
+          "text": "R4 violation cites repo.py publishing to the broker",
+          "passed": false,
+          "evidence": "programmatic check"
+        },
+        {
+          "text": "R5 violation cites migrations/0001_init.sql REFERENCES orders",
+          "passed": false,
+          "evidence": "programmatic check"
+        },
+        {
+          "text": "R6 and R7 violations cite src/billing/http.py (Invoices path, ERR_404)",
+          "passed": false,
+          "evidence": "programmatic check"
+        },
+        {
+          "text": "R2 violation cites the Customer object held by Order",
+          "passed": false,
+          "evidence": "programmatic check"
+        },
+        {
+          "text": "The judgement rule R2 was checked by an opus subagent, not inline",
+          "passed": false,
+          "evidence": "programmatic check"
+        },
+        {
+          "text": "No source file was changed",
+          "passed": true,
+          "evidence": "programmatic check"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "ac-negative-explain",
+      "eval_name": "ac-negative-explain",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 2,
+        "failed": 0,
+        "total": 2,
+        "time_seconds": 34,
+        "tokens": 60007,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "architecture-conformance was not used",
+          "passed": true,
+          "evidence": "programmatic check"
+        },
+        {
+          "text": "No architecture report was written",
+          "passed": true,
+          "evidence": "programmatic check"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "ac-no-rules",
+      "eval_name": "ac-no-rules",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 3,
+        "failed": 0,
+        "total": 3,
+        "time_seconds": 51,
+        "tokens": 63336,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "It asks the user which file holds the rules",
+          "passed": true,
+          "evidence": "programmatic check"
+        },
+        {
+          "text": "No architecture report was written",
+          "passed": true,
+          "evidence": "programmatic check"
+        },
+        {
+          "text": "It reports no rule violations",
+          "passed": true,
+          "evidence": "programmatic check"
+        }
+      ],
+      "notes": []
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {
+        "mean": 0.9667,
+        "stddev": 0.0577,
+        "min": 0.9,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "mean": 76.0,
+        "stddev": 76.7398,
+        "min": 23,
+        "max": 164
+      },
+      "tokens": {
+        "mean": 66332.0,
+        "stddev": 7293.9821,
+        "min": 60667,
+        "max": 74562
+      }
+    },
+    "without_skill": {
+      "pass_rate": {
+        "mean": 0.7,
+        "stddev": 0.5196,
+        "min": 0.1,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "mean": 60.3333,
+        "stddev": 32.0364,
+        "min": 34,
+        "max": 96
+      },
+      "tokens": {
+        "mean": 62968.0,
+        "stddev": 2795.2275,
+        "min": 60007,
+        "max": 65561
+      }
+    },
+    "delta": {
+      "pass_rate": "+0.27",
+      "time_seconds": "+15.7",
+      "tokens": "+3364"
+    }
+  },
+  "notes": []
+}

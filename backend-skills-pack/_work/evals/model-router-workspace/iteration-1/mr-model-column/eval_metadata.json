@@ -1,0 +1,10 @@
+{
+  "eval_name": "mr-model-column",
+  "prompt": "Build the model column for the README of backend-skills-pack: every skill and agent in D:/I-fikra/backend-claude-skills/backend-skills-pack/skills with its model and why. Save the table to OUT/model-column.md.",
+  "assertions": [
+    "model-column.md lists all 5 skills",
+    "Each skill has its correct alias (reuse-first/model-router haiku, dead-code-cleaner/architecture-conformance sonnet, skill-security-audit opus)",
+    "model_column.py was run",
+    "No model version numbers in the table"
+  ]
+}

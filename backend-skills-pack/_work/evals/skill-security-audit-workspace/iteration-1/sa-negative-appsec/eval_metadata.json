@@ -1,0 +1,8 @@
+{
+  "eval_name": "sa-negative-appsec",
+  "prompt": "Do a quick security review of src/billing in orders-svc. I'm worried about injection and leaked secrets. Reply in chat, no files.",
+  "assertions": [
+    "skill-security-audit was not used",
+    "No skill-audit report was written"
+  ]
+}

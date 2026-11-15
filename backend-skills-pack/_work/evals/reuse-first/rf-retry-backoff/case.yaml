@@ -1,0 +1,5 @@
+schema_version: "1.1"
+name: rf-retry-backoff
+expected_outcome: |
+  REUSE urllib3 Retry through the installed requests (HTTPAdapter); no new dependency without a 2-option comparison.
+  should_trigger: true

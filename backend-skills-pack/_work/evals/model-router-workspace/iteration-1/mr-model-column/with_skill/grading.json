@@ -1,0 +1,30 @@
+{
+  "expectations": [
+    {
+      "text": "model-column.md lists all 5 skills",
+      "passed": true,
+      "evidence": "programmatic check"
+    },
+    {
+      "text": "Each skill has its correct alias (reuse-first/model-router haiku, dead-code-cleaner/architecture-conformance sonnet, skill-security-audit opus)",
+      "passed": true,
+      "evidence": "programmatic check"
+    },
+    {
+      "text": "model_column.py was run",
+      "passed": true,
+      "evidence": "programmatic check"
+    },
+    {
+      "text": "No model version numbers in the table",
+      "passed": true,
+      "evidence": "programmatic check"
+    }
+  ],
+  "summary": {
+    "passed": 4,
+    "failed": 0,
+    "total": 4,
+    "pass_rate": 1.0
+  }
+}

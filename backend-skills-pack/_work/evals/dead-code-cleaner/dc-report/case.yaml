@@ -1,0 +1,5 @@
+schema_version: "1.1"
+name: dc-report
+expected_outcome: |
+  Report only: legacy_invoice_number and _unused_helper SAFE-TO-DELETE; on_invoice_created and old_tax_rate not deletable; _fmt_money merge into shared/money.format_money proposed; no source change; no tool installed; reply <= 15 lines.
+  should_trigger: true

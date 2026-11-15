@@ -1,0 +1,5 @@
+schema_version: "1.1"
+name: dc-negative-question
+expected_outcome: |
+  Answers the question; does not run the manual cleanup skill; no files changed.
+  should_trigger: false

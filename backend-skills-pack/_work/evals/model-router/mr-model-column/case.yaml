@@ -1,0 +1,5 @@
+schema_version: "1.1"
+name: mr-model-column
+expected_outcome: |
+  A table with all five skills and correct aliases, built by model_column.py; no version numbers.
+  should_trigger: true

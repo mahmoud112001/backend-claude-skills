@@ -1,0 +1,5 @@
+schema_version: "1.1"
+name: rf-negative-rename
+expected_outcome: |
+  Does the rename directly; reuse-first is not used.
+  should_trigger: false

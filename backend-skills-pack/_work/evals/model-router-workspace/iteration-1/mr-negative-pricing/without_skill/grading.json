@@ -1,0 +1,15 @@
+{
+  "expectations": [
+    {
+      "text": "model-router was not used",
+      "passed": true,
+      "evidence": "programmatic check"
+    }
+  ],
+  "summary": {
+    "passed": 1,
+    "failed": 0,
+    "total": 1,
+    "pass_rate": 1.0
+  }
+}

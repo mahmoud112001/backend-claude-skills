@@ -1,0 +1,60 @@
+{
+  "expectations": [
+    {
+      "text": "docs/reviews/cleanup-2026-11-15.md exists",
+      "passed": true,
+      "evidence": "programmatic check"
+    },
+    {
+      "text": "legacy_invoice_number is SAFE-TO-DELETE",
+      "passed": true,
+      "evidence": "programmatic check"
+    },
+    {
+      "text": "_unused_helper is SAFE-TO-DELETE",
+      "passed": true,
+      "evidence": "programmatic check"
+    },
+    {
+      "text": "on_invoice_created is not SAFE-TO-DELETE (named in pyproject.toml)",
+      "passed": true,
+      "evidence": "programmatic check"
+    },
+    {
+      "text": "old_tax_rate is not SAFE-TO-DELETE (dynamic lookup)",
+      "passed": true,
+      "evidence": "programmatic check"
+    },
+    {
+      "text": "The _fmt_money duplicate of shared/money.py format_money is reported",
+      "passed": true,
+      "evidence": "programmatic check"
+    },
+    {
+      "text": "No source file was changed (report mode)",
+      "passed": true,
+      "evidence": "programmatic check"
+    },
+    {
+      "text": "No tool was installed",
+      "passed": true,
+      "evidence": "programmatic check"
+    },
+    {
+      "text": "normalize_whitespace (public, in shared/) is not SAFE-TO-DELETE",
+      "passed": true,
+      "evidence": "programmatic check"
+    },
+    {
+      "text": "The chat reply is at most 15 lines",
+      "passed": true,
+      "evidence": "programmatic check"
+    }
+  ],
+  "summary": {
+    "passed": 10,
+    "failed": 0,
+    "total": 10,
+    "pass_rate": 1.0
+  }
+}

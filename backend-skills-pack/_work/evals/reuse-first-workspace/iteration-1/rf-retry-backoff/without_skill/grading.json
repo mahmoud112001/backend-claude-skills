@@ -1,0 +1,35 @@
+{
+  "expectations": [
+    {
+      "text": "The reply's verdict is REUSE",
+      "passed": false,
+      "evidence": "programmatic check"
+    },
+    {
+      "text": "The reply names urllib3 Retry (via requests HTTPAdapter)",
+      "passed": true,
+      "evidence": "programmatic check"
+    },
+    {
+      "text": "The reply does not recommend adding tenacity or backoff",
+      "passed": true,
+      "evidence": "programmatic check"
+    },
+    {
+      "text": "The reply is at most 10 lines",
+      "passed": false,
+      "evidence": "programmatic check"
+    },
+    {
+      "text": "No file in the repo was changed",
+      "passed": true,
+      "evidence": "programmatic check"
+    }
+  ],
+  "summary": {
+    "passed": 3,
+    "failed": 2,
+    "total": 5,
+    "pass_rate": 0.6
+  }
+}

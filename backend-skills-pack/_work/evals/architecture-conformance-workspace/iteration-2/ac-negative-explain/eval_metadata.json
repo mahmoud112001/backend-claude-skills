@@ -1,0 +1,8 @@
+{
+  "eval_name": "ac-negative-explain",
+  "prompt": "Explain the difference between hexagonal and layered architecture, and when I'd pick each for a service like orders-svc. Keep it short.",
+  "assertions": [
+    "architecture-conformance was not used",
+    "No architecture report was written"
+  ]
+}

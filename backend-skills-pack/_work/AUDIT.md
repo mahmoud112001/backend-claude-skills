@@ -4,7 +4,7 @@ Read `CONVENTIONS.md` first. Every statement here is tagged **[sourced]** (seen 
 
 ## Method
 
-1. `scripts/scan.py` grepped 2,624 text files: every file in each skill folder, plus plugin-level `hooks/`, `agents/`, `commands/`, `scripts/`, `bin/`, `plugin.json`, `.mcp.json`, `hooks.json`, `package.json` and `settings.json`. It produced 2,984 hits in `_work/scan_hits.csv`, with per-owner counts in `_work/scan_summary.csv`.
+1. `scripts/scan.py` grepped 2,624 text files (session 2 moved it to `skills/skill-security-audit/scripts/scan.py`, the only copy, which now takes target folders as arguments): every file in each skill folder, plus plugin-level `hooks/`, `agents/`, `commands/`, `scripts/`, `bin/`, `plugin.json`, `.mcp.json`, `hooks.json`, `package.json` and `settings.json`. It produced 2,984 hits in `_work/scan_hits.csv`, with per-owner counts in `_work/scan_summary.csv`.
 2. Noise patterns (`token-keyword`, `dotenv`, `blob`) were counted but not reviewed one by one. I reviewed every other hit for the quarantine skills and the shortlist. Most were documentation prose: words like "transcript" in "transcription", or curl examples in API docs. **[sourced: scan_hits.csv]**
 3. Verdicts judge safety only. Fit for the pack is decided in `SELECTION.md`.
 4. Limits: I read the full SKILL.md for every shortlisted skill. For the other quarantine skills, the verdict rests on the scan hits plus the frontmatter. Their scripts were not read line by line.

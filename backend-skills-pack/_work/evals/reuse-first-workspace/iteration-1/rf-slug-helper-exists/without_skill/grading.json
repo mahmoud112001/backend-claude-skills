@@ -1,0 +1,35 @@
+{
+  "expectations": [
+    {
+      "text": "The reply's verdict is REUSE (first non-empty line starts with REUSE)",
+      "passed": false,
+      "evidence": "programmatic check"
+    },
+    {
+      "text": "The reply points to src/shared/text.py slugify",
+      "passed": true,
+      "evidence": "programmatic check"
+    },
+    {
+      "text": "The reply is at most 10 lines",
+      "passed": true,
+      "evidence": "programmatic check"
+    },
+    {
+      "text": "The reply does not recommend adding python-slugify or another library",
+      "passed": false,
+      "evidence": "programmatic check"
+    },
+    {
+      "text": "No file in the repo was changed",
+      "passed": true,
+      "evidence": "programmatic check"
+    }
+  ],
+  "summary": {
+    "passed": 3,
+    "failed": 2,
+    "total": 5,
+    "pass_rate": 0.6
+  }
+}

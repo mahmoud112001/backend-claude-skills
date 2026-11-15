@@ -1,0 +1,9 @@
+{
+  "eval_name": "dc-negative-question",
+  "prompt": "Is legacy_invoice_number in orders-svc used anywhere? Just tell me, don't change anything.",
+  "assertions": [
+    "dead-code-cleaner was not used",
+    "No file changed and no report written",
+    "The reply says it is unused / has no callers"
+  ]
+}

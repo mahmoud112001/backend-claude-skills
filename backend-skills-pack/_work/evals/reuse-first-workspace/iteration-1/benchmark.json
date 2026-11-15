@@ -1,0 +1,309 @@
+{
+  "metadata": {
+    "skill_name": "reuse-first",
+    "skill_path": "<path/to/skill>",
+    "executor_model": "<model-name>",
+    "analyzer_model": "<model-name>",
+    "timestamp": "2026-11-15T17:40:46Z",
+    "evals_run": [
+      "rf-negative-rename",
+      "rf-retry-backoff",
+      "rf-slug-helper-exists"
+    ],
+    "runs_per_configuration": 1
+  },
+  "runs": [
+    {
+      "eval_id": "rf-negative-rename",
+      "eval_name": "rf-negative-rename",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 3,
+        "failed": 0,
+        "total": 3,
+        "time_seconds": 112,
+        "tokens": 68375,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "reuse-first was not used",
+          "passed": true,
+          "evidence": "programmatic check"
+        },
+        {
+          "text": "format_money now takes `value`",
+          "passed": true,
+          "evidence": "programmatic check"
+        },
+        {
+          "text": "The reply contains no REUSE/ADD/WRITE verdict",
+          "passed": true,
+          "evidence": "programmatic check"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "rf-retry-backoff",
+      "eval_name": "rf-retry-backoff",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 5,
+        "failed": 0,
+        "total": 5,
+        "time_seconds": 181,
+        "tokens": 70610,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "The reply's verdict is REUSE",
+          "passed": true,
+          "evidence": "programmatic check"
+        },
+        {
+          "text": "The reply names urllib3 Retry (via requests HTTPAdapter)",
+          "passed": true,
+          "evidence": "programmatic check"
+        },
+        {
+          "text": "The reply does not recommend adding tenacity or backoff",
+          "passed": true,
+          "evidence": "programmatic check"
+        },
+        {
+          "text": "The reply is at most 10 lines",
+          "passed": true,
+          "evidence": "programmatic check"
+        },
+        {
+          "text": "No file in the repo was changed",
+          "passed": true,
+          "evidence": "programmatic check"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "rf-slug-helper-exists",
+      "eval_name": "rf-slug-helper-exists",
+      "configuration": "with_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 5,
+        "failed": 0,
+        "total": 5,
+        "time_seconds": 153,
+        "tokens": 73518,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "The reply's verdict is REUSE (first non-empty line starts with REUSE)",
+          "passed": true,
+          "evidence": "programmatic check"
+        },
+        {
+          "text": "The reply points to src/shared/text.py slugify",
+          "passed": true,
+          "evidence": "programmatic check"
+        },
+        {
+          "text": "The reply is at most 10 lines",
+          "passed": true,
+          "evidence": "programmatic check"
+        },
+        {
+          "text": "The reply does not recommend adding python-slugify or another library",
+          "passed": true,
+          "evidence": "programmatic check"
+        },
+        {
+          "text": "No file in the repo was changed",
+          "passed": true,
+          "evidence": "programmatic check"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "rf-negative-rename",
+      "eval_name": "rf-negative-rename",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 1.0,
+        "passed": 3,
+        "failed": 0,
+        "total": 3,
+        "time_seconds": 104,
+        "tokens": 65554,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "reuse-first was not used",
+          "passed": true,
+          "evidence": "programmatic check"
+        },
+        {
+          "text": "format_money now takes `value`",
+          "passed": true,
+          "evidence": "programmatic check"
+        },
+        {
+          "text": "The reply contains no REUSE/ADD/WRITE verdict",
+          "passed": true,
+          "evidence": "programmatic check"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "rf-retry-backoff",
+      "eval_name": "rf-retry-backoff",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.6,
+        "passed": 3,
+        "failed": 2,
+        "total": 5,
+        "time_seconds": 158,
+        "tokens": 72107,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "The reply's verdict is REUSE",
+          "passed": false,
+          "evidence": "programmatic check"
+        },
+        {
+          "text": "The reply names urllib3 Retry (via requests HTTPAdapter)",
+          "passed": true,
+          "evidence": "programmatic check"
+        },
+        {
+          "text": "The reply does not recommend adding tenacity or backoff",
+          "passed": true,
+          "evidence": "programmatic check"
+        },
+        {
+          "text": "The reply is at most 10 lines",
+          "passed": false,
+          "evidence": "programmatic check"
+        },
+        {
+          "text": "No file in the repo was changed",
+          "passed": true,
+          "evidence": "programmatic check"
+        }
+      ],
+      "notes": []
+    },
+    {
+      "eval_id": "rf-slug-helper-exists",
+      "eval_name": "rf-slug-helper-exists",
+      "configuration": "without_skill",
+      "run_number": 1,
+      "result": {
+        "pass_rate": 0.6,
+        "passed": 3,
+        "failed": 2,
+        "total": 5,
+        "time_seconds": 124,
+        "tokens": 68182,
+        "tool_calls": 0,
+        "errors": 0
+      },
+      "expectations": [
+        {
+          "text": "The reply's verdict is REUSE (first non-empty line starts with REUSE)",
+          "passed": false,
+          "evidence": "programmatic check"
+        },
+        {
+          "text": "The reply points to src/shared/text.py slugify",
+          "passed": true,
+          "evidence": "programmatic check"
+        },
+        {
+          "text": "The reply is at most 10 lines",
+          "passed": true,
+          "evidence": "programmatic check"
+        },
+        {
+          "text": "The reply does not recommend adding python-slugify or another library",
+          "passed": false,
+          "evidence": "programmatic check"
+        },
+        {
+          "text": "No file in the repo was changed",
+          "passed": true,
+          "evidence": "programmatic check"
+        }
+      ],
+      "notes": []
+    }
+  ],
+  "run_summary": {
+    "with_skill": {
+      "pass_rate": {
+        "mean": 1.0,
+        "stddev": 0.0,
+        "min": 1.0,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "mean": 148.6667,
+        "stddev": 34.7035,
+        "min": 112,
+        "max": 181
+      },
+      "tokens": {
+        "mean": 70834.3333,
+        "stddev": 2578.8285,
+        "min": 68375,
+        "max": 73518
+      }
+    },
+    "without_skill": {
+      "pass_rate": {
+        "mean": 0.7333,
+        "stddev": 0.2309,
+        "min": 0.6,
+        "max": 1.0
+      },
+      "time_seconds": {
+        "mean": 128.6667,
+        "stddev": 27.3008,
+        "min": 104,
+        "max": 158
+      },
+      "tokens": {
+        "mean": 68614.3333,
+        "stddev": 3297.823,
+        "min": 65554,
+        "max": 72107
+      }
+    },
+    "delta": {
+      "pass_rate": "+0.27",
+      "time_seconds": "+20.0",
+      "tokens": "+2220"
+    }
+  },
+  "notes": []
+}

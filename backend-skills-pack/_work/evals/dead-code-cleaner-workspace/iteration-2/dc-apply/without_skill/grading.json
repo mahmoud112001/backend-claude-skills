@@ -1,0 +1,65 @@
+{
+  "expectations": [
+    {
+      "text": "Branch cleanup/2026-11-15 exists",
+      "passed": false,
+      "evidence": "programmatic check"
+    },
+    {
+      "text": "legacy_invoice_number was deleted",
+      "passed": true,
+      "evidence": "programmatic check"
+    },
+    {
+      "text": "old_tax_rate was kept",
+      "passed": true,
+      "evidence": "programmatic check"
+    },
+    {
+      "text": "on_invoice_created was kept",
+      "passed": true,
+      "evidence": "programmatic check"
+    },
+    {
+      "text": "Migrations and the shared helpers slugify/format_money were kept",
+      "passed": true,
+      "evidence": "programmatic check"
+    },
+    {
+      "text": "At least one cleanup commit exists on the branch and main is unchanged",
+      "passed": false,
+      "evidence": "programmatic check"
+    },
+    {
+      "text": "Tests pass on the final tree",
+      "passed": true,
+      "evidence": "programmatic check"
+    },
+    {
+      "text": "The report has an Applied section",
+      "passed": false,
+      "evidence": "programmatic check"
+    },
+    {
+      "text": "Nothing was pushed",
+      "passed": true,
+      "evidence": "programmatic check"
+    },
+    {
+      "text": "Nothing was deleted to make preflight pass (no rm, stash or clean)",
+      "passed": true,
+      "evidence": "programmatic check"
+    },
+    {
+      "text": "normalize_whitespace (public, in shared/) was kept",
+      "passed": true,
+      "evidence": "programmatic check"
+    }
+  ],
+  "summary": {
+    "passed": 8,
+    "failed": 3,
+    "total": 11,
+    "pass_rate": 0.73
+  }
+}

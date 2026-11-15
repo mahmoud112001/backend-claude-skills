@@ -1,0 +1,5 @@
+schema_version: "1.1"
+name: ac-no-rules
+expected_outcome: |
+  No rules file exists: asks the user for it, writes no report, invents no rules.
+  should_trigger: true

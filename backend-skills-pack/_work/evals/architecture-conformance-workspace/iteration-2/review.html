@@ -1,0 +1,1330 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Eval Review</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@500;600&family=Lora:wght@400;500&display=swap" rel="stylesheet">
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js" integrity="sha384-EnyY0/GSHQGSxSgMwaIPzSESbqoOLSexfnSMN2AP+39Ckmn92stwABZynq1JyzdT" crossorigin="anonymous"></script>
+  <style>
+    :root {
+      --bg: #faf9f5;
+      --surface: #ffffff;
+      --border: #e8e6dc;
+      --text: #141413;
+      --text-muted: #b0aea5;
+      --accent: #d97757;
+      --accent-hover: #c4613f;
+      --green: #788c5d;
+      --green-bg: #eef2e8;
+      --red: #c44;
+      --red-bg: #fceaea;
+      --header-bg: #141413;
+      --header-text: #faf9f5;
+      --radius: 6px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Lora', Georgia, serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ---- Header ---- */
+    .header {
+      background: var(--header-bg);
+      color: var(--header-text);
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-shrink: 0;
+    }
+    .header h1 {
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 600;
+    }
+    .header .instructions {
+      font-size: 0.8rem;
+      opacity: 0.7;
+      margin-top: 0.25rem;
+    }
+    .header .progress {
+      font-size: 0.875rem;
+      opacity: 0.8;
+      text-align: right;
+    }
+
+    /* ---- Main content ---- */
+    .main {
+      flex: 1;
+      overflow-y: auto;
+      padding: 1.5rem 2rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    /* ---- Sections ---- */
+    .section {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      flex-shrink: 0;
+    }
+    .section-header {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.75rem 1rem;
+      font-size: 0.75rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border);
+      background: var(--bg);
+    }
+    .section-body {
+      padding: 1rem;
+    }
+
+    /* ---- Config badge ---- */
+    .config-badge {
+      display: inline-block;
+      padding: 0.2rem 0.625rem;
+      border-radius: 9999px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.6875rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
+      margin-left: 0.75rem;
+      vertical-align: middle;
+    }
+    .config-badge.config-primary {
+      background: rgba(33, 150, 243, 0.12);
+      color: #1976d2;
+    }
+    .config-badge.config-baseline {
+      background: rgba(255, 193, 7, 0.15);
+      color: #f57f17;
+    }
+
+    /* ---- Prompt ---- */
+    .prompt-text {
+      white-space: pre-wrap;
+      font-size: 0.9375rem;
+      line-height: 1.6;
+    }
+
+    /* ---- Outputs ---- */
+    .output-file {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+    .output-file + .output-file {
+      margin-top: 1rem;
+    }
+    .output-file-header {
+      padding: 0.5rem 0.75rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .output-file-header .dl-btn {
+      font-size: 0.7rem;
+      color: var(--accent);
+      text-decoration: none;
+      cursor: pointer;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      font-weight: 500;
+      opacity: 0.8;
+    }
+    .output-file-header .dl-btn:hover {
+      opacity: 1;
+      text-decoration: underline;
+    }
+    .output-file-content {
+      padding: 0.75rem;
+      overflow-x: auto;
+    }
+    .output-file-content pre {
+      font-size: 0.8125rem;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-break: break-word;
+      font-family: 'SF Mono', SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace;
+    }
+    .output-file-content img {
+      max-width: 100%;
+      height: auto;
+      border-radius: 4px;
+    }
+    .output-file-content iframe {
+      width: 100%;
+      height: 600px;
+      border: none;
+    }
+    .output-file-content table {
+      border-collapse: collapse;
+      font-size: 0.8125rem;
+      width: 100%;
+    }
+    .output-file-content table td,
+    .output-file-content table th {
+      border: 1px solid var(--border);
+      padding: 0.375rem 0.5rem;
+      text-align: left;
+    }
+    .output-file-content table th {
+      background: var(--bg);
+      font-weight: 600;
+    }
+    .output-file-content .download-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 0.875rem;
+      cursor: pointer;
+    }
+    .output-file-content .download-link:hover {
+      background: var(--border);
+    }
+    .empty-state {
+      color: var(--text-muted);
+      font-style: italic;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    /* ---- Feedback ---- */
+    .prev-feedback {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 0.625rem 0.75rem;
+      margin-top: 0.75rem;
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    .prev-feedback-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      margin-bottom: 0.25rem;
+      color: var(--text-muted);
+    }
+    .feedback-textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      font-family: inherit;
+      font-size: 0.9375rem;
+      line-height: 1.5;
+      resize: vertical;
+      color: var(--text);
+    }
+    .feedback-textarea:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+    }
+    .feedback-status {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+      min-height: 1.1em;
+    }
+
+    /* ---- Grades (collapsible) ---- */
+    .grades-toggle {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+    .grades-toggle:hover {
+      color: var(--accent);
+    }
+    .grades-toggle .arrow {
+      margin-right: 0.5rem;
+      transition: transform 0.15s;
+      font-size: 0.75rem;
+    }
+    .grades-toggle .arrow.open {
+      transform: rotate(90deg);
+    }
+    .grades-content {
+      display: none;
+      margin-top: 0.75rem;
+    }
+    .grades-content.open {
+      display: block;
+    }
+    .grades-summary {
+      font-size: 0.875rem;
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .grade-badge {
+      display: inline-block;
+      padding: 0.125rem 0.5rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+    .grade-pass { background: var(--green-bg); color: var(--green); }
+    .grade-fail { background: var(--red-bg); color: var(--red); }
+    .assertion-list {
+      list-style: none;
+    }
+    .assertion-item {
+      padding: 0.625rem 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.8125rem;
+    }
+    .assertion-item:last-child { border-bottom: none; }
+    .assertion-status {
+      font-weight: 600;
+      margin-right: 0.5rem;
+    }
+    .assertion-status.pass { color: var(--green); }
+    .assertion-status.fail { color: var(--red); }
+    .assertion-evidence {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      margin-top: 0.25rem;
+      padding-left: 1.5rem;
+    }
+
+    /* ---- View tabs ---- */
+    .view-tabs {
+      display: flex;
+      gap: 0;
+      padding: 0 2rem;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+    .view-tab {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.625rem 1.25rem;
+      font-size: 0.8125rem;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      background: none;
+      color: var(--text-muted);
+      border-bottom: 2px solid transparent;
+      transition: all 0.15s;
+    }
+    .view-tab:hover { color: var(--text); }
+    .view-tab.active {
+      color: var(--accent);
+      border-bottom-color: var(--accent);
+    }
+    .view-panel { display: none; }
+    .view-panel.active { display: flex; flex-direction: column; flex: 1; overflow: hidden; }
+
+    /* ---- Benchmark view ---- */
+    .benchmark-view {
+      padding: 1.5rem 2rem;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .benchmark-table {
+      border-collapse: collapse;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      font-size: 0.8125rem;
+      width: 100%;
+      margin-bottom: 1.5rem;
+    }
+    .benchmark-table th, .benchmark-table td {
+      padding: 0.625rem 0.75rem;
+      text-align: left;
+      border: 1px solid var(--border);
+    }
+    .benchmark-table th {
+      font-family: 'Poppins', sans-serif;
+      background: var(--header-bg);
+      color: var(--header-text);
+      font-weight: 500;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    .benchmark-table tr:hover { background: var(--bg); }
+    .benchmark-table tr.benchmark-row-with { background: rgba(33, 150, 243, 0.06); }
+    .benchmark-table tr.benchmark-row-without { background: rgba(255, 193, 7, 0.06); }
+    .benchmark-table tr.benchmark-row-with:hover { background: rgba(33, 150, 243, 0.12); }
+    .benchmark-table tr.benchmark-row-without:hover { background: rgba(255, 193, 7, 0.12); }
+    .benchmark-table tr.benchmark-row-avg { font-weight: 600; border-top: 2px solid var(--border); }
+    .benchmark-table tr.benchmark-row-avg.benchmark-row-with { background: rgba(33, 150, 243, 0.12); }
+    .benchmark-table tr.benchmark-row-avg.benchmark-row-without { background: rgba(255, 193, 7, 0.12); }
+    .benchmark-delta-positive { color: var(--green); font-weight: 600; }
+    .benchmark-delta-negative { color: var(--red); font-weight: 600; }
+    .benchmark-notes {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1rem;
+    }
+    .benchmark-notes h3 {
+      font-family: 'Poppins', sans-serif;
+      font-size: 0.875rem;
+      margin-bottom: 0.75rem;
+    }
+    .benchmark-notes ul {
+      list-style: disc;
+      padding-left: 1.25rem;
+    }
+    .benchmark-notes li {
+      font-size: 0.8125rem;
+      line-height: 1.6;
+      margin-bottom: 0.375rem;
+    }
+    .benchmark-empty {
+      color: var(--text-muted);
+      font-style: italic;
+      text-align: center;
+      padding: 3rem;
+    }
+
+    /* ---- Navigation ---- */
+    .nav {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1rem 2rem;
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      flex-shrink: 0;
+    }
+    .nav-btn {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.5rem 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: var(--text);
+      transition: all 0.15s;
+    }
+    .nav-btn:hover:not(:disabled) {
+      background: var(--bg);
+      border-color: var(--text-muted);
+    }
+    .nav-btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .done-btn {
+      font-family: 'Poppins', sans-serif;
+      padding: 0.5rem 1.5rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      color: var(--text);
+      cursor: pointer;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+    .done-btn:hover {
+      background: var(--bg);
+      border-color: var(--text-muted);
+    }
+    .done-btn.ready {
+      border: none;
+      background: var(--accent);
+      color: white;
+      font-weight: 600;
+    }
+    .done-btn.ready:hover {
+      background: var(--accent-hover);
+    }
+    /* ---- Done overlay ---- */
+    .done-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 100;
+      justify-content: center;
+      align-items: center;
+    }
+    .done-overlay.visible {
+      display: flex;
+    }
+    .done-card {
+      background: var(--surface);
+      border-radius: 12px;
+      padding: 2rem 3rem;
+      text-align: center;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+      max-width: 500px;
+    }
+    .done-card h2 {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .done-card p {
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+      line-height: 1.5;
+    }
+    .done-card .btn-row {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: center;
+    }
+    .done-card button {
+      padding: 0.5rem 1.25rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background: var(--surface);
+      cursor: pointer;
+      font-size: 0.875rem;
+    }
+    .done-card button:hover {
+      background: var(--bg);
+    }
+    /* ---- Toast ---- */
+    .toast {
+      position: fixed;
+      bottom: 5rem;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--header-bg);
+      color: var(--header-text);
+      padding: 0.625rem 1.25rem;
+      border-radius: var(--radius);
+      font-size: 0.875rem;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+      z-index: 200;
+    }
+    .toast.visible {
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <div id="app" style="height:100vh; display:flex; flex-direction:column;">
+    <div class="header">
+      <div>
+        <h1>Eval Review: <span id="skill-name"></span></h1>
+        <div class="instructions">Review each output and leave feedback below. Navigate with arrow keys or buttons. When done, copy feedback and paste into Claude Code.</div>
+      </div>
+      <div class="progress" id="progress"></div>
+    </div>
+
+    <!-- View tabs (only shown when benchmark data exists) -->
+    <div class="view-tabs" id="view-tabs" style="display:none;">
+      <button class="view-tab active" onclick="switchView('outputs')">Outputs</button>
+      <button class="view-tab" onclick="switchView('benchmark')">Benchmark</button>
+    </div>
+
+    <!-- Outputs panel (qualitative review) -->
+    <div class="view-panel active" id="panel-outputs">
+    <div class="main">
+      <!-- Prompt -->
+      <div class="section">
+        <div class="section-header">Prompt <span class="config-badge" id="config-badge" style="display:none;"></span></div>
+        <div class="section-body">
+          <div class="prompt-text" id="prompt-text"></div>
+        </div>
+      </div>
+
+      <!-- Outputs -->
+      <div class="section">
+        <div class="section-header">Output</div>
+        <div class="section-body" id="outputs-body">
+          <div class="empty-state">No output files found</div>
+        </div>
+      </div>
+
+      <!-- Previous Output (collapsible) -->
+      <div class="section" id="prev-outputs-section" style="display:none;">
+        <div class="section-header">
+          <div class="grades-toggle" onclick="togglePrevOutputs()">
+            <span class="arrow" id="prev-outputs-arrow">&#9654;</span>
+            Previous Output
+          </div>
+        </div>
+        <div class="grades-content" id="prev-outputs-content"></div>
+      </div>
+
+      <!-- Grades (collapsible) -->
+      <div class="section" id="grades-section" style="display:none;">
+        <div class="section-header">
+          <div class="grades-toggle" onclick="toggleGrades()">
+            <span class="arrow" id="grades-arrow">&#9654;</span>
+            Formal Grades
+          </div>
+        </div>
+        <div class="grades-content" id="grades-content"></div>
+      </div>
+
+      <!-- Feedback -->
+      <div class="section">
+        <div class="section-header">Your Feedback</div>
+        <div class="section-body">
+          <textarea
+            class="feedback-textarea"
+            id="feedback"
+            placeholder="What do you think of this output? Any issues, suggestions, or things that look great?"
+          ></textarea>
+          <div class="feedback-status" id="feedback-status"></div>
+          <div class="prev-feedback" id="prev-feedback" style="display:none;">
+            <div class="prev-feedback-label">Previous feedback</div>
+            <div id="prev-feedback-text"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="nav" id="outputs-nav">
+      <button class="nav-btn" id="prev-btn" onclick="navigate(-1)">&#8592; Previous</button>
+      <button class="done-btn" id="done-btn" onclick="showDoneDialog()">Submit All Reviews</button>
+      <button class="nav-btn" id="next-btn" onclick="navigate(1)">Next &#8594;</button>
+    </div>
+    </div><!-- end panel-outputs -->
+
+    <!-- Benchmark panel (quantitative stats) -->
+    <div class="view-panel" id="panel-benchmark">
+      <div class="benchmark-view" id="benchmark-content">
+        <div class="benchmark-empty">No benchmark data available. Run a benchmark to see quantitative results here.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Done overlay -->
+  <div class="done-overlay" id="done-overlay">
+    <div class="done-card">
+      <h2>Review Complete</h2>
+      <p>Your feedback has been saved. Go back to your Claude Code session and tell Claude you're done reviewing.</p>
+      <div class="btn-row">
+        <button onclick="closeDoneDialog()">OK</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+  <script>
+    // ---- Embedded data (injected by generate_review.py) ----
+    const EMBEDDED_DATA = {"skill_name": "architecture-conformance", "runs": [{"id": "ac-full-repo-with_skill", "prompt": "Check whether orders-svc follows our architecture rules.", "eval_id": null, "outputs": [{"name": "orders-svc/docs/ddd/service-design-rules.md", "type": "text", "content": "# Service design rules (orders-svc)\n\n- **R1 Module contract.** A module may import another module only through its public contract (`\u003cmodule>/__init__.py`). Importing `\u003cother>.domain`, `\u003cother>.infrastructure` or `\u003cother>.api` directly is forbidden.\n- **R2 Reference by id.** An aggregate refers to another aggregate or another module's entity by id only, never by holding the object.\n- **R3 Pure domain.** Code under `*/domain/` imports nothing from `*/infrastructure/`, `requests`, or any database or HTTP library.\n- **R4 Outbox.** Domain events are written to the outbox (`Session.outbox`) in the same transaction as the aggregate, and published by a relay. Publishing to the broker from a repository or handler is forbidden.\n- **R5 No cross-module FK.** No foreign key or join between tables owned by different modules (orders owns `orders`; billing owns `invoices`).\n- **R6 Endpoint paths.** Paths are `/api/v\u003cn>/\u003cplural-kebab-lowercase>[/{id}]`.\n- **R7 Error codes.** Error codes are `\u003cMODULE>.\u003cUPPER_SNAKE>`, for example `BILLING.INVALID_INVOICE`.\n"}, {"name": "orders-svc/docs/reviews/architecture-2026-11-15.md", "type": "text", "content": "# Architecture conformance 2026-11-15 \u2014 orders-svc\nRules: docs/ddd/service-design-rules.md@6baec70 \u00b7 Target: repo \u00b7 Methods: script (check.py import/grep), manual via opus subagent (R2, R4 save path)\n\n## Rules\n| Rule | Summary | Method | Result | Violations |\n|---|---|---|---|---|\n| R1 | Import other modules only via `\u003cmodule>/__init__.py` | script import | FAIL | 1 |\n| R2 | Aggregates refer to others by id only | manual (opus) | FAIL | 1 |\n| R3 | Domain imports no infrastructure/requests/DB/HTTP libs | script import | FAIL | 1 |\n| R4 | Events go to `Session.outbox` in same transaction; no broker publish from repo/handler | script grep + manual (opus) | FAIL | 1 |\n| R5 | No FK or join across modules' tables | script grep | FAIL | 1 |\n| R6 | Paths `/api/v\u003cn>/\u003cplural-kebab-lowercase>[/{id}]` | script grep | FAIL | 1 |\n| R7 | Error codes `\u003cMODULE>.\u003cUPPER_SNAKE>` | script grep | FAIL | 1 |\n\n## Violations (worst first)\n| # | Rule | Location | Evidence | Severity | Suggested fix |\n|---|---|---|---|---|---|\n| 1 | R4 | src/orders/infrastructure/repo.py:13 | `broker.publish(event)  # published after commit, not via outbox` | high | In `save`, `self.session.outbox.extend(order.events)` before commit; drop broker publish; add a relay (none exists; `Session.outbox` is unused) |\n| 2 | R1 | src/billing/service.py:3 | `from orders.domain.order import Order` | high | Import via `orders` public contract |\n| 3 | R3 | src/orders/domain/order.py:5 | `from orders.infrastructure.db import Session` | high | Inject a port; remove `persist()` dependency on Session |\n| 4 | R2 | src/orders/domain/order.py:17 | `self.customer: \"Customer \\| None\" = None` (type from billing.service) | high | Remove `customer` attribute and TYPE_CHECKING import; keep `customer_id` |\n| 5 | R5 | migrations/0001_init.sql:4 | `order_id TEXT NOT NULL REFERENCES orders(id)` | high | Drop the FK; keep `order_id` as plain id |\n| 6 | R6 | src/billing/http.py:2 | `\"GET /api/v1/Invoices/{id}\"` | medium | `/api/v1/invoices/{id}` |\n| 7 | R7 | src/billing/http.py:7 | `\"code\": \"ERR_404\"` | medium | `BILLING.NOT_FOUND` |\n\nFalse positives dropped: 0.\n\n## Not checked\nNone. Not flagged: `billing/service.py:17` `invoice_text(order: Order)` is a parameter, not a held object (R2).\n"}, {"name": "orders-svc/docs/reviews/architecture-checks.json", "type": "text", "content": "[\n {\"id\":\"R1\",\"kind\":\"import\",\"from\":\"src/billing/**\",\"forbid\":\"^orders\\\\.(domain|infrastructure|api)\\\\b\",\"severity\":\"high\",\"fix\":\"import only from orders (its __init__ contract)\"},\n {\"id\":\"R1\",\"kind\":\"import\",\"from\":\"src/orders/**\",\"forbid\":\"^billing\\\\.(domain|infrastructure|api)\\\\b\",\"severity\":\"high\",\"fix\":\"import only from billing (its __init__ contract)\"},\n {\"id\":\"R3\",\"kind\":\"import\",\"from\":\"src/*/domain/**\",\"forbid\":\"infrastructure|^requests|^sqlalchemy|^django|^psycopg|^httpx\",\"severity\":\"high\",\"fix\":\"inject a port instead of importing infrastructure\"},\n {\"id\":\"R4\",\"kind\":\"grep\",\"files\":\"src/**/*.py\",\"pattern\":\"\\\\bpublish\\\\(\",\"unless\":\"def publish\\\\(\",\"severity\":\"high\",\"fix\":\"write to Session.outbox in the same transaction; publish from a relay\"},\n {\"id\":\"R5\",\"kind\":\"grep\",\"files\":\"**/*.sql\",\"pattern\":\"REFERENCES\\\\s+(orders|invoices)|JOIN\\\\s+(orders|invoices)\",\"severity\":\"high\",\"fix\":\"store the id only, no FK or join across modules\"},\n {\"id\":\"R6\",\"kind\":\"grep\",\"files\":\"src/**/*.py\",\"pattern\":\"/api/\",\"unless\":\"/api/v\\\\d+/[a-z]+(-[a-z]+)*(/\\\\{id\\\\})?\\\"\",\"severity\":\"medium\",\"fix\":\"use lowercase kebab plural path\"},\n {\"id\":\"R7\",\"kind\":\"grep\",\"files\":\"src/**/*.py\",\"pattern\":\"\\\"code\\\"\\\\s*:\",\"unless\":\"\\\"code\\\":\\\\s*\\\"[A-Z]+\\\\.[A-Z][A-Z0-9_]*\\\"\",\"severity\":\"medium\",\"fix\":\"use \u003cMODULE>.\u003cUPPER_SNAKE>\"}\n]\n"}, {"name": "orders-svc/migrations/0001_init.sql", "type": "text", "content": "CREATE TABLE orders (id TEXT PRIMARY KEY, customer_id TEXT NOT NULL);\nCREATE TABLE invoices (\n  id TEXT PRIMARY KEY,\n  order_id TEXT NOT NULL REFERENCES orders(id),\n  amount NUMERIC(12,2) NOT NULL\n);\n"}, {"name": "orders-svc/pyproject.toml", "type": "text", "content": "[project]\nname = \"orders-svc\"\nversion = \"0.3.0\"\nrequires-python = \">=3.11\"\ndependencies = [\"requests>=2.31\"]\n\n[tool.orders]\n# handlers are loaded by name at startup\nevent_handlers = [\"billing.handlers:on_invoice_created\"]\n"}, {"name": "orders-svc/README.md", "type": "text", "content": "# orders-svc\n\nRun tests: `python -m unittest discover -s tests -t .`\n"}, {"name": "orders-svc/src/billing/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/src/billing/handlers.py", "type": "text", "content": "from billing.service import invoice_text\n\n\ndef on_invoice_created(event: dict) -> str:\n    return f\"handled {event['invoice_id']}\"\n\n\ndef _unused_helper(x):\n    return x * 2\n"}, {"name": "orders-svc/src/billing/http.py", "type": "text", "content": "ROUTES = {\n    \"GET /api/v1/Invoices/{id}\": \"get_invoice\",\n    \"POST /api/v1/invoices\": \"create_invoice\",\n}\n\nERRORS = {\n    \"not_found\": {\"code\": \"ERR_404\", \"http\": 404},\n    \"invalid\": {\"code\": \"BILLING.INVALID_INVOICE\", \"http\": 422},\n}\n"}, {"name": "orders-svc/src/billing/service.py", "type": "text", "content": "from decimal import Decimal, ROUND_HALF_UP\n\nfrom orders.domain.order import Order\n\n\nclass Customer:\n    def __init__(self, customer_id: str, name: str):\n        self.customer_id = customer_id\n        self.name = name\n\n\ndef _fmt_money(amount: Decimal, currency: str) -> str:\n    q = amount.quantize(Decimal(\"0.01\"), rounding=ROUND_HALF_UP)\n    return f\"{q:,.2f} {currency.upper()}\"\n\n\ndef invoice_text(order: Order, currency: str = \"eur\") -> str:\n    return f\"Invoice {order.order_id}: {_fmt_money(order.total(), currency)}\"\n\n\ndef legacy_invoice_number(order_id: str) -> str:\n    return \"INV-\" + order_id.zfill(8)\n\n\ndef old_tax_rate() -> Decimal:\n    return Decimal(\"0.19\")\n\n\ndef tax_rate(region: str) -> Decimal:\n    fn = globals().get(f\"{region}_tax_rate\")\n    return fn() if fn else Decimal(\"0.20\")\n"}, {"name": "orders-svc/src/orders/__init__.py", "type": "text", "content": "\"\"\"Public contract of the orders module. Other modules import only from here.\"\"\"\nfrom orders.api import place_order, get_order_total\n\n__all__ = [\"place_order\", \"get_order_total\"]\n"}, {"name": "orders-svc/src/orders/api.py", "type": "text", "content": "from decimal import Decimal\n\nfrom orders.domain.order import Order\nfrom orders.infrastructure.repo import OrderRepository\n\n_repo = OrderRepository()\n\n\ndef place_order(order_id: str, customer_id: str, lines: list[tuple[str, Decimal]]) -> Order:\n    order = Order(order_id, customer_id)\n    for sku, price in lines:\n        order.add_line(sku, price)\n    _repo.save(order)\n    return order\n\n\ndef get_order_total(order_id: str) -> Decimal:\n    return _repo.get(order_id).total()\n"}, {"name": "orders-svc/src/orders/domain/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/src/orders/domain/order.py", "type": "text", "content": "from decimal import Decimal\n\nfrom typing import TYPE_CHECKING\n\nfrom orders.infrastructure.db import Session\n\nif TYPE_CHECKING:\n    from billing.service import Customer\n\n\nclass Order:\n    \"\"\"Order aggregate.\"\"\"\n\n    def __init__(self, order_id: str, customer_id: str):\n        self.order_id = order_id\n        self.customer_id = customer_id\n        self.customer: \"Customer | None\" = None\n        self.lines: list[tuple[str, Decimal]] = []\n        self.events: list[dict] = []\n\n    def add_line(self, sku: str, price: Decimal) -> None:\n        if price \u003c= 0:\n            raise ValueError(\"price must be positive\")\n        self.lines.append((sku, price))\n\n    def total(self) -> Decimal:\n        return sum((p for _, p in self.lines), Decimal(\"0\"))\n\n    def place(self) -> None:\n        self.events.append({\"type\": \"order.placed\", \"order_id\": self.order_id})\n\n    def persist(self) -> None:\n        Session().add(self)\n"}, {"name": "orders-svc/src/orders/infrastructure/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/src/orders/infrastructure/broker.py", "type": "text", "content": "BROKER_URL = \"http://broker.internal/publish\"\n\n\ndef publish(event: dict) -> None:\n    import requests\n\n    requests.post(BROKER_URL, json=event, timeout=5)\n"}, {"name": "orders-svc/src/orders/infrastructure/db.py", "type": "text", "content": "class Session:\n    _store: dict = {}\n    outbox: list = []\n\n    def add(self, obj) -> None:\n        self._store[obj.order_id] = obj\n\n    def get(self, key):\n        return self._store[key]\n\n    def commit(self) -> None:\n        pass\n"}, {"name": "orders-svc/src/orders/infrastructure/repo.py", "type": "text", "content": "from orders.infrastructure.db import Session\nfrom orders.infrastructure import broker\n\n\nclass OrderRepository:\n    def __init__(self):\n        self.session = Session()\n\n    def save(self, order) -> None:\n        self.session.add(order)\n        self.session.commit()\n        for event in order.events:\n            broker.publish(event)  # published after commit, not via outbox\n        order.events.clear()\n\n    def get(self, order_id: str):\n        return self.session.get(order_id)\n"}, {"name": "orders-svc/src/shared/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/src/shared/money.py", "type": "text", "content": "from decimal import Decimal, ROUND_HALF_UP\n\n\ndef format_money(amount: Decimal, currency: str) -> str:\n    q = amount.quantize(Decimal(\"0.01\"), rounding=ROUND_HALF_UP)\n    return f\"{q:,.2f} {currency.upper()}\"\n"}, {"name": "orders-svc/src/shared/text.py", "type": "text", "content": "import re\nimport unicodedata\n\n\ndef slugify(value: str, max_len: int = 80) -> str:\n    \"\"\"Lowercase ASCII slug for URLs: 'Cafe Order #12' -> 'cafe-order-12'.\"\"\"\n    norm = unicodedata.normalize(\"NFKD\", value).encode(\"ascii\", \"ignore\").decode()\n    slug = re.sub(r\"[^a-z0-9]+\", \"-\", norm.lower()).strip(\"-\")\n    return slug[:max_len].rstrip(\"-\")\n\n\ndef normalize_whitespace(value: str) -> str:\n    return \" \".join(value.split())\n"}, {"name": "orders-svc/tests/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/tests/test_orders.py", "type": "text", "content": "import sys\nimport unittest\nfrom decimal import Decimal\nfrom pathlib import Path\n\nsys.path.insert(0, str(Path(__file__).resolve().parent.parent / \"src\"))\n\nfrom shared.text import slugify  # noqa: E402\nfrom shared.money import format_money  # noqa: E402\nfrom billing.service import invoice_text, tax_rate  # noqa: E402\nfrom orders.domain.order import Order  # noqa: E402\n\n\nclass OrderTests(unittest.TestCase):\n    def test_total(self):\n        o = Order(\"1\", \"c1\")\n        o.add_line(\"a\", Decimal(\"2.50\"))\n        o.add_line(\"b\", Decimal(\"1.25\"))\n        self.assertEqual(o.total(), Decimal(\"3.75\"))\n\n    def test_invoice_text(self):\n        o = Order(\"7\", \"c1\")\n        o.add_line(\"a\", Decimal(\"1000\"))\n        self.assertEqual(invoice_text(o), \"Invoice 7: 1,000.00 EUR\")\n\n    def test_slugify(self):\n        self.assertEqual(slugify(\"Cafe Order #12\"), \"cafe-order-12\")\n\n    def test_format_money(self):\n        self.assertEqual(format_money(Decimal(\"3\"), \"usd\"), \"3.00 USD\")\n\n    def test_tax_rate_dynamic(self):\n        self.assertEqual(tax_rate(\"old\"), Decimal(\"0.19\"))\n\n\nif __name__ == \"__main__\":\n    unittest.main()\n"}, {"name": "reply.md", "type": "text", "content": "7 rules: 0 pass, 7 fail, 0 not checked \u00b7 7 violations (5 high)\n\n- R4 \u00b7 src/orders/infrastructure/repo.py:13 \u00b7 broker.publish after commit, not via outbox (and no relay exists) \u00b7 write to Session.outbox before commit; add a relay\n- R1 \u00b7 src/billing/service.py:3 \u00b7 imports orders.domain.order directly \u00b7 import via orders public contract\n- R3 \u00b7 src/orders/domain/order.py:5 \u00b7 domain imports orders.infrastructure.db \u00b7 inject a port\n- R2 \u00b7 src/orders/domain/order.py:17 \u00b7 Order holds a Customer object from billing \u00b7 keep customer_id only\n- R5 \u00b7 migrations/0001_init.sql:4 \u00b7 invoices.order_id REFERENCES orders(id) \u00b7 drop the cross-module FK\n- R6 \u00b7 src/billing/http.py:2 \u00b7 /api/v1/Invoices/{id} not lowercase \u00b7 /api/v1/invoices/{id}\n- R7 \u00b7 src/billing/http.py:7 \u00b7 code ERR_404 \u00b7 BILLING.NOT_FOUND\n\nReport: docs/reviews/architecture-2026-11-15.md (spec: docs/reviews/architecture-checks.json)\n\nSKILLS USED: architecture-conformance\nCOMMANDS RUN:\ncd \u003cproject root> && find . -type f -not -path './.git/*' | head -100\ncat docs/ddd/service-design-rules.md migrations/0001_init.sql; git log -1 --format=%h -- docs/ddd/service-design-rules.md; sed -n 1,60p .../architecture-conformance/scripts/check.py; cat -n of src/billing/*.py src/orders/api.py src/orders/domain/order.py src/orders/infrastructure/*.py\nmkdir -p docs/reviews && cat > docs/reviews/architecture-checks.json (failed, invalid JSON; rewritten with Write tool)\npython3.15 -I .../architecture-conformance/scripts/check.py . --spec docs/reviews/architecture-checks.json\nsed -n 2p docs/reviews/architecture-checks.json\npython3.15 -I .../architecture-conformance/scripts/check.py . --spec docs/reviews/architecture-checks.json\n"}], "grading": {"expectations": [{"text": "docs/reviews/architecture-2026-11-15.md exists", "passed": true, "evidence": "programmatic check"}, {"text": "Every rule R1-R7 appears in the report", "passed": true, "evidence": "programmatic check"}, {"text": "R1 violation cites src/billing/service.py importing orders.domain", "passed": true, "evidence": "programmatic check"}, {"text": "R3 violation cites src/orders/domain/order.py importing infrastructure", "passed": true, "evidence": "programmatic check"}, {"text": "R4 violation cites repo.py publishing to the broker", "passed": true, "evidence": "programmatic check"}, {"text": "R5 violation cites migrations/0001_init.sql REFERENCES orders", "passed": true, "evidence": "programmatic check"}, {"text": "R6 and R7 violations cite src/billing/http.py (Invoices path, ERR_404)", "passed": true, "evidence": "programmatic check"}, {"text": "R2 violation cites the Customer object held by Order", "passed": true, "evidence": "programmatic check"}, {"text": "The judgement rule R2 was checked by an opus subagent, not inline", "passed": true, "evidence": "programmatic check"}, {"text": "No source file was changed", "passed": true, "evidence": "programmatic check"}], "summary": {"passed": 10, "failed": 0, "total": 10, "pass_rate": 1.0}}}, {"id": "ac-full-repo-without_skill", "prompt": "Check whether orders-svc follows our architecture rules.", "eval_id": null, "outputs": [{"name": "orders-svc/docs/ddd/service-design-rules.md", "type": "text", "content": "# Service design rules (orders-svc)\n\n- **R1 Module contract.** A module may import another module only through its public contract (`\u003cmodule>/__init__.py`). Importing `\u003cother>.domain`, `\u003cother>.infrastructure` or `\u003cother>.api` directly is forbidden.\n- **R2 Reference by id.** An aggregate refers to another aggregate or another module's entity by id only, never by holding the object.\n- **R3 Pure domain.** Code under `*/domain/` imports nothing from `*/infrastructure/`, `requests`, or any database or HTTP library.\n- **R4 Outbox.** Domain events are written to the outbox (`Session.outbox`) in the same transaction as the aggregate, and published by a relay. Publishing to the broker from a repository or handler is forbidden.\n- **R5 No cross-module FK.** No foreign key or join between tables owned by different modules (orders owns `orders`; billing owns `invoices`).\n- **R6 Endpoint paths.** Paths are `/api/v\u003cn>/\u003cplural-kebab-lowercase>[/{id}]`.\n- **R7 Error codes.** Error codes are `\u003cMODULE>.\u003cUPPER_SNAKE>`, for example `BILLING.INVALID_INVOICE`.\n"}, {"name": "orders-svc/migrations/0001_init.sql", "type": "text", "content": "CREATE TABLE orders (id TEXT PRIMARY KEY, customer_id TEXT NOT NULL);\nCREATE TABLE invoices (\n  id TEXT PRIMARY KEY,\n  order_id TEXT NOT NULL REFERENCES orders(id),\n  amount NUMERIC(12,2) NOT NULL\n);\n"}, {"name": "orders-svc/pyproject.toml", "type": "text", "content": "[project]\nname = \"orders-svc\"\nversion = \"0.3.0\"\nrequires-python = \">=3.11\"\ndependencies = [\"requests>=2.31\"]\n\n[tool.orders]\n# handlers are loaded by name at startup\nevent_handlers = [\"billing.handlers:on_invoice_created\"]\n"}, {"name": "orders-svc/README.md", "type": "text", "content": "# orders-svc\n\nRun tests: `python -m unittest discover -s tests -t .`\n"}, {"name": "orders-svc/src/billing/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/src/billing/handlers.py", "type": "text", "content": "from billing.service import invoice_text\n\n\ndef on_invoice_created(event: dict) -> str:\n    return f\"handled {event['invoice_id']}\"\n\n\ndef _unused_helper(x):\n    return x * 2\n"}, {"name": "orders-svc/src/billing/http.py", "type": "text", "content": "ROUTES = {\n    \"GET /api/v1/Invoices/{id}\": \"get_invoice\",\n    \"POST /api/v1/invoices\": \"create_invoice\",\n}\n\nERRORS = {\n    \"not_found\": {\"code\": \"ERR_404\", \"http\": 404},\n    \"invalid\": {\"code\": \"BILLING.INVALID_INVOICE\", \"http\": 422},\n}\n"}, {"name": "orders-svc/src/billing/service.py", "type": "text", "content": "from decimal import Decimal, ROUND_HALF_UP\n\nfrom orders.domain.order import Order\n\n\nclass Customer:\n    def __init__(self, customer_id: str, name: str):\n        self.customer_id = customer_id\n        self.name = name\n\n\ndef _fmt_money(amount: Decimal, currency: str) -> str:\n    q = amount.quantize(Decimal(\"0.01\"), rounding=ROUND_HALF_UP)\n    return f\"{q:,.2f} {currency.upper()}\"\n\n\ndef invoice_text(order: Order, currency: str = \"eur\") -> str:\n    return f\"Invoice {order.order_id}: {_fmt_money(order.total(), currency)}\"\n\n\ndef legacy_invoice_number(order_id: str) -> str:\n    return \"INV-\" + order_id.zfill(8)\n\n\ndef old_tax_rate() -> Decimal:\n    return Decimal(\"0.19\")\n\n\ndef tax_rate(region: str) -> Decimal:\n    fn = globals().get(f\"{region}_tax_rate\")\n    return fn() if fn else Decimal(\"0.20\")\n"}, {"name": "orders-svc/src/orders/__init__.py", "type": "text", "content": "\"\"\"Public contract of the orders module. Other modules import only from here.\"\"\"\nfrom orders.api import place_order, get_order_total\n\n__all__ = [\"place_order\", \"get_order_total\"]\n"}, {"name": "orders-svc/src/orders/api.py", "type": "text", "content": "from decimal import Decimal\n\nfrom orders.domain.order import Order\nfrom orders.infrastructure.repo import OrderRepository\n\n_repo = OrderRepository()\n\n\ndef place_order(order_id: str, customer_id: str, lines: list[tuple[str, Decimal]]) -> Order:\n    order = Order(order_id, customer_id)\n    for sku, price in lines:\n        order.add_line(sku, price)\n    _repo.save(order)\n    return order\n\n\ndef get_order_total(order_id: str) -> Decimal:\n    return _repo.get(order_id).total()\n"}, {"name": "orders-svc/src/orders/domain/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/src/orders/domain/order.py", "type": "text", "content": "from decimal import Decimal\n\nfrom typing import TYPE_CHECKING\n\nfrom orders.infrastructure.db import Session\n\nif TYPE_CHECKING:\n    from billing.service import Customer\n\n\nclass Order:\n    \"\"\"Order aggregate.\"\"\"\n\n    def __init__(self, order_id: str, customer_id: str):\n        self.order_id = order_id\n        self.customer_id = customer_id\n        self.customer: \"Customer | None\" = None\n        self.lines: list[tuple[str, Decimal]] = []\n        self.events: list[dict] = []\n\n    def add_line(self, sku: str, price: Decimal) -> None:\n        if price \u003c= 0:\n            raise ValueError(\"price must be positive\")\n        self.lines.append((sku, price))\n\n    def total(self) -> Decimal:\n        return sum((p for _, p in self.lines), Decimal(\"0\"))\n\n    def place(self) -> None:\n        self.events.append({\"type\": \"order.placed\", \"order_id\": self.order_id})\n\n    def persist(self) -> None:\n        Session().add(self)\n"}, {"name": "orders-svc/src/orders/infrastructure/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/src/orders/infrastructure/broker.py", "type": "text", "content": "BROKER_URL = \"http://broker.internal/publish\"\n\n\ndef publish(event: dict) -> None:\n    import requests\n\n    requests.post(BROKER_URL, json=event, timeout=5)\n"}, {"name": "orders-svc/src/orders/infrastructure/db.py", "type": "text", "content": "class Session:\n    _store: dict = {}\n    outbox: list = []\n\n    def add(self, obj) -> None:\n        self._store[obj.order_id] = obj\n\n    def get(self, key):\n        return self._store[key]\n\n    def commit(self) -> None:\n        pass\n"}, {"name": "orders-svc/src/orders/infrastructure/repo.py", "type": "text", "content": "from orders.infrastructure.db import Session\nfrom orders.infrastructure import broker\n\n\nclass OrderRepository:\n    def __init__(self):\n        self.session = Session()\n\n    def save(self, order) -> None:\n        self.session.add(order)\n        self.session.commit()\n        for event in order.events:\n            broker.publish(event)  # published after commit, not via outbox\n        order.events.clear()\n\n    def get(self, order_id: str):\n        return self.session.get(order_id)\n"}, {"name": "orders-svc/src/shared/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/src/shared/money.py", "type": "text", "content": "from decimal import Decimal, ROUND_HALF_UP\n\n\ndef format_money(amount: Decimal, currency: str) -> str:\n    q = amount.quantize(Decimal(\"0.01\"), rounding=ROUND_HALF_UP)\n    return f\"{q:,.2f} {currency.upper()}\"\n"}, {"name": "orders-svc/src/shared/text.py", "type": "text", "content": "import re\nimport unicodedata\n\n\ndef slugify(value: str, max_len: int = 80) -> str:\n    \"\"\"Lowercase ASCII slug for URLs: 'Cafe Order #12' -> 'cafe-order-12'.\"\"\"\n    norm = unicodedata.normalize(\"NFKD\", value).encode(\"ascii\", \"ignore\").decode()\n    slug = re.sub(r\"[^a-z0-9]+\", \"-\", norm.lower()).strip(\"-\")\n    return slug[:max_len].rstrip(\"-\")\n\n\ndef normalize_whitespace(value: str) -> str:\n    return \" \".join(value.split())\n"}, {"name": "orders-svc/tests/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/tests/test_orders.py", "type": "text", "content": "import sys\nimport unittest\nfrom decimal import Decimal\nfrom pathlib import Path\n\nsys.path.insert(0, str(Path(__file__).resolve().parent.parent / \"src\"))\n\nfrom shared.text import slugify  # noqa: E402\nfrom shared.money import format_money  # noqa: E402\nfrom billing.service import invoice_text, tax_rate  # noqa: E402\nfrom orders.domain.order import Order  # noqa: E402\n\n\nclass OrderTests(unittest.TestCase):\n    def test_total(self):\n        o = Order(\"1\", \"c1\")\n        o.add_line(\"a\", Decimal(\"2.50\"))\n        o.add_line(\"b\", Decimal(\"1.25\"))\n        self.assertEqual(o.total(), Decimal(\"3.75\"))\n\n    def test_invoice_text(self):\n        o = Order(\"7\", \"c1\")\n        o.add_line(\"a\", Decimal(\"1000\"))\n        self.assertEqual(invoice_text(o), \"Invoice 7: 1,000.00 EUR\")\n\n    def test_slugify(self):\n        self.assertEqual(slugify(\"Cafe Order #12\"), \"cafe-order-12\")\n\n    def test_format_money(self):\n        self.assertEqual(format_money(Decimal(\"3\"), \"usd\"), \"3.00 USD\")\n\n    def test_tax_rate_dynamic(self):\n        self.assertEqual(tax_rate(\"old\"), Decimal(\"0.19\"))\n\n\nif __name__ == \"__main__\":\n    unittest.main()\n"}, {"name": "reply.md", "type": "text", "content": "No, orders-svc does not follow its rules. I checked the code against R1-R7 in `docs/ddd/service-design-rules.md` by reading every file. I didn't run the tests or any tooling. Six of the seven rules are broken, and only the first half of R7 and the POST path of R6 are fine.\n\n| Rule | Status | Evidence |\n|---|---|---|\n| R1 Module contract | VIOLATED | `src/billing/service.py:3` does `from orders.domain.order import Order`. This is a direct import of another module's `domain`, not `orders/__init__.py`. `src/orders/domain/order.py:8` also imports `billing.service` under `TYPE_CHECKING`, and `billing/__init__.py` is empty, so billing has no public contract to import from. `tests/test_orders.py:11` imports `orders.domain.order` too (lower severity, since it is a test). |\n| R2 Reference by id | VIOLATED | `Order.customer` (`order.py:17`) holds a billing `Customer` object. The aggregate should keep only `customer_id`, which it already has. |\n| R3 Pure domain | VIOLATED | `src/orders/domain/order.py:5` imports `orders.infrastructure.db.Session`. `Order.persist()` (line 32-33) calls `Session().add(self)` from inside the domain. |\n| R4 Outbox | VIOLATED | `OrderRepository.save` (`infrastructure/repo.py:12-14`) calls `broker.publish(event)` directly after commit. The comment there says \"not via outbox\". `Session.outbox` exists in `db.py` but nothing writes to it, and there is no relay. |\n| R5 No cross-module FK | VIOLATED | `migrations/0001_init.sql:4` has `invoices.order_id ... REFERENCES orders(id)`. This is a foreign key from a billing table to an orders table. |\n| R6 Endpoint paths | VIOLATED | `src/billing/http.py:2` has `GET /api/v1/Invoices/{id}`. It has an uppercase `I`, but paths must be lowercase. `POST /api/v1/invoices` is fine. |\n| R7 Error codes | VIOLATED | `src/billing/http.py:7` has `ERR_404`, which is not `\u003cMODULE>.\u003cUPPER_SNAKE>`. It should be something like `BILLING.NOT_FOUND`. `BILLING.INVALID_INVOICE` is fine. |\n\n**Fix order**\n1. R3 and R2: remove the `Session` import, `persist()` and the `customer` field from `Order`.\n2. R4: have the repository add events to `Session.outbox` in the same transaction as the aggregate. Add a relay that does the publishing.\n3. R1: expose what billing needs from orders through `orders/__init__.py`, for example an order total or a read model. Have billing import only from there.\n4. R5: drop the FK in a new migration and keep `order_id` as a plain indexed column.\n5. R6 and R7: rename the path to lowercase and change the error code.\n\n**Other things I noticed that aren't in the rules**\n- `billing/service.py` has its own `_fmt_money`, which duplicates `shared/money.format_money`.\n- `billing/handlers.py` has an unused import (`invoice_text`) and an unused `_unused_helper`.\n- `legacy_invoice_number` looks unused.\n- `old_tax_rate` is only reached through the `globals()` lookup in `tax_rate`. That lookup is fragile and bypasses static analysis.\n- `on_invoice_created` is used. It is loaded by name from `pyproject.toml`.\n- `Session._store` and `Session.outbox` are class-level mutable state shared across instances.\nSKILLS USED: none\nCOMMANDS RUN:\ncd D:/I-fikra/backend-claude-skills/backend-skills-pack/_work/evals/architecture-conformance-workspace/iteration-1/ac-full-repo/without_skill/outputs/orders-svc && find . -type f -not -path './.git/*' | head -100\ncd D:/I-fikra/backend-claude-skills/backend-skills-pack/_work/evals/architecture-conformance-workspace/iteration-1/ac-full-repo/without_skill/outputs/orders-svc && for f in docs/ddd/service-design-rules.md README.md pyproject.toml migrations/0001_init.sql $(find src tests -name '*.py'); do echo \"=== $f\"; cat -n $f; done\n"}], "grading": {"expectations": [{"text": "docs/reviews/architecture-2026-11-15.md exists", "passed": false, "evidence": "programmatic check"}, {"text": "Every rule R1-R7 appears in the report", "passed": false, "evidence": "programmatic check"}, {"text": "R1 violation cites src/billing/service.py importing orders.domain", "passed": false, "evidence": "programmatic check"}, {"text": "R3 violation cites src/orders/domain/order.py importing infrastructure", "passed": false, "evidence": "programmatic check"}, {"text": "R4 violation cites repo.py publishing to the broker", "passed": false, "evidence": "programmatic check"}, {"text": "R5 violation cites migrations/0001_init.sql REFERENCES orders", "passed": false, "evidence": "programmatic check"}, {"text": "R6 and R7 violations cite src/billing/http.py (Invoices path, ERR_404)", "passed": false, "evidence": "programmatic check"}, {"text": "R2 violation cites the Customer object held by Order", "passed": false, "evidence": "programmatic check"}, {"text": "The judgement rule R2 was checked by an opus subagent, not inline", "passed": false, "evidence": "programmatic check"}, {"text": "No source file was changed", "passed": true, "evidence": "programmatic check"}], "summary": {"passed": 1, "failed": 9, "total": 10, "pass_rate": 0.1}}}, {"id": "ac-negative-explain-with_skill", "prompt": "Explain the difference between hexagonal and layered architecture, and when I'd pick each for a service like orders-svc. Keep it short.", "eval_id": null, "outputs": [{"name": "orders-svc/docs/ddd/service-design-rules.md", "type": "text", "content": "# Service design rules (orders-svc)\n\n- **R1 Module contract.** A module may import another module only through its public contract (`\u003cmodule>/__init__.py`). Importing `\u003cother>.domain`, `\u003cother>.infrastructure` or `\u003cother>.api` directly is forbidden.\n- **R2 Reference by id.** An aggregate refers to another aggregate or another module's entity by id only, never by holding the object.\n- **R3 Pure domain.** Code under `*/domain/` imports nothing from `*/infrastructure/`, `requests`, or any database or HTTP library.\n- **R4 Outbox.** Domain events are written to the outbox (`Session.outbox`) in the same transaction as the aggregate, and published by a relay. Publishing to the broker from a repository or handler is forbidden.\n- **R5 No cross-module FK.** No foreign key or join between tables owned by different modules (orders owns `orders`; billing owns `invoices`).\n- **R6 Endpoint paths.** Paths are `/api/v\u003cn>/\u003cplural-kebab-lowercase>[/{id}]`.\n- **R7 Error codes.** Error codes are `\u003cMODULE>.\u003cUPPER_SNAKE>`, for example `BILLING.INVALID_INVOICE`.\n"}, {"name": "orders-svc/migrations/0001_init.sql", "type": "text", "content": "CREATE TABLE orders (id TEXT PRIMARY KEY, customer_id TEXT NOT NULL);\nCREATE TABLE invoices (\n  id TEXT PRIMARY KEY,\n  order_id TEXT NOT NULL REFERENCES orders(id),\n  amount NUMERIC(12,2) NOT NULL\n);\n"}, {"name": "orders-svc/pyproject.toml", "type": "text", "content": "[project]\nname = \"orders-svc\"\nversion = \"0.3.0\"\nrequires-python = \">=3.11\"\ndependencies = [\"requests>=2.31\"]\n\n[tool.orders]\n# handlers are loaded by name at startup\nevent_handlers = [\"billing.handlers:on_invoice_created\"]\n"}, {"name": "orders-svc/README.md", "type": "text", "content": "# orders-svc\n\nRun tests: `python -m unittest discover -s tests -t .`\n"}, {"name": "orders-svc/src/billing/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/src/billing/handlers.py", "type": "text", "content": "from billing.service import invoice_text\n\n\ndef on_invoice_created(event: dict) -> str:\n    return f\"handled {event['invoice_id']}\"\n\n\ndef _unused_helper(x):\n    return x * 2\n"}, {"name": "orders-svc/src/billing/http.py", "type": "text", "content": "ROUTES = {\n    \"GET /api/v1/Invoices/{id}\": \"get_invoice\",\n    \"POST /api/v1/invoices\": \"create_invoice\",\n}\n\nERRORS = {\n    \"not_found\": {\"code\": \"ERR_404\", \"http\": 404},\n    \"invalid\": {\"code\": \"BILLING.INVALID_INVOICE\", \"http\": 422},\n}\n"}, {"name": "orders-svc/src/billing/service.py", "type": "text", "content": "from decimal import Decimal, ROUND_HALF_UP\n\nfrom orders.domain.order import Order\n\n\nclass Customer:\n    def __init__(self, customer_id: str, name: str):\n        self.customer_id = customer_id\n        self.name = name\n\n\ndef _fmt_money(amount: Decimal, currency: str) -> str:\n    q = amount.quantize(Decimal(\"0.01\"), rounding=ROUND_HALF_UP)\n    return f\"{q:,.2f} {currency.upper()}\"\n\n\ndef invoice_text(order: Order, currency: str = \"eur\") -> str:\n    return f\"Invoice {order.order_id}: {_fmt_money(order.total(), currency)}\"\n\n\ndef legacy_invoice_number(order_id: str) -> str:\n    return \"INV-\" + order_id.zfill(8)\n\n\ndef old_tax_rate() -> Decimal:\n    return Decimal(\"0.19\")\n\n\ndef tax_rate(region: str) -> Decimal:\n    fn = globals().get(f\"{region}_tax_rate\")\n    return fn() if fn else Decimal(\"0.20\")\n"}, {"name": "orders-svc/src/orders/__init__.py", "type": "text", "content": "\"\"\"Public contract of the orders module. Other modules import only from here.\"\"\"\nfrom orders.api import place_order, get_order_total\n\n__all__ = [\"place_order\", \"get_order_total\"]\n"}, {"name": "orders-svc/src/orders/api.py", "type": "text", "content": "from decimal import Decimal\n\nfrom orders.domain.order import Order\nfrom orders.infrastructure.repo import OrderRepository\n\n_repo = OrderRepository()\n\n\ndef place_order(order_id: str, customer_id: str, lines: list[tuple[str, Decimal]]) -> Order:\n    order = Order(order_id, customer_id)\n    for sku, price in lines:\n        order.add_line(sku, price)\n    _repo.save(order)\n    return order\n\n\ndef get_order_total(order_id: str) -> Decimal:\n    return _repo.get(order_id).total()\n"}, {"name": "orders-svc/src/orders/domain/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/src/orders/domain/order.py", "type": "text", "content": "from decimal import Decimal\n\nfrom typing import TYPE_CHECKING\n\nfrom orders.infrastructure.db import Session\n\nif TYPE_CHECKING:\n    from billing.service import Customer\n\n\nclass Order:\n    \"\"\"Order aggregate.\"\"\"\n\n    def __init__(self, order_id: str, customer_id: str):\n        self.order_id = order_id\n        self.customer_id = customer_id\n        self.customer: \"Customer | None\" = None\n        self.lines: list[tuple[str, Decimal]] = []\n        self.events: list[dict] = []\n\n    def add_line(self, sku: str, price: Decimal) -> None:\n        if price \u003c= 0:\n            raise ValueError(\"price must be positive\")\n        self.lines.append((sku, price))\n\n    def total(self) -> Decimal:\n        return sum((p for _, p in self.lines), Decimal(\"0\"))\n\n    def place(self) -> None:\n        self.events.append({\"type\": \"order.placed\", \"order_id\": self.order_id})\n\n    def persist(self) -> None:\n        Session().add(self)\n"}, {"name": "orders-svc/src/orders/infrastructure/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/src/orders/infrastructure/broker.py", "type": "text", "content": "BROKER_URL = \"http://broker.internal/publish\"\n\n\ndef publish(event: dict) -> None:\n    import requests\n\n    requests.post(BROKER_URL, json=event, timeout=5)\n"}, {"name": "orders-svc/src/orders/infrastructure/db.py", "type": "text", "content": "class Session:\n    _store: dict = {}\n    outbox: list = []\n\n    def add(self, obj) -> None:\n        self._store[obj.order_id] = obj\n\n    def get(self, key):\n        return self._store[key]\n\n    def commit(self) -> None:\n        pass\n"}, {"name": "orders-svc/src/orders/infrastructure/repo.py", "type": "text", "content": "from orders.infrastructure.db import Session\nfrom orders.infrastructure import broker\n\n\nclass OrderRepository:\n    def __init__(self):\n        self.session = Session()\n\n    def save(self, order) -> None:\n        self.session.add(order)\n        self.session.commit()\n        for event in order.events:\n            broker.publish(event)  # published after commit, not via outbox\n        order.events.clear()\n\n    def get(self, order_id: str):\n        return self.session.get(order_id)\n"}, {"name": "orders-svc/src/shared/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/src/shared/money.py", "type": "text", "content": "from decimal import Decimal, ROUND_HALF_UP\n\n\ndef format_money(amount: Decimal, currency: str) -> str:\n    q = amount.quantize(Decimal(\"0.01\"), rounding=ROUND_HALF_UP)\n    return f\"{q:,.2f} {currency.upper()}\"\n"}, {"name": "orders-svc/src/shared/text.py", "type": "text", "content": "import re\nimport unicodedata\n\n\ndef slugify(value: str, max_len: int = 80) -> str:\n    \"\"\"Lowercase ASCII slug for URLs: 'Cafe Order #12' -> 'cafe-order-12'.\"\"\"\n    norm = unicodedata.normalize(\"NFKD\", value).encode(\"ascii\", \"ignore\").decode()\n    slug = re.sub(r\"[^a-z0-9]+\", \"-\", norm.lower()).strip(\"-\")\n    return slug[:max_len].rstrip(\"-\")\n\n\ndef normalize_whitespace(value: str) -> str:\n    return \" \".join(value.split())\n"}, {"name": "orders-svc/tests/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/tests/test_orders.py", "type": "text", "content": "import sys\nimport unittest\nfrom decimal import Decimal\nfrom pathlib import Path\n\nsys.path.insert(0, str(Path(__file__).resolve().parent.parent / \"src\"))\n\nfrom shared.text import slugify  # noqa: E402\nfrom shared.money import format_money  # noqa: E402\nfrom billing.service import invoice_text, tax_rate  # noqa: E402\nfrom orders.domain.order import Order  # noqa: E402\n\n\nclass OrderTests(unittest.TestCase):\n    def test_total(self):\n        o = Order(\"1\", \"c1\")\n        o.add_line(\"a\", Decimal(\"2.50\"))\n        o.add_line(\"b\", Decimal(\"1.25\"))\n        self.assertEqual(o.total(), Decimal(\"3.75\"))\n\n    def test_invoice_text(self):\n        o = Order(\"7\", \"c1\")\n        o.add_line(\"a\", Decimal(\"1000\"))\n        self.assertEqual(invoice_text(o), \"Invoice 7: 1,000.00 EUR\")\n\n    def test_slugify(self):\n        self.assertEqual(slugify(\"Cafe Order #12\"), \"cafe-order-12\")\n\n    def test_format_money(self):\n        self.assertEqual(format_money(Decimal(\"3\"), \"usd\"), \"3.00 USD\")\n\n    def test_tax_rate_dynamic(self):\n        self.assertEqual(tax_rate(\"old\"), Decimal(\"0.19\"))\n\n\nif __name__ == \"__main__\":\n    unittest.main()\n"}, {"name": "reply.md", "type": "text", "content": "**Layered architecture** stacks horizontal layers (controller -> service -> repository -> DB). Each layer depends on the one below it. Business logic ends up sitting on top of the persistence layer, so the database shape tends to leak upward.\n\n**Hexagonal (ports and adapters)** puts the domain at the center. The domain defines ports (interfaces) for what it needs: storage, payments, messaging. Adapters (HTTP, Postgres, Kafka, a payment gateway) implement those ports. Dependencies point inward only, so the domain knows nothing about frameworks or the DB.\n\n| | Layered | Hexagonal |\n|---|---|---|\n| Dependency direction | Top to bottom, toward the DB | Always inward, toward the domain |\n| Swapping infra | Touches several layers | Replace one adapter |\n| Testing the core | Usually needs the DB or heavy mocks | Plain unit tests with fake ports |\n| Cost | Low ceremony | More interfaces and mapping code |\n\n**For orders-svc**\n- Pick **layered** if it is mostly CRUD: create, read and update orders, few business rules, one database, one or two integrations, small team. It is simpler and faster to build.\n- Pick **hexagonal** if it has real order logic (pricing, state transitions, inventory or payment rules), several external integrations (payments, shipping, events), or you expect to swap or add infrastructure and want fast, DB-free domain tests.\n\nA reasonable path is to start layered, keep the service layer free of framework and DB types, and move to ports and adapters when the integrations or rules start to hurt.\n\nSKILLS USED: none\nCOMMANDS RUN:\n"}], "grading": {"expectations": [{"text": "architecture-conformance was not used", "passed": true, "evidence": "programmatic check"}, {"text": "No architecture report was written", "passed": true, "evidence": "programmatic check"}], "summary": {"passed": 2, "failed": 0, "total": 2, "pass_rate": 1.0}}}, {"id": "ac-negative-explain-without_skill", "prompt": "Explain the difference between hexagonal and layered architecture, and when I'd pick each for a service like orders-svc. Keep it short.", "eval_id": null, "outputs": [{"name": "orders-svc/docs/ddd/service-design-rules.md", "type": "text", "content": "# Service design rules (orders-svc)\n\n- **R1 Module contract.** A module may import another module only through its public contract (`\u003cmodule>/__init__.py`). Importing `\u003cother>.domain`, `\u003cother>.infrastructure` or `\u003cother>.api` directly is forbidden.\n- **R2 Reference by id.** An aggregate refers to another aggregate or another module's entity by id only, never by holding the object.\n- **R3 Pure domain.** Code under `*/domain/` imports nothing from `*/infrastructure/`, `requests`, or any database or HTTP library.\n- **R4 Outbox.** Domain events are written to the outbox (`Session.outbox`) in the same transaction as the aggregate, and published by a relay. Publishing to the broker from a repository or handler is forbidden.\n- **R5 No cross-module FK.** No foreign key or join between tables owned by different modules (orders owns `orders`; billing owns `invoices`).\n- **R6 Endpoint paths.** Paths are `/api/v\u003cn>/\u003cplural-kebab-lowercase>[/{id}]`.\n- **R7 Error codes.** Error codes are `\u003cMODULE>.\u003cUPPER_SNAKE>`, for example `BILLING.INVALID_INVOICE`.\n"}, {"name": "orders-svc/migrations/0001_init.sql", "type": "text", "content": "CREATE TABLE orders (id TEXT PRIMARY KEY, customer_id TEXT NOT NULL);\nCREATE TABLE invoices (\n  id TEXT PRIMARY KEY,\n  order_id TEXT NOT NULL REFERENCES orders(id),\n  amount NUMERIC(12,2) NOT NULL\n);\n"}, {"name": "orders-svc/pyproject.toml", "type": "text", "content": "[project]\nname = \"orders-svc\"\nversion = \"0.3.0\"\nrequires-python = \">=3.11\"\ndependencies = [\"requests>=2.31\"]\n\n[tool.orders]\n# handlers are loaded by name at startup\nevent_handlers = [\"billing.handlers:on_invoice_created\"]\n"}, {"name": "orders-svc/README.md", "type": "text", "content": "# orders-svc\n\nRun tests: `python -m unittest discover -s tests -t .`\n"}, {"name": "orders-svc/src/billing/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/src/billing/handlers.py", "type": "text", "content": "from billing.service import invoice_text\n\n\ndef on_invoice_created(event: dict) -> str:\n    return f\"handled {event['invoice_id']}\"\n\n\ndef _unused_helper(x):\n    return x * 2\n"}, {"name": "orders-svc/src/billing/http.py", "type": "text", "content": "ROUTES = {\n    \"GET /api/v1/Invoices/{id}\": \"get_invoice\",\n    \"POST /api/v1/invoices\": \"create_invoice\",\n}\n\nERRORS = {\n    \"not_found\": {\"code\": \"ERR_404\", \"http\": 404},\n    \"invalid\": {\"code\": \"BILLING.INVALID_INVOICE\", \"http\": 422},\n}\n"}, {"name": "orders-svc/src/billing/service.py", "type": "text", "content": "from decimal import Decimal, ROUND_HALF_UP\n\nfrom orders.domain.order import Order\n\n\nclass Customer:\n    def __init__(self, customer_id: str, name: str):\n        self.customer_id = customer_id\n        self.name = name\n\n\ndef _fmt_money(amount: Decimal, currency: str) -> str:\n    q = amount.quantize(Decimal(\"0.01\"), rounding=ROUND_HALF_UP)\n    return f\"{q:,.2f} {currency.upper()}\"\n\n\ndef invoice_text(order: Order, currency: str = \"eur\") -> str:\n    return f\"Invoice {order.order_id}: {_fmt_money(order.total(), currency)}\"\n\n\ndef legacy_invoice_number(order_id: str) -> str:\n    return \"INV-\" + order_id.zfill(8)\n\n\ndef old_tax_rate() -> Decimal:\n    return Decimal(\"0.19\")\n\n\ndef tax_rate(region: str) -> Decimal:\n    fn = globals().get(f\"{region}_tax_rate\")\n    return fn() if fn else Decimal(\"0.20\")\n"}, {"name": "orders-svc/src/orders/__init__.py", "type": "text", "content": "\"\"\"Public contract of the orders module. Other modules import only from here.\"\"\"\nfrom orders.api import place_order, get_order_total\n\n__all__ = [\"place_order\", \"get_order_total\"]\n"}, {"name": "orders-svc/src/orders/api.py", "type": "text", "content": "from decimal import Decimal\n\nfrom orders.domain.order import Order\nfrom orders.infrastructure.repo import OrderRepository\n\n_repo = OrderRepository()\n\n\ndef place_order(order_id: str, customer_id: str, lines: list[tuple[str, Decimal]]) -> Order:\n    order = Order(order_id, customer_id)\n    for sku, price in lines:\n        order.add_line(sku, price)\n    _repo.save(order)\n    return order\n\n\ndef get_order_total(order_id: str) -> Decimal:\n    return _repo.get(order_id).total()\n"}, {"name": "orders-svc/src/orders/domain/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/src/orders/domain/order.py", "type": "text", "content": "from decimal import Decimal\n\nfrom typing import TYPE_CHECKING\n\nfrom orders.infrastructure.db import Session\n\nif TYPE_CHECKING:\n    from billing.service import Customer\n\n\nclass Order:\n    \"\"\"Order aggregate.\"\"\"\n\n    def __init__(self, order_id: str, customer_id: str):\n        self.order_id = order_id\n        self.customer_id = customer_id\n        self.customer: \"Customer | None\" = None\n        self.lines: list[tuple[str, Decimal]] = []\n        self.events: list[dict] = []\n\n    def add_line(self, sku: str, price: Decimal) -> None:\n        if price \u003c= 0:\n            raise ValueError(\"price must be positive\")\n        self.lines.append((sku, price))\n\n    def total(self) -> Decimal:\n        return sum((p for _, p in self.lines), Decimal(\"0\"))\n\n    def place(self) -> None:\n        self.events.append({\"type\": \"order.placed\", \"order_id\": self.order_id})\n\n    def persist(self) -> None:\n        Session().add(self)\n"}, {"name": "orders-svc/src/orders/infrastructure/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/src/orders/infrastructure/broker.py", "type": "text", "content": "BROKER_URL = \"http://broker.internal/publish\"\n\n\ndef publish(event: dict) -> None:\n    import requests\n\n    requests.post(BROKER_URL, json=event, timeout=5)\n"}, {"name": "orders-svc/src/orders/infrastructure/db.py", "type": "text", "content": "class Session:\n    _store: dict = {}\n    outbox: list = []\n\n    def add(self, obj) -> None:\n        self._store[obj.order_id] = obj\n\n    def get(self, key):\n        return self._store[key]\n\n    def commit(self) -> None:\n        pass\n"}, {"name": "orders-svc/src/orders/infrastructure/repo.py", "type": "text", "content": "from orders.infrastructure.db import Session\nfrom orders.infrastructure import broker\n\n\nclass OrderRepository:\n    def __init__(self):\n        self.session = Session()\n\n    def save(self, order) -> None:\n        self.session.add(order)\n        self.session.commit()\n        for event in order.events:\n            broker.publish(event)  # published after commit, not via outbox\n        order.events.clear()\n\n    def get(self, order_id: str):\n        return self.session.get(order_id)\n"}, {"name": "orders-svc/src/shared/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/src/shared/money.py", "type": "text", "content": "from decimal import Decimal, ROUND_HALF_UP\n\n\ndef format_money(amount: Decimal, currency: str) -> str:\n    q = amount.quantize(Decimal(\"0.01\"), rounding=ROUND_HALF_UP)\n    return f\"{q:,.2f} {currency.upper()}\"\n"}, {"name": "orders-svc/src/shared/text.py", "type": "text", "content": "import re\nimport unicodedata\n\n\ndef slugify(value: str, max_len: int = 80) -> str:\n    \"\"\"Lowercase ASCII slug for URLs: 'Cafe Order #12' -> 'cafe-order-12'.\"\"\"\n    norm = unicodedata.normalize(\"NFKD\", value).encode(\"ascii\", \"ignore\").decode()\n    slug = re.sub(r\"[^a-z0-9]+\", \"-\", norm.lower()).strip(\"-\")\n    return slug[:max_len].rstrip(\"-\")\n\n\ndef normalize_whitespace(value: str) -> str:\n    return \" \".join(value.split())\n"}, {"name": "orders-svc/tests/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/tests/test_orders.py", "type": "text", "content": "import sys\nimport unittest\nfrom decimal import Decimal\nfrom pathlib import Path\n\nsys.path.insert(0, str(Path(__file__).resolve().parent.parent / \"src\"))\n\nfrom shared.text import slugify  # noqa: E402\nfrom shared.money import format_money  # noqa: E402\nfrom billing.service import invoice_text, tax_rate  # noqa: E402\nfrom orders.domain.order import Order  # noqa: E402\n\n\nclass OrderTests(unittest.TestCase):\n    def test_total(self):\n        o = Order(\"1\", \"c1\")\n        o.add_line(\"a\", Decimal(\"2.50\"))\n        o.add_line(\"b\", Decimal(\"1.25\"))\n        self.assertEqual(o.total(), Decimal(\"3.75\"))\n\n    def test_invoice_text(self):\n        o = Order(\"7\", \"c1\")\n        o.add_line(\"a\", Decimal(\"1000\"))\n        self.assertEqual(invoice_text(o), \"Invoice 7: 1,000.00 EUR\")\n\n    def test_slugify(self):\n        self.assertEqual(slugify(\"Cafe Order #12\"), \"cafe-order-12\")\n\n    def test_format_money(self):\n        self.assertEqual(format_money(Decimal(\"3\"), \"usd\"), \"3.00 USD\")\n\n    def test_tax_rate_dynamic(self):\n        self.assertEqual(tax_rate(\"old\"), Decimal(\"0.19\"))\n\n\nif __name__ == \"__main__\":\n    unittest.main()\n"}, {"name": "reply.md", "type": "text", "content": "**Layered:** code is stacked (API -> service -> data access), and each layer calls the one below it. The business logic ends up depending on the persistence layer, usually through the ORM or DB models. It's simple and familiar, but over time the DB and framework details leak upward.\n\n**Hexagonal (ports and adapters):** the domain sits in the middle and defines ports (interfaces such as `OrderRepository` and `EventPublisher`). Adapters (HTTP, Postgres, the message broker) implement those ports and depend on the domain. Dependencies point inward, so you can test the domain without infrastructure and swap adapters easily. The cost is more interfaces and mapping code.\n\n**When to pick which for orders-svc:**\n- **Layered:** if it's mostly CRUD with little business logic, a small team, and stable infrastructure.\n- **Hexagonal:** if orders has real rules (state transitions, pricing, invariants), talks to several external systems (broker, billing, DB), or needs fast tests that don't need infrastructure.\n\nYour repo already has `orders/domain` and `orders/infrastructure`, so it's heading toward hexagonal. To get the full benefit, add explicit ports in the domain and have `infrastructure` implement them. Don't let `domain` import from `infrastructure`.\n\nSKILLS USED: none\nCOMMANDS RUN:\ncd \u003cproject root>/.. && find . -type f -not -path './.git/*' | head -50\ncat > reply.md (this file)\n"}], "grading": {"expectations": [{"text": "architecture-conformance was not used", "passed": true, "evidence": "programmatic check"}, {"text": "No architecture report was written", "passed": true, "evidence": "programmatic check"}], "summary": {"passed": 2, "failed": 0, "total": 2, "pass_rate": 1.0}}}, {"id": "ac-no-rules-with_skill", "prompt": "Does src/billing in orders-svc follow our DDD architecture? Run the conformance check.", "eval_id": null, "outputs": [{"name": "orders-svc/migrations/0001_init.sql", "type": "text", "content": "CREATE TABLE orders (id TEXT PRIMARY KEY, customer_id TEXT NOT NULL);\nCREATE TABLE invoices (\n  id TEXT PRIMARY KEY,\n  order_id TEXT NOT NULL REFERENCES orders(id),\n  amount NUMERIC(12,2) NOT NULL\n);\n"}, {"name": "orders-svc/pyproject.toml", "type": "text", "content": "[project]\nname = \"orders-svc\"\nversion = \"0.3.0\"\nrequires-python = \">=3.11\"\ndependencies = [\"requests>=2.31\"]\n\n[tool.orders]\n# handlers are loaded by name at startup\nevent_handlers = [\"billing.handlers:on_invoice_created\"]\n"}, {"name": "orders-svc/README.md", "type": "text", "content": "# orders-svc\n\nRun tests: `python -m unittest discover -s tests -t .`\n"}, {"name": "orders-svc/src/billing/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/src/billing/handlers.py", "type": "text", "content": "from billing.service import invoice_text\n\n\ndef on_invoice_created(event: dict) -> str:\n    return f\"handled {event['invoice_id']}\"\n\n\ndef _unused_helper(x):\n    return x * 2\n"}, {"name": "orders-svc/src/billing/http.py", "type": "text", "content": "ROUTES = {\n    \"GET /api/v1/Invoices/{id}\": \"get_invoice\",\n    \"POST /api/v1/invoices\": \"create_invoice\",\n}\n\nERRORS = {\n    \"not_found\": {\"code\": \"ERR_404\", \"http\": 404},\n    \"invalid\": {\"code\": \"BILLING.INVALID_INVOICE\", \"http\": 422},\n}\n"}, {"name": "orders-svc/src/billing/service.py", "type": "text", "content": "from decimal import Decimal, ROUND_HALF_UP\n\nfrom orders.domain.order import Order\n\n\nclass Customer:\n    def __init__(self, customer_id: str, name: str):\n        self.customer_id = customer_id\n        self.name = name\n\n\ndef _fmt_money(amount: Decimal, currency: str) -> str:\n    q = amount.quantize(Decimal(\"0.01\"), rounding=ROUND_HALF_UP)\n    return f\"{q:,.2f} {currency.upper()}\"\n\n\ndef invoice_text(order: Order, currency: str = \"eur\") -> str:\n    return f\"Invoice {order.order_id}: {_fmt_money(order.total(), currency)}\"\n\n\ndef legacy_invoice_number(order_id: str) -> str:\n    return \"INV-\" + order_id.zfill(8)\n\n\ndef old_tax_rate() -> Decimal:\n    return Decimal(\"0.19\")\n\n\ndef tax_rate(region: str) -> Decimal:\n    fn = globals().get(f\"{region}_tax_rate\")\n    return fn() if fn else Decimal(\"0.20\")\n"}, {"name": "orders-svc/src/orders/__init__.py", "type": "text", "content": "\"\"\"Public contract of the orders module. Other modules import only from here.\"\"\"\nfrom orders.api import place_order, get_order_total\n\n__all__ = [\"place_order\", \"get_order_total\"]\n"}, {"name": "orders-svc/src/orders/api.py", "type": "text", "content": "from decimal import Decimal\n\nfrom orders.domain.order import Order\nfrom orders.infrastructure.repo import OrderRepository\n\n_repo = OrderRepository()\n\n\ndef place_order(order_id: str, customer_id: str, lines: list[tuple[str, Decimal]]) -> Order:\n    order = Order(order_id, customer_id)\n    for sku, price in lines:\n        order.add_line(sku, price)\n    _repo.save(order)\n    return order\n\n\ndef get_order_total(order_id: str) -> Decimal:\n    return _repo.get(order_id).total()\n"}, {"name": "orders-svc/src/orders/domain/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/src/orders/domain/order.py", "type": "text", "content": "from decimal import Decimal\n\nfrom typing import TYPE_CHECKING\n\nfrom orders.infrastructure.db import Session\n\nif TYPE_CHECKING:\n    from billing.service import Customer\n\n\nclass Order:\n    \"\"\"Order aggregate.\"\"\"\n\n    def __init__(self, order_id: str, customer_id: str):\n        self.order_id = order_id\n        self.customer_id = customer_id\n        self.customer: \"Customer | None\" = None\n        self.lines: list[tuple[str, Decimal]] = []\n        self.events: list[dict] = []\n\n    def add_line(self, sku: str, price: Decimal) -> None:\n        if price \u003c= 0:\n            raise ValueError(\"price must be positive\")\n        self.lines.append((sku, price))\n\n    def total(self) -> Decimal:\n        return sum((p for _, p in self.lines), Decimal(\"0\"))\n\n    def place(self) -> None:\n        self.events.append({\"type\": \"order.placed\", \"order_id\": self.order_id})\n\n    def persist(self) -> None:\n        Session().add(self)\n"}, {"name": "orders-svc/src/orders/infrastructure/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/src/orders/infrastructure/broker.py", "type": "text", "content": "BROKER_URL = \"http://broker.internal/publish\"\n\n\ndef publish(event: dict) -> None:\n    import requests\n\n    requests.post(BROKER_URL, json=event, timeout=5)\n"}, {"name": "orders-svc/src/orders/infrastructure/db.py", "type": "text", "content": "class Session:\n    _store: dict = {}\n    outbox: list = []\n\n    def add(self, obj) -> None:\n        self._store[obj.order_id] = obj\n\n    def get(self, key):\n        return self._store[key]\n\n    def commit(self) -> None:\n        pass\n"}, {"name": "orders-svc/src/orders/infrastructure/repo.py", "type": "text", "content": "from orders.infrastructure.db import Session\nfrom orders.infrastructure import broker\n\n\nclass OrderRepository:\n    def __init__(self):\n        self.session = Session()\n\n    def save(self, order) -> None:\n        self.session.add(order)\n        self.session.commit()\n        for event in order.events:\n            broker.publish(event)  # published after commit, not via outbox\n        order.events.clear()\n\n    def get(self, order_id: str):\n        return self.session.get(order_id)\n"}, {"name": "orders-svc/src/shared/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/src/shared/money.py", "type": "text", "content": "from decimal import Decimal, ROUND_HALF_UP\n\n\ndef format_money(amount: Decimal, currency: str) -> str:\n    q = amount.quantize(Decimal(\"0.01\"), rounding=ROUND_HALF_UP)\n    return f\"{q:,.2f} {currency.upper()}\"\n"}, {"name": "orders-svc/src/shared/text.py", "type": "text", "content": "import re\nimport unicodedata\n\n\ndef slugify(value: str, max_len: int = 80) -> str:\n    \"\"\"Lowercase ASCII slug for URLs: 'Cafe Order #12' -> 'cafe-order-12'.\"\"\"\n    norm = unicodedata.normalize(\"NFKD\", value).encode(\"ascii\", \"ignore\").decode()\n    slug = re.sub(r\"[^a-z0-9]+\", \"-\", norm.lower()).strip(\"-\")\n    return slug[:max_len].rstrip(\"-\")\n\n\ndef normalize_whitespace(value: str) -> str:\n    return \" \".join(value.split())\n"}, {"name": "orders-svc/tests/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/tests/test_orders.py", "type": "text", "content": "import sys\nimport unittest\nfrom decimal import Decimal\nfrom pathlib import Path\n\nsys.path.insert(0, str(Path(__file__).resolve().parent.parent / \"src\"))\n\nfrom shared.text import slugify  # noqa: E402\nfrom shared.money import format_money  # noqa: E402\nfrom billing.service import invoice_text, tax_rate  # noqa: E402\nfrom orders.domain.order import Order  # noqa: E402\n\n\nclass OrderTests(unittest.TestCase):\n    def test_total(self):\n        o = Order(\"1\", \"c1\")\n        o.add_line(\"a\", Decimal(\"2.50\"))\n        o.add_line(\"b\", Decimal(\"1.25\"))\n        self.assertEqual(o.total(), Decimal(\"3.75\"))\n\n    def test_invoice_text(self):\n        o = Order(\"7\", \"c1\")\n        o.add_line(\"a\", Decimal(\"1000\"))\n        self.assertEqual(invoice_text(o), \"Invoice 7: 1,000.00 EUR\")\n\n    def test_slugify(self):\n        self.assertEqual(slugify(\"Cafe Order #12\"), \"cafe-order-12\")\n\n    def test_format_money(self):\n        self.assertEqual(format_money(Decimal(\"3\"), \"usd\"), \"3.00 USD\")\n\n    def test_tax_rate_dynamic(self):\n        self.assertEqual(tax_rate(\"old\"), Decimal(\"0.19\"))\n\n\nif __name__ == \"__main__\":\n    unittest.main()\n"}, {"name": "reply.md", "type": "text", "content": "I can't run the conformance check yet, because orders-svc has no written architecture rules to check against.\n\nI looked for `docs/ddd/service-design-rules.md`, `ARCHITECTURE.md` and `CLAUDE.md`. None exists. `docs/` is empty, and nothing else in the repo mentions architecture rules.\n\nI haven't checked `src/billing` against \"typical\" DDD rules. Rules you haven't written down aren't your rules, and a pass or fail against them would mean little. I also wrote no report.\n\nWhich file holds your DDD rules? You can give me a path, for example `docs/ddd/service-design-rules.md`. You can also paste the rules, and I'll save them to a file and check `src/billing` against it. I'll turn each rule into a check, run it on `src/billing`, and report violations with file and line.\n\nSKILLS USED: architecture-conformance\nCOMMANDS RUN:\ncd \"D:/I-fikra/backend-claude-skills/backend-skills-pack/_work/evals/architecture-conformance-workspace/iteration-2/ac-no-rules/with_skill/outputs/orders-svc\" && ls -a && ls docs docs/ddd 2>&1; ls ARCHITECTURE.md CLAUDE.md 2>&1; grep -ril architecture . 2>/dev/null | head\n"}], "grading": {"expectations": [{"text": "It asks the user which file holds the rules", "passed": true, "evidence": "programmatic check"}, {"text": "No architecture report was written", "passed": true, "evidence": "programmatic check"}, {"text": "It reports no rule violations", "passed": true, "evidence": "programmatic check"}], "summary": {"passed": 3, "failed": 0, "total": 3, "pass_rate": 1.0}}}, {"id": "ac-no-rules-without_skill", "prompt": "Does src/billing in orders-svc follow our DDD architecture? Run the conformance check.", "eval_id": null, "outputs": [{"name": "orders-svc/migrations/0001_init.sql", "type": "text", "content": "CREATE TABLE orders (id TEXT PRIMARY KEY, customer_id TEXT NOT NULL);\nCREATE TABLE invoices (\n  id TEXT PRIMARY KEY,\n  order_id TEXT NOT NULL REFERENCES orders(id),\n  amount NUMERIC(12,2) NOT NULL\n);\n"}, {"name": "orders-svc/pyproject.toml", "type": "text", "content": "[project]\nname = \"orders-svc\"\nversion = \"0.3.0\"\nrequires-python = \">=3.11\"\ndependencies = [\"requests>=2.31\"]\n\n[tool.orders]\n# handlers are loaded by name at startup\nevent_handlers = [\"billing.handlers:on_invoice_created\"]\n"}, {"name": "orders-svc/README.md", "type": "text", "content": "# orders-svc\n\nRun tests: `python -m unittest discover -s tests -t .`\n"}, {"name": "orders-svc/src/billing/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/src/billing/handlers.py", "type": "text", "content": "from billing.service import invoice_text\n\n\ndef on_invoice_created(event: dict) -> str:\n    return f\"handled {event['invoice_id']}\"\n\n\ndef _unused_helper(x):\n    return x * 2\n"}, {"name": "orders-svc/src/billing/http.py", "type": "text", "content": "ROUTES = {\n    \"GET /api/v1/Invoices/{id}\": \"get_invoice\",\n    \"POST /api/v1/invoices\": \"create_invoice\",\n}\n\nERRORS = {\n    \"not_found\": {\"code\": \"ERR_404\", \"http\": 404},\n    \"invalid\": {\"code\": \"BILLING.INVALID_INVOICE\", \"http\": 422},\n}\n"}, {"name": "orders-svc/src/billing/service.py", "type": "text", "content": "from decimal import Decimal, ROUND_HALF_UP\n\nfrom orders.domain.order import Order\n\n\nclass Customer:\n    def __init__(self, customer_id: str, name: str):\n        self.customer_id = customer_id\n        self.name = name\n\n\ndef _fmt_money(amount: Decimal, currency: str) -> str:\n    q = amount.quantize(Decimal(\"0.01\"), rounding=ROUND_HALF_UP)\n    return f\"{q:,.2f} {currency.upper()}\"\n\n\ndef invoice_text(order: Order, currency: str = \"eur\") -> str:\n    return f\"Invoice {order.order_id}: {_fmt_money(order.total(), currency)}\"\n\n\ndef legacy_invoice_number(order_id: str) -> str:\n    return \"INV-\" + order_id.zfill(8)\n\n\ndef old_tax_rate() -> Decimal:\n    return Decimal(\"0.19\")\n\n\ndef tax_rate(region: str) -> Decimal:\n    fn = globals().get(f\"{region}_tax_rate\")\n    return fn() if fn else Decimal(\"0.20\")\n"}, {"name": "orders-svc/src/orders/__init__.py", "type": "text", "content": "\"\"\"Public contract of the orders module. Other modules import only from here.\"\"\"\nfrom orders.api import place_order, get_order_total\n\n__all__ = [\"place_order\", \"get_order_total\"]\n"}, {"name": "orders-svc/src/orders/api.py", "type": "text", "content": "from decimal import Decimal\n\nfrom orders.domain.order import Order\nfrom orders.infrastructure.repo import OrderRepository\n\n_repo = OrderRepository()\n\n\ndef place_order(order_id: str, customer_id: str, lines: list[tuple[str, Decimal]]) -> Order:\n    order = Order(order_id, customer_id)\n    for sku, price in lines:\n        order.add_line(sku, price)\n    _repo.save(order)\n    return order\n\n\ndef get_order_total(order_id: str) -> Decimal:\n    return _repo.get(order_id).total()\n"}, {"name": "orders-svc/src/orders/domain/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/src/orders/domain/order.py", "type": "text", "content": "from decimal import Decimal\n\nfrom typing import TYPE_CHECKING\n\nfrom orders.infrastructure.db import Session\n\nif TYPE_CHECKING:\n    from billing.service import Customer\n\n\nclass Order:\n    \"\"\"Order aggregate.\"\"\"\n\n    def __init__(self, order_id: str, customer_id: str):\n        self.order_id = order_id\n        self.customer_id = customer_id\n        self.customer: \"Customer | None\" = None\n        self.lines: list[tuple[str, Decimal]] = []\n        self.events: list[dict] = []\n\n    def add_line(self, sku: str, price: Decimal) -> None:\n        if price \u003c= 0:\n            raise ValueError(\"price must be positive\")\n        self.lines.append((sku, price))\n\n    def total(self) -> Decimal:\n        return sum((p for _, p in self.lines), Decimal(\"0\"))\n\n    def place(self) -> None:\n        self.events.append({\"type\": \"order.placed\", \"order_id\": self.order_id})\n\n    def persist(self) -> None:\n        Session().add(self)\n"}, {"name": "orders-svc/src/orders/infrastructure/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/src/orders/infrastructure/broker.py", "type": "text", "content": "BROKER_URL = \"http://broker.internal/publish\"\n\n\ndef publish(event: dict) -> None:\n    import requests\n\n    requests.post(BROKER_URL, json=event, timeout=5)\n"}, {"name": "orders-svc/src/orders/infrastructure/db.py", "type": "text", "content": "class Session:\n    _store: dict = {}\n    outbox: list = []\n\n    def add(self, obj) -> None:\n        self._store[obj.order_id] = obj\n\n    def get(self, key):\n        return self._store[key]\n\n    def commit(self) -> None:\n        pass\n"}, {"name": "orders-svc/src/orders/infrastructure/repo.py", "type": "text", "content": "from orders.infrastructure.db import Session\nfrom orders.infrastructure import broker\n\n\nclass OrderRepository:\n    def __init__(self):\n        self.session = Session()\n\n    def save(self, order) -> None:\n        self.session.add(order)\n        self.session.commit()\n        for event in order.events:\n            broker.publish(event)  # published after commit, not via outbox\n        order.events.clear()\n\n    def get(self, order_id: str):\n        return self.session.get(order_id)\n"}, {"name": "orders-svc/src/shared/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/src/shared/money.py", "type": "text", "content": "from decimal import Decimal, ROUND_HALF_UP\n\n\ndef format_money(amount: Decimal, currency: str) -> str:\n    q = amount.quantize(Decimal(\"0.01\"), rounding=ROUND_HALF_UP)\n    return f\"{q:,.2f} {currency.upper()}\"\n"}, {"name": "orders-svc/src/shared/text.py", "type": "text", "content": "import re\nimport unicodedata\n\n\ndef slugify(value: str, max_len: int = 80) -> str:\n    \"\"\"Lowercase ASCII slug for URLs: 'Cafe Order #12' -> 'cafe-order-12'.\"\"\"\n    norm = unicodedata.normalize(\"NFKD\", value).encode(\"ascii\", \"ignore\").decode()\n    slug = re.sub(r\"[^a-z0-9]+\", \"-\", norm.lower()).strip(\"-\")\n    return slug[:max_len].rstrip(\"-\")\n\n\ndef normalize_whitespace(value: str) -> str:\n    return \" \".join(value.split())\n"}, {"name": "orders-svc/tests/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/tests/test_orders.py", "type": "text", "content": "import sys\nimport unittest\nfrom decimal import Decimal\nfrom pathlib import Path\n\nsys.path.insert(0, str(Path(__file__).resolve().parent.parent / \"src\"))\n\nfrom shared.text import slugify  # noqa: E402\nfrom shared.money import format_money  # noqa: E402\nfrom billing.service import invoice_text, tax_rate  # noqa: E402\nfrom orders.domain.order import Order  # noqa: E402\n\n\nclass OrderTests(unittest.TestCase):\n    def test_total(self):\n        o = Order(\"1\", \"c1\")\n        o.add_line(\"a\", Decimal(\"2.50\"))\n        o.add_line(\"b\", Decimal(\"1.25\"))\n        self.assertEqual(o.total(), Decimal(\"3.75\"))\n\n    def test_invoice_text(self):\n        o = Order(\"7\", \"c1\")\n        o.add_line(\"a\", Decimal(\"1000\"))\n        self.assertEqual(invoice_text(o), \"Invoice 7: 1,000.00 EUR\")\n\n    def test_slugify(self):\n        self.assertEqual(slugify(\"Cafe Order #12\"), \"cafe-order-12\")\n\n    def test_format_money(self):\n        self.assertEqual(format_money(Decimal(\"3\"), \"usd\"), \"3.00 USD\")\n\n    def test_tax_rate_dynamic(self):\n        self.assertEqual(tax_rate(\"old\"), Decimal(\"0.19\"))\n\n\nif __name__ == \"__main__\":\n    unittest.main()\n"}, {"name": "reply.md", "type": "text", "content": "I can't run a conformance check against \"our DDD architecture\", because the repo doesn't define one. There is no rules file, no ADR, and no architecture doc. `docs/` is empty, and the README and pyproject say nothing about layering or boundaries. There is also no conformance tool in the repo. Without a written standard, I'd be inventing the pass/fail criteria. If you point me at the rules, or tell me the layers and dependency directions you want, I can run a real check.\n\nHere is what I saw reading `src/billing` and its neighbours, measured against generic DDD conventions rather than your rules:\n\n- **Billing has no layers.** It is flat: `service.py`, `handlers.py` and `http.py`, with no domain, application or infrastructure split. `service.py` holds the `Customer` class, formatting, tax logic and invoice text together. There is no Invoice aggregate or repository, although the routes and handlers refer to invoices.\n- **Billing depends on the orders domain.** `billing/service.py` imports `orders.domain.order.Order`. This is a cross-context dependency. It may be acceptable if billing is meant to be downstream, but nothing in the repo says so.\n- **The orders domain depends back on billing.** `orders/domain/order.py` imports `billing.service.Customer` under `TYPE_CHECKING`. That makes the two contexts depend on each other, even though the import only exists for type checking.\n- **The orders domain also imports infrastructure.** `Order` imports `orders.infrastructure.db.Session` and has a `persist()` method. This is a domain-to-infrastructure violation under any common DDD layering.\n- **Billing duplicates shared code.** `_fmt_money` repeats `shared/money.py:format_money`.\n- **Dead code in billing:**\n  - `_unused_helper` in `handlers.py`.\n  - `legacy_invoice_number` and `old_tax_rate` in `service.py`.\n  - `handlers.py` imports `invoice_text` without using it.\n- **`tax_rate` looks up functions by name.** It builds `f\"{region}_tax_rate\"` and finds it with `globals()`. That is fragile, and it makes `old_tax_rate` look like it is reached dynamically.\n- **The HTTP and error conventions are inconsistent.**\n  - The routes mix `/Invoices/{id}` (capitalised) and `/invoices`.\n  - The error codes use two styles, `ERR_404` and `BILLING.INVALID_INVOICE`.\n  - Whether either is a violation depends on your API standard.\n- **Handler registration is by name.** `on_invoice_created` is registered by string in `pyproject.toml`, so a tool that only follows imports would miss it.\n- **A related problem in orders.** `OrderRepository.save` publishes events after commit, with no outbox. That's a reliability issue rather than a layering one.\n\nBilling doesn't clearly follow DDD. It isn't structured as a bounded context, and its dependencies with orders run in both directions. I can't give a definitive pass or fail until the rules are written down.\n\nSKILLS USED: none\nCOMMANDS RUN:\ncd \"D:/I-fikra/backend-claude-skills/backend-skills-pack/_work/evals/architecture-conformance-workspace/iteration-1/ac-no-rules/without_skill/outputs/orders-svc\" && find . -type f -not -path './.git/*' | head -100\ncd \"$ROOT\" && cat README.md pyproject.toml; for f in src/billing/*.py src/orders/api.py src/orders/domain/order.py src/orders/infrastructure/repo.py; do echo \"=== $f\"; cat $f; done; ls -a; ls docs 2>/dev/null\ncd \"$ROOT\" && ls -la docs; grep -rn \"billing\" src tests migrations --include=* | grep -v \"^src/billing\"; cat src/shared/*.py | head -30\n(cat > reply.md heredocs to write this file)\n"}], "grading": {"expectations": [{"text": "It asks the user which file holds the rules", "passed": true, "evidence": "programmatic check"}, {"text": "No architecture report was written", "passed": true, "evidence": "programmatic check"}, {"text": "It reports no rule violations", "passed": true, "evidence": "programmatic check"}], "summary": {"passed": 3, "failed": 0, "total": 3, "pass_rate": 1.0}}}], "previous_feedback": {}, "previous_outputs": {"ac-full-repo-with_skill": [{"name": "orders-svc/docs/ddd/service-design-rules.md", "type": "text", "content": "# Service design rules (orders-svc)\n\n- **R1 Module contract.** A module may import another module only through its public contract (`\u003cmodule>/__init__.py`). Importing `\u003cother>.domain`, `\u003cother>.infrastructure` or `\u003cother>.api` directly is forbidden.\n- **R2 Reference by id.** An aggregate refers to another aggregate or another module's entity by id only, never by holding the object.\n- **R3 Pure domain.** Code under `*/domain/` imports nothing from `*/infrastructure/`, `requests`, or any database or HTTP library.\n- **R4 Outbox.** Domain events are written to the outbox (`Session.outbox`) in the same transaction as the aggregate, and published by a relay. Publishing to the broker from a repository or handler is forbidden.\n- **R5 No cross-module FK.** No foreign key or join between tables owned by different modules (orders owns `orders`; billing owns `invoices`).\n- **R6 Endpoint paths.** Paths are `/api/v\u003cn>/\u003cplural-kebab-lowercase>[/{id}]`.\n- **R7 Error codes.** Error codes are `\u003cMODULE>.\u003cUPPER_SNAKE>`, for example `BILLING.INVALID_INVOICE`.\n"}, {"name": "orders-svc/docs/reviews/architecture-2026-11-15.md", "type": "text", "content": "# Architecture conformance 2026-11-15 - orders-svc\nRules: docs/ddd/service-design-rules.md@aced754 \u00b7 Target: repo \u00b7 Methods: script (import, grep), manual (R2)\n\n## Rules\n| Rule | Summary | Method | Result | Violations |\n|---|---|---|---|---|\n| R1 | Import another module only via `\u003cmodule>/__init__.py` | script import | FAIL | 1 |\n| R2 | Refer to other aggregates/entities by id only | manual | FAIL | 1 |\n| R3 | `*/domain/` imports no infrastructure, requests, DB/HTTP lib | script import | FAIL | 1 |\n| R4 | Events go to `Session.outbox` in same transaction; no publish from repository/handler | script grep + manual | FAIL | 1 |\n| R5 | No FK or join across modules | script grep | FAIL | 1 |\n| R6 | Paths `/api/v\u003cn>/\u003cplural-kebab-lowercase>[/{id}]` | script grep | FAIL | 1 |\n| R7 | Error codes `\u003cMODULE>.\u003cUPPER_SNAKE>` | script grep | FAIL | 1 |\n\n## Violations (worst first)\n| # | Rule | Location | Evidence | Severity | Suggested fix |\n|---|---|---|---|---|---|\n| 1 | R1 | src/billing/service.py:3 | `from orders.domain.order import Order` | high | Import from `orders` and expose what billing needs (e.g. order total/id) through its contract |\n| 2 | R3 | src/orders/domain/order.py:5 | `from orders.infrastructure.db import Session` (used in `persist()`, line 33) | high | Remove `persist()`; let the repository persist the aggregate |\n| 3 | R4 | src/orders/infrastructure/repo.py:13 | `broker.publish(event)` in `save()` after commit | high | Write events to `Session.outbox` before commit; publish from a relay |\n| 4 | R5 | migrations/0001_init.sql:4 | `order_id TEXT NOT NULL REFERENCES orders(id)` on `invoices` | high | Drop the FK; keep `order_id` as a plain id |\n| 5 | R2 | src/orders/domain/order.py:17 | `self.customer: \"Customer | None\"` holds billing's `Customer` object (TYPE_CHECKING import line 8 from `billing.service`) | high | Drop the field; keep `customer_id` only |\n| 6 | R6 | src/billing/http.py:2 | `\"GET /api/v1/Invoices/{id}\"` uppercase | medium | `/api/v1/invoices/{id}` |\n| 7 | R7 | src/billing/http.py:7 | `\"code\": \"ERR_404\"` | medium | `BILLING.NOT_FOUND` |\n\nFalse positives dropped: 0. R1 other direction (orders -> billing): PASS.\nR1 note: the TYPE_CHECKING import of `billing.service` in orders/domain/order.py is not an `api/domain/infrastructure` import, so it is not an R1 violation; it is reported under R2.\n\n## Not checked\nNothing skipped. R2 was reviewed manually by me directly (no forked subagent; repo is 9 source files). R4's relay is not present in the repo; only the publish call is flagged.\n"}, {"name": "orders-svc/docs/reviews/architecture-checks.json", "type": "text", "content": "[\n {\"id\":\"R1\",\"kind\":\"import\",\"from\":\"src/billing/**\",\"forbid\":\"^orders\\\\.(domain|infrastructure|api)\\\\b\",\"severity\":\"high\",\"fix\":\"import from orders (public contract) instead\"},\n {\"id\":\"R1\",\"kind\":\"import\",\"from\":\"src/orders/**\",\"forbid\":\"^billing\\\\.(domain|infrastructure|api)\\\\b\",\"severity\":\"high\",\"fix\":\"import from billing (public contract) instead\"},\n {\"id\":\"R3\",\"kind\":\"import\",\"from\":\"src/*/domain/**\",\"forbid\":\"infrastructure|^requests|^sqlalchemy|^django|^httpx|^psycopg\",\"severity\":\"high\",\"fix\":\"inject a port; keep domain pure\"},\n {\"id\":\"R4\",\"kind\":\"grep\",\"files\":\"src/**/*.py\",\"pattern\":\"broker\\\\.publish\\\\(|\\\\bpublish\\\\(\",\"unless\":\"^\\\\s*def \",\"severity\":\"high\",\"fix\":\"append to Session.outbox in the same transaction; publish from a relay\"},\n {\"id\":\"R5\",\"kind\":\"grep\",\"files\":\"migrations/**/*.sql\",\"pattern\":\"REFERENCES\\\\s+orders|JOIN\\\\s+orders\",\"severity\":\"high\",\"fix\":\"store order_id as plain value, no FK\"},\n {\"id\":\"R6\",\"kind\":\"grep\",\"files\":\"src/**/*.py\",\"pattern\":\"/api/v\\\\d+/[^\\\"\\\\s]*[A-Z]|/api/(?!v\\\\d+/)\",\"severity\":\"medium\",\"fix\":\"use /api/v\u003cn>/\u003cplural-kebab-lowercase>\"},\n {\"id\":\"R7\",\"kind\":\"grep\",\"files\":\"src/**/*.py\",\"pattern\":\"\\\"code\\\":\\\\s*\\\"(?![A-Z]+\\\\.[A-Z0-9_]+\\\")\",\"severity\":\"medium\",\"fix\":\"use \u003cMODULE>.\u003cUPPER_SNAKE>\"}\n]\n"}, {"name": "orders-svc/migrations/0001_init.sql", "type": "text", "content": "CREATE TABLE orders (id TEXT PRIMARY KEY, customer_id TEXT NOT NULL);\nCREATE TABLE invoices (\n  id TEXT PRIMARY KEY,\n  order_id TEXT NOT NULL REFERENCES orders(id),\n  amount NUMERIC(12,2) NOT NULL\n);\n"}, {"name": "orders-svc/pyproject.toml", "type": "text", "content": "[project]\nname = \"orders-svc\"\nversion = \"0.3.0\"\nrequires-python = \">=3.11\"\ndependencies = [\"requests>=2.31\"]\n\n[tool.orders]\n# handlers are loaded by name at startup\nevent_handlers = [\"billing.handlers:on_invoice_created\"]\n"}, {"name": "orders-svc/README.md", "type": "text", "content": "# orders-svc\n\nRun tests: `python -m unittest discover -s tests -t .`\n"}, {"name": "orders-svc/src/billing/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/src/billing/handlers.py", "type": "text", "content": "from billing.service import invoice_text\n\n\ndef on_invoice_created(event: dict) -> str:\n    return f\"handled {event['invoice_id']}\"\n\n\ndef _unused_helper(x):\n    return x * 2\n"}, {"name": "orders-svc/src/billing/http.py", "type": "text", "content": "ROUTES = {\n    \"GET /api/v1/Invoices/{id}\": \"get_invoice\",\n    \"POST /api/v1/invoices\": \"create_invoice\",\n}\n\nERRORS = {\n    \"not_found\": {\"code\": \"ERR_404\", \"http\": 404},\n    \"invalid\": {\"code\": \"BILLING.INVALID_INVOICE\", \"http\": 422},\n}\n"}, {"name": "orders-svc/src/billing/service.py", "type": "text", "content": "from decimal import Decimal, ROUND_HALF_UP\n\nfrom orders.domain.order import Order\n\n\nclass Customer:\n    def __init__(self, customer_id: str, name: str):\n        self.customer_id = customer_id\n        self.name = name\n\n\ndef _fmt_money(amount: Decimal, currency: str) -> str:\n    q = amount.quantize(Decimal(\"0.01\"), rounding=ROUND_HALF_UP)\n    return f\"{q:,.2f} {currency.upper()}\"\n\n\ndef invoice_text(order: Order, currency: str = \"eur\") -> str:\n    return f\"Invoice {order.order_id}: {_fmt_money(order.total(), currency)}\"\n\n\ndef legacy_invoice_number(order_id: str) -> str:\n    return \"INV-\" + order_id.zfill(8)\n\n\ndef old_tax_rate() -> Decimal:\n    return Decimal(\"0.19\")\n\n\ndef tax_rate(region: str) -> Decimal:\n    fn = globals().get(f\"{region}_tax_rate\")\n    return fn() if fn else Decimal(\"0.20\")\n"}, {"name": "orders-svc/src/orders/__init__.py", "type": "text", "content": "\"\"\"Public contract of the orders module. Other modules import only from here.\"\"\"\nfrom orders.api import place_order, get_order_total\n\n__all__ = [\"place_order\", \"get_order_total\"]\n"}, {"name": "orders-svc/src/orders/api.py", "type": "text", "content": "from decimal import Decimal\n\nfrom orders.domain.order import Order\nfrom orders.infrastructure.repo import OrderRepository\n\n_repo = OrderRepository()\n\n\ndef place_order(order_id: str, customer_id: str, lines: list[tuple[str, Decimal]]) -> Order:\n    order = Order(order_id, customer_id)\n    for sku, price in lines:\n        order.add_line(sku, price)\n    _repo.save(order)\n    return order\n\n\ndef get_order_total(order_id: str) -> Decimal:\n    return _repo.get(order_id).total()\n"}, {"name": "orders-svc/src/orders/domain/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/src/orders/domain/order.py", "type": "text", "content": "from decimal import Decimal\n\nfrom typing import TYPE_CHECKING\n\nfrom orders.infrastructure.db import Session\n\nif TYPE_CHECKING:\n    from billing.service import Customer\n\n\nclass Order:\n    \"\"\"Order aggregate.\"\"\"\n\n    def __init__(self, order_id: str, customer_id: str):\n        self.order_id = order_id\n        self.customer_id = customer_id\n        self.customer: \"Customer | None\" = None\n        self.lines: list[tuple[str, Decimal]] = []\n        self.events: list[dict] = []\n\n    def add_line(self, sku: str, price: Decimal) -> None:\n        if price \u003c= 0:\n            raise ValueError(\"price must be positive\")\n        self.lines.append((sku, price))\n\n    def total(self) -> Decimal:\n        return sum((p for _, p in self.lines), Decimal(\"0\"))\n\n    def place(self) -> None:\n        self.events.append({\"type\": \"order.placed\", \"order_id\": self.order_id})\n\n    def persist(self) -> None:\n        Session().add(self)\n"}, {"name": "orders-svc/src/orders/infrastructure/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/src/orders/infrastructure/broker.py", "type": "text", "content": "BROKER_URL = \"http://broker.internal/publish\"\n\n\ndef publish(event: dict) -> None:\n    import requests\n\n    requests.post(BROKER_URL, json=event, timeout=5)\n"}, {"name": "orders-svc/src/orders/infrastructure/db.py", "type": "text", "content": "class Session:\n    _store: dict = {}\n    outbox: list = []\n\n    def add(self, obj) -> None:\n        self._store[obj.order_id] = obj\n\n    def get(self, key):\n        return self._store[key]\n\n    def commit(self) -> None:\n        pass\n"}, {"name": "orders-svc/src/orders/infrastructure/repo.py", "type": "text", "content": "from orders.infrastructure.db import Session\nfrom orders.infrastructure import broker\n\n\nclass OrderRepository:\n    def __init__(self):\n        self.session = Session()\n\n    def save(self, order) -> None:\n        self.session.add(order)\n        self.session.commit()\n        for event in order.events:\n            broker.publish(event)  # published after commit, not via outbox\n        order.events.clear()\n\n    def get(self, order_id: str):\n        return self.session.get(order_id)\n"}, {"name": "orders-svc/src/shared/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/src/shared/money.py", "type": "text", "content": "from decimal import Decimal, ROUND_HALF_UP\n\n\ndef format_money(amount: Decimal, currency: str) -> str:\n    q = amount.quantize(Decimal(\"0.01\"), rounding=ROUND_HALF_UP)\n    return f\"{q:,.2f} {currency.upper()}\"\n"}, {"name": "orders-svc/src/shared/text.py", "type": "text", "content": "import re\nimport unicodedata\n\n\ndef slugify(value: str, max_len: int = 80) -> str:\n    \"\"\"Lowercase ASCII slug for URLs: 'Cafe Order #12' -> 'cafe-order-12'.\"\"\"\n    norm = unicodedata.normalize(\"NFKD\", value).encode(\"ascii\", \"ignore\").decode()\n    slug = re.sub(r\"[^a-z0-9]+\", \"-\", norm.lower()).strip(\"-\")\n    return slug[:max_len].rstrip(\"-\")\n\n\ndef normalize_whitespace(value: str) -> str:\n    return \" \".join(value.split())\n"}, {"name": "orders-svc/tests/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/tests/test_orders.py", "type": "text", "content": "import sys\nimport unittest\nfrom decimal import Decimal\nfrom pathlib import Path\n\nsys.path.insert(0, str(Path(__file__).resolve().parent.parent / \"src\"))\n\nfrom shared.text import slugify  # noqa: E402\nfrom shared.money import format_money  # noqa: E402\nfrom billing.service import invoice_text, tax_rate  # noqa: E402\nfrom orders.domain.order import Order  # noqa: E402\n\n\nclass OrderTests(unittest.TestCase):\n    def test_total(self):\n        o = Order(\"1\", \"c1\")\n        o.add_line(\"a\", Decimal(\"2.50\"))\n        o.add_line(\"b\", Decimal(\"1.25\"))\n        self.assertEqual(o.total(), Decimal(\"3.75\"))\n\n    def test_invoice_text(self):\n        o = Order(\"7\", \"c1\")\n        o.add_line(\"a\", Decimal(\"1000\"))\n        self.assertEqual(invoice_text(o), \"Invoice 7: 1,000.00 EUR\")\n\n    def test_slugify(self):\n        self.assertEqual(slugify(\"Cafe Order #12\"), \"cafe-order-12\")\n\n    def test_format_money(self):\n        self.assertEqual(format_money(Decimal(\"3\"), \"usd\"), \"3.00 USD\")\n\n    def test_tax_rate_dynamic(self):\n        self.assertEqual(tax_rate(\"old\"), Decimal(\"0.19\"))\n\n\nif __name__ == \"__main__\":\n    unittest.main()\n"}, {"name": "reply.md", "type": "text", "content": "Checked orders-svc against docs/ddd/service-design-rules.md (aced754).\n\n7 rules: 0 pass, 7 fail, 0 not checked \u00b7 7 violations (5 high)\n\n- R1 \u00b7 src/billing/service.py:3 \u00b7 imports orders.domain.order directly \u00b7 import from the orders contract\n- R3 \u00b7 src/orders/domain/order.py:5 \u00b7 domain imports orders.infrastructure.db \u00b7 remove persist(), let repo persist\n- R4 \u00b7 src/orders/infrastructure/repo.py:13 \u00b7 broker.publish in repository, not outbox \u00b7 write to Session.outbox, publish via relay\n- R5 \u00b7 migrations/0001_init.sql:4 \u00b7 invoices.order_id REFERENCES orders \u00b7 drop the FK\n- R2 \u00b7 src/orders/domain/order.py:17 \u00b7 Order holds billing Customer object \u00b7 keep customer_id only\n- R6 \u00b7 src/billing/http.py:2 \u00b7 /api/v1/Invoices/{id} uppercase \u00b7 /api/v1/invoices/{id}\n- R7 \u00b7 src/billing/http.py:7 \u00b7 code ERR_404 \u00b7 BILLING.NOT_FOUND\n\nReport: docs/reviews/architecture-2026-11-15.md (spec: docs/reviews/architecture-checks.json)\n\nSKILLS USED: architecture-conformance\nCOMMANDS RUN:\nfind . -type f -not -path './.git/*' | head -100\ncat docs/ddd/service-design-rules.md migrations/0001_init.sql; cat of all src/*.py files; git log -1 --format=%h -- docs/ddd/service-design-rules.md; ls -a; sed -n 1,60p .../architecture-conformance/scripts/check.py\nmkdir -p docs/reviews; cat > docs/reviews/architecture-checks.json (failed JSON escaping, rewritten with Write tool)\npython3.15 -I D:/I-fikra/backend-claude-skills/backend-skills-pack/skills/architecture-conformance/scripts/check.py . --spec docs/reviews/architecture-checks.json (run twice; first failed on JSON)\nsed -n 2p docs/reviews/architecture-checks.json\ncat > docs/reviews/architecture-2026-11-15.md\n"}], "ac-full-repo-without_skill": [{"name": "orders-svc/docs/ddd/service-design-rules.md", "type": "text", "content": "# Service design rules (orders-svc)\n\n- **R1 Module contract.** A module may import another module only through its public contract (`\u003cmodule>/__init__.py`). Importing `\u003cother>.domain`, `\u003cother>.infrastructure` or `\u003cother>.api` directly is forbidden.\n- **R2 Reference by id.** An aggregate refers to another aggregate or another module's entity by id only, never by holding the object.\n- **R3 Pure domain.** Code under `*/domain/` imports nothing from `*/infrastructure/`, `requests`, or any database or HTTP library.\n- **R4 Outbox.** Domain events are written to the outbox (`Session.outbox`) in the same transaction as the aggregate, and published by a relay. Publishing to the broker from a repository or handler is forbidden.\n- **R5 No cross-module FK.** No foreign key or join between tables owned by different modules (orders owns `orders`; billing owns `invoices`).\n- **R6 Endpoint paths.** Paths are `/api/v\u003cn>/\u003cplural-kebab-lowercase>[/{id}]`.\n- **R7 Error codes.** Error codes are `\u003cMODULE>.\u003cUPPER_SNAKE>`, for example `BILLING.INVALID_INVOICE`.\n"}, {"name": "orders-svc/migrations/0001_init.sql", "type": "text", "content": "CREATE TABLE orders (id TEXT PRIMARY KEY, customer_id TEXT NOT NULL);\nCREATE TABLE invoices (\n  id TEXT PRIMARY KEY,\n  order_id TEXT NOT NULL REFERENCES orders(id),\n  amount NUMERIC(12,2) NOT NULL\n);\n"}, {"name": "orders-svc/pyproject.toml", "type": "text", "content": "[project]\nname = \"orders-svc\"\nversion = \"0.3.0\"\nrequires-python = \">=3.11\"\ndependencies = [\"requests>=2.31\"]\n\n[tool.orders]\n# handlers are loaded by name at startup\nevent_handlers = [\"billing.handlers:on_invoice_created\"]\n"}, {"name": "orders-svc/README.md", "type": "text", "content": "# orders-svc\n\nRun tests: `python -m unittest discover -s tests -t .`\n"}, {"name": "orders-svc/src/billing/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/src/billing/handlers.py", "type": "text", "content": "from billing.service import invoice_text\n\n\ndef on_invoice_created(event: dict) -> str:\n    return f\"handled {event['invoice_id']}\"\n\n\ndef _unused_helper(x):\n    return x * 2\n"}, {"name": "orders-svc/src/billing/http.py", "type": "text", "content": "ROUTES = {\n    \"GET /api/v1/Invoices/{id}\": \"get_invoice\",\n    \"POST /api/v1/invoices\": \"create_invoice\",\n}\n\nERRORS = {\n    \"not_found\": {\"code\": \"ERR_404\", \"http\": 404},\n    \"invalid\": {\"code\": \"BILLING.INVALID_INVOICE\", \"http\": 422},\n}\n"}, {"name": "orders-svc/src/billing/service.py", "type": "text", "content": "from decimal import Decimal, ROUND_HALF_UP\n\nfrom orders.domain.order import Order\n\n\nclass Customer:\n    def __init__(self, customer_id: str, name: str):\n        self.customer_id = customer_id\n        self.name = name\n\n\ndef _fmt_money(amount: Decimal, currency: str) -> str:\n    q = amount.quantize(Decimal(\"0.01\"), rounding=ROUND_HALF_UP)\n    return f\"{q:,.2f} {currency.upper()}\"\n\n\ndef invoice_text(order: Order, currency: str = \"eur\") -> str:\n    return f\"Invoice {order.order_id}: {_fmt_money(order.total(), currency)}\"\n\n\ndef legacy_invoice_number(order_id: str) -> str:\n    return \"INV-\" + order_id.zfill(8)\n\n\ndef old_tax_rate() -> Decimal:\n    return Decimal(\"0.19\")\n\n\ndef tax_rate(region: str) -> Decimal:\n    fn = globals().get(f\"{region}_tax_rate\")\n    return fn() if fn else Decimal(\"0.20\")\n"}, {"name": "orders-svc/src/orders/__init__.py", "type": "text", "content": "\"\"\"Public contract of the orders module. Other modules import only from here.\"\"\"\nfrom orders.api import place_order, get_order_total\n\n__all__ = [\"place_order\", \"get_order_total\"]\n"}, {"name": "orders-svc/src/orders/api.py", "type": "text", "content": "from decimal import Decimal\n\nfrom orders.domain.order import Order\nfrom orders.infrastructure.repo import OrderRepository\n\n_repo = OrderRepository()\n\n\ndef place_order(order_id: str, customer_id: str, lines: list[tuple[str, Decimal]]) -> Order:\n    order = Order(order_id, customer_id)\n    for sku, price in lines:\n        order.add_line(sku, price)\n    _repo.save(order)\n    return order\n\n\ndef get_order_total(order_id: str) -> Decimal:\n    return _repo.get(order_id).total()\n"}, {"name": "orders-svc/src/orders/domain/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/src/orders/domain/order.py", "type": "text", "content": "from decimal import Decimal\n\nfrom typing import TYPE_CHECKING\n\nfrom orders.infrastructure.db import Session\n\nif TYPE_CHECKING:\n    from billing.service import Customer\n\n\nclass Order:\n    \"\"\"Order aggregate.\"\"\"\n\n    def __init__(self, order_id: str, customer_id: str):\n        self.order_id = order_id\n        self.customer_id = customer_id\n        self.customer: \"Customer | None\" = None\n        self.lines: list[tuple[str, Decimal]] = []\n        self.events: list[dict] = []\n\n    def add_line(self, sku: str, price: Decimal) -> None:\n        if price \u003c= 0:\n            raise ValueError(\"price must be positive\")\n        self.lines.append((sku, price))\n\n    def total(self) -> Decimal:\n        return sum((p for _, p in self.lines), Decimal(\"0\"))\n\n    def place(self) -> None:\n        self.events.append({\"type\": \"order.placed\", \"order_id\": self.order_id})\n\n    def persist(self) -> None:\n        Session().add(self)\n"}, {"name": "orders-svc/src/orders/infrastructure/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/src/orders/infrastructure/broker.py", "type": "text", "content": "BROKER_URL = \"http://broker.internal/publish\"\n\n\ndef publish(event: dict) -> None:\n    import requests\n\n    requests.post(BROKER_URL, json=event, timeout=5)\n"}, {"name": "orders-svc/src/orders/infrastructure/db.py", "type": "text", "content": "class Session:\n    _store: dict = {}\n    outbox: list = []\n\n    def add(self, obj) -> None:\n        self._store[obj.order_id] = obj\n\n    def get(self, key):\n        return self._store[key]\n\n    def commit(self) -> None:\n        pass\n"}, {"name": "orders-svc/src/orders/infrastructure/repo.py", "type": "text", "content": "from orders.infrastructure.db import Session\nfrom orders.infrastructure import broker\n\n\nclass OrderRepository:\n    def __init__(self):\n        self.session = Session()\n\n    def save(self, order) -> None:\n        self.session.add(order)\n        self.session.commit()\n        for event in order.events:\n            broker.publish(event)  # published after commit, not via outbox\n        order.events.clear()\n\n    def get(self, order_id: str):\n        return self.session.get(order_id)\n"}, {"name": "orders-svc/src/shared/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/src/shared/money.py", "type": "text", "content": "from decimal import Decimal, ROUND_HALF_UP\n\n\ndef format_money(amount: Decimal, currency: str) -> str:\n    q = amount.quantize(Decimal(\"0.01\"), rounding=ROUND_HALF_UP)\n    return f\"{q:,.2f} {currency.upper()}\"\n"}, {"name": "orders-svc/src/shared/text.py", "type": "text", "content": "import re\nimport unicodedata\n\n\ndef slugify(value: str, max_len: int = 80) -> str:\n    \"\"\"Lowercase ASCII slug for URLs: 'Cafe Order #12' -> 'cafe-order-12'.\"\"\"\n    norm = unicodedata.normalize(\"NFKD\", value).encode(\"ascii\", \"ignore\").decode()\n    slug = re.sub(r\"[^a-z0-9]+\", \"-\", norm.lower()).strip(\"-\")\n    return slug[:max_len].rstrip(\"-\")\n\n\ndef normalize_whitespace(value: str) -> str:\n    return \" \".join(value.split())\n"}, {"name": "orders-svc/tests/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/tests/test_orders.py", "type": "text", "content": "import sys\nimport unittest\nfrom decimal import Decimal\nfrom pathlib import Path\n\nsys.path.insert(0, str(Path(__file__).resolve().parent.parent / \"src\"))\n\nfrom shared.text import slugify  # noqa: E402\nfrom shared.money import format_money  # noqa: E402\nfrom billing.service import invoice_text, tax_rate  # noqa: E402\nfrom orders.domain.order import Order  # noqa: E402\n\n\nclass OrderTests(unittest.TestCase):\n    def test_total(self):\n        o = Order(\"1\", \"c1\")\n        o.add_line(\"a\", Decimal(\"2.50\"))\n        o.add_line(\"b\", Decimal(\"1.25\"))\n        self.assertEqual(o.total(), Decimal(\"3.75\"))\n\n    def test_invoice_text(self):\n        o = Order(\"7\", \"c1\")\n        o.add_line(\"a\", Decimal(\"1000\"))\n        self.assertEqual(invoice_text(o), \"Invoice 7: 1,000.00 EUR\")\n\n    def test_slugify(self):\n        self.assertEqual(slugify(\"Cafe Order #12\"), \"cafe-order-12\")\n\n    def test_format_money(self):\n        self.assertEqual(format_money(Decimal(\"3\"), \"usd\"), \"3.00 USD\")\n\n    def test_tax_rate_dynamic(self):\n        self.assertEqual(tax_rate(\"old\"), Decimal(\"0.19\"))\n\n\nif __name__ == \"__main__\":\n    unittest.main()\n"}, {"name": "reply.md", "type": "text", "content": "No, orders-svc does not follow its rules. I checked the code against R1-R7 in `docs/ddd/service-design-rules.md` by reading every file. I didn't run the tests or any tooling. Six of the seven rules are broken, and only the first half of R7 and the POST path of R6 are fine.\n\n| Rule | Status | Evidence |\n|---|---|---|\n| R1 Module contract | VIOLATED | `src/billing/service.py:3` does `from orders.domain.order import Order`. This is a direct import of another module's `domain`, not `orders/__init__.py`. `src/orders/domain/order.py:8` also imports `billing.service` under `TYPE_CHECKING`, and `billing/__init__.py` is empty, so billing has no public contract to import from. `tests/test_orders.py:11` imports `orders.domain.order` too (lower severity, since it is a test). |\n| R2 Reference by id | VIOLATED | `Order.customer` (`order.py:17`) holds a billing `Customer` object. The aggregate should keep only `customer_id`, which it already has. |\n| R3 Pure domain | VIOLATED | `src/orders/domain/order.py:5` imports `orders.infrastructure.db.Session`. `Order.persist()` (line 32-33) calls `Session().add(self)` from inside the domain. |\n| R4 Outbox | VIOLATED | `OrderRepository.save` (`infrastructure/repo.py:12-14`) calls `broker.publish(event)` directly after commit. The comment there says \"not via outbox\". `Session.outbox` exists in `db.py` but nothing writes to it, and there is no relay. |\n| R5 No cross-module FK | VIOLATED | `migrations/0001_init.sql:4` has `invoices.order_id ... REFERENCES orders(id)`. This is a foreign key from a billing table to an orders table. |\n| R6 Endpoint paths | VIOLATED | `src/billing/http.py:2` has `GET /api/v1/Invoices/{id}`. It has an uppercase `I`, but paths must be lowercase. `POST /api/v1/invoices` is fine. |\n| R7 Error codes | VIOLATED | `src/billing/http.py:7` has `ERR_404`, which is not `\u003cMODULE>.\u003cUPPER_SNAKE>`. It should be something like `BILLING.NOT_FOUND`. `BILLING.INVALID_INVOICE` is fine. |\n\n**Fix order**\n1. R3 and R2: remove the `Session` import, `persist()` and the `customer` field from `Order`.\n2. R4: have the repository add events to `Session.outbox` in the same transaction as the aggregate. Add a relay that does the publishing.\n3. R1: expose what billing needs from orders through `orders/__init__.py`, for example an order total or a read model. Have billing import only from there.\n4. R5: drop the FK in a new migration and keep `order_id` as a plain indexed column.\n5. R6 and R7: rename the path to lowercase and change the error code.\n\n**Other things I noticed that aren't in the rules**\n- `billing/service.py` has its own `_fmt_money`, which duplicates `shared/money.format_money`.\n- `billing/handlers.py` has an unused import (`invoice_text`) and an unused `_unused_helper`.\n- `legacy_invoice_number` looks unused.\n- `old_tax_rate` is only reached through the `globals()` lookup in `tax_rate`. That lookup is fragile and bypasses static analysis.\n- `on_invoice_created` is used. It is loaded by name from `pyproject.toml`.\n- `Session._store` and `Session.outbox` are class-level mutable state shared across instances.\nSKILLS USED: none\nCOMMANDS RUN:\ncd D:/I-fikra/backend-claude-skills/backend-skills-pack/_work/evals/architecture-conformance-workspace/iteration-1/ac-full-repo/without_skill/outputs/orders-svc && find . -type f -not -path './.git/*' | head -100\ncd D:/I-fikra/backend-claude-skills/backend-skills-pack/_work/evals/architecture-conformance-workspace/iteration-1/ac-full-repo/without_skill/outputs/orders-svc && for f in docs/ddd/service-design-rules.md README.md pyproject.toml migrations/0001_init.sql $(find src tests -name '*.py'); do echo \"=== $f\"; cat -n $f; done\n"}], "ac-negative-explain-with_skill": [{"name": "orders-svc/docs/ddd/service-design-rules.md", "type": "text", "content": "# Service design rules (orders-svc)\n\n- **R1 Module contract.** A module may import another module only through its public contract (`\u003cmodule>/__init__.py`). Importing `\u003cother>.domain`, `\u003cother>.infrastructure` or `\u003cother>.api` directly is forbidden.\n- **R2 Reference by id.** An aggregate refers to another aggregate or another module's entity by id only, never by holding the object.\n- **R3 Pure domain.** Code under `*/domain/` imports nothing from `*/infrastructure/`, `requests`, or any database or HTTP library.\n- **R4 Outbox.** Domain events are written to the outbox (`Session.outbox`) in the same transaction as the aggregate, and published by a relay. Publishing to the broker from a repository or handler is forbidden.\n- **R5 No cross-module FK.** No foreign key or join between tables owned by different modules (orders owns `orders`; billing owns `invoices`).\n- **R6 Endpoint paths.** Paths are `/api/v\u003cn>/\u003cplural-kebab-lowercase>[/{id}]`.\n- **R7 Error codes.** Error codes are `\u003cMODULE>.\u003cUPPER_SNAKE>`, for example `BILLING.INVALID_INVOICE`.\n"}, {"name": "orders-svc/migrations/0001_init.sql", "type": "text", "content": "CREATE TABLE orders (id TEXT PRIMARY KEY, customer_id TEXT NOT NULL);\nCREATE TABLE invoices (\n  id TEXT PRIMARY KEY,\n  order_id TEXT NOT NULL REFERENCES orders(id),\n  amount NUMERIC(12,2) NOT NULL\n);\n"}, {"name": "orders-svc/pyproject.toml", "type": "text", "content": "[project]\nname = \"orders-svc\"\nversion = \"0.3.0\"\nrequires-python = \">=3.11\"\ndependencies = [\"requests>=2.31\"]\n\n[tool.orders]\n# handlers are loaded by name at startup\nevent_handlers = [\"billing.handlers:on_invoice_created\"]\n"}, {"name": "orders-svc/README.md", "type": "text", "content": "# orders-svc\n\nRun tests: `python -m unittest discover -s tests -t .`\n"}, {"name": "orders-svc/src/billing/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/src/billing/handlers.py", "type": "text", "content": "from billing.service import invoice_text\n\n\ndef on_invoice_created(event: dict) -> str:\n    return f\"handled {event['invoice_id']}\"\n\n\ndef _unused_helper(x):\n    return x * 2\n"}, {"name": "orders-svc/src/billing/http.py", "type": "text", "content": "ROUTES = {\n    \"GET /api/v1/Invoices/{id}\": \"get_invoice\",\n    \"POST /api/v1/invoices\": \"create_invoice\",\n}\n\nERRORS = {\n    \"not_found\": {\"code\": \"ERR_404\", \"http\": 404},\n    \"invalid\": {\"code\": \"BILLING.INVALID_INVOICE\", \"http\": 422},\n}\n"}, {"name": "orders-svc/src/billing/service.py", "type": "text", "content": "from decimal import Decimal, ROUND_HALF_UP\n\nfrom orders.domain.order import Order\n\n\nclass Customer:\n    def __init__(self, customer_id: str, name: str):\n        self.customer_id = customer_id\n        self.name = name\n\n\ndef _fmt_money(amount: Decimal, currency: str) -> str:\n    q = amount.quantize(Decimal(\"0.01\"), rounding=ROUND_HALF_UP)\n    return f\"{q:,.2f} {currency.upper()}\"\n\n\ndef invoice_text(order: Order, currency: str = \"eur\") -> str:\n    return f\"Invoice {order.order_id}: {_fmt_money(order.total(), currency)}\"\n\n\ndef legacy_invoice_number(order_id: str) -> str:\n    return \"INV-\" + order_id.zfill(8)\n\n\ndef old_tax_rate() -> Decimal:\n    return Decimal(\"0.19\")\n\n\ndef tax_rate(region: str) -> Decimal:\n    fn = globals().get(f\"{region}_tax_rate\")\n    return fn() if fn else Decimal(\"0.20\")\n"}, {"name": "orders-svc/src/orders/__init__.py", "type": "text", "content": "\"\"\"Public contract of the orders module. Other modules import only from here.\"\"\"\nfrom orders.api import place_order, get_order_total\n\n__all__ = [\"place_order\", \"get_order_total\"]\n"}, {"name": "orders-svc/src/orders/api.py", "type": "text", "content": "from decimal import Decimal\n\nfrom orders.domain.order import Order\nfrom orders.infrastructure.repo import OrderRepository\n\n_repo = OrderRepository()\n\n\ndef place_order(order_id: str, customer_id: str, lines: list[tuple[str, Decimal]]) -> Order:\n    order = Order(order_id, customer_id)\n    for sku, price in lines:\n        order.add_line(sku, price)\n    _repo.save(order)\n    return order\n\n\ndef get_order_total(order_id: str) -> Decimal:\n    return _repo.get(order_id).total()\n"}, {"name": "orders-svc/src/orders/domain/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/src/orders/domain/order.py", "type": "text", "content": "from decimal import Decimal\n\nfrom typing import TYPE_CHECKING\n\nfrom orders.infrastructure.db import Session\n\nif TYPE_CHECKING:\n    from billing.service import Customer\n\n\nclass Order:\n    \"\"\"Order aggregate.\"\"\"\n\n    def __init__(self, order_id: str, customer_id: str):\n        self.order_id = order_id\n        self.customer_id = customer_id\n        self.customer: \"Customer | None\" = None\n        self.lines: list[tuple[str, Decimal]] = []\n        self.events: list[dict] = []\n\n    def add_line(self, sku: str, price: Decimal) -> None:\n        if price \u003c= 0:\n            raise ValueError(\"price must be positive\")\n        self.lines.append((sku, price))\n\n    def total(self) -> Decimal:\n        return sum((p for _, p in self.lines), Decimal(\"0\"))\n\n    def place(self) -> None:\n        self.events.append({\"type\": \"order.placed\", \"order_id\": self.order_id})\n\n    def persist(self) -> None:\n        Session().add(self)\n"}, {"name": "orders-svc/src/orders/infrastructure/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/src/orders/infrastructure/broker.py", "type": "text", "content": "BROKER_URL = \"http://broker.internal/publish\"\n\n\ndef publish(event: dict) -> None:\n    import requests\n\n    requests.post(BROKER_URL, json=event, timeout=5)\n"}, {"name": "orders-svc/src/orders/infrastructure/db.py", "type": "text", "content": "class Session:\n    _store: dict = {}\n    outbox: list = []\n\n    def add(self, obj) -> None:\n        self._store[obj.order_id] = obj\n\n    def get(self, key):\n        return self._store[key]\n\n    def commit(self) -> None:\n        pass\n"}, {"name": "orders-svc/src/orders/infrastructure/repo.py", "type": "text", "content": "from orders.infrastructure.db import Session\nfrom orders.infrastructure import broker\n\n\nclass OrderRepository:\n    def __init__(self):\n        self.session = Session()\n\n    def save(self, order) -> None:\n        self.session.add(order)\n        self.session.commit()\n        for event in order.events:\n            broker.publish(event)  # published after commit, not via outbox\n        order.events.clear()\n\n    def get(self, order_id: str):\n        return self.session.get(order_id)\n"}, {"name": "orders-svc/src/shared/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/src/shared/money.py", "type": "text", "content": "from decimal import Decimal, ROUND_HALF_UP\n\n\ndef format_money(amount: Decimal, currency: str) -> str:\n    q = amount.quantize(Decimal(\"0.01\"), rounding=ROUND_HALF_UP)\n    return f\"{q:,.2f} {currency.upper()}\"\n"}, {"name": "orders-svc/src/shared/text.py", "type": "text", "content": "import re\nimport unicodedata\n\n\ndef slugify(value: str, max_len: int = 80) -> str:\n    \"\"\"Lowercase ASCII slug for URLs: 'Cafe Order #12' -> 'cafe-order-12'.\"\"\"\n    norm = unicodedata.normalize(\"NFKD\", value).encode(\"ascii\", \"ignore\").decode()\n    slug = re.sub(r\"[^a-z0-9]+\", \"-\", norm.lower()).strip(\"-\")\n    return slug[:max_len].rstrip(\"-\")\n\n\ndef normalize_whitespace(value: str) -> str:\n    return \" \".join(value.split())\n"}, {"name": "orders-svc/tests/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/tests/test_orders.py", "type": "text", "content": "import sys\nimport unittest\nfrom decimal import Decimal\nfrom pathlib import Path\n\nsys.path.insert(0, str(Path(__file__).resolve().parent.parent / \"src\"))\n\nfrom shared.text import slugify  # noqa: E402\nfrom shared.money import format_money  # noqa: E402\nfrom billing.service import invoice_text, tax_rate  # noqa: E402\nfrom orders.domain.order import Order  # noqa: E402\n\n\nclass OrderTests(unittest.TestCase):\n    def test_total(self):\n        o = Order(\"1\", \"c1\")\n        o.add_line(\"a\", Decimal(\"2.50\"))\n        o.add_line(\"b\", Decimal(\"1.25\"))\n        self.assertEqual(o.total(), Decimal(\"3.75\"))\n\n    def test_invoice_text(self):\n        o = Order(\"7\", \"c1\")\n        o.add_line(\"a\", Decimal(\"1000\"))\n        self.assertEqual(invoice_text(o), \"Invoice 7: 1,000.00 EUR\")\n\n    def test_slugify(self):\n        self.assertEqual(slugify(\"Cafe Order #12\"), \"cafe-order-12\")\n\n    def test_format_money(self):\n        self.assertEqual(format_money(Decimal(\"3\"), \"usd\"), \"3.00 USD\")\n\n    def test_tax_rate_dynamic(self):\n        self.assertEqual(tax_rate(\"old\"), Decimal(\"0.19\"))\n\n\nif __name__ == \"__main__\":\n    unittest.main()\n"}, {"name": "reply.md", "type": "text", "content": "**Layered**: code is stacked (controller -> service -> repository -> DB), and each layer calls the one below it. It is simple and familiar. The catch is that business logic tends to end up depending on the persistence layer, and often on its ORM models. That makes the domain harder to test without a database and harder to swap infrastructure under.\n\n**Hexagonal (ports and adapters)**: the domain and use cases sit in the center and define ports (interfaces) for what they need, such as an order repository, a payment gateway or an event publisher. Adapters (HTTP, DB, queue, third-party clients) implement those ports. Dependencies point inward only, so the core never imports infrastructure.\n\n**Practical difference**: in layered, the direction is top to bottom. In hexagonal, the direction is toward the domain, and infrastructure is a plugin.\n\n**For orders-svc**\n- Pick **layered** if it is mostly CRUD: create, read and update orders, with little business logic, a single DB, a small team and few integrations. It is the cheapest option and enough here.\n- Pick **hexagonal** if orders has real rules (pricing, state transitions, inventory and payment checks), several integrations (payments, shipping, events), or you want fast domain tests without a DB or network. It also helps if you expect to swap or add infrastructure.\n\nA common middle path is to start layered and keep the service and domain code free of ORM and framework imports. You can then move to hexagonal by extracting ports when the logic grows.\n\nSKILLS USED: none\nCOMMANDS RUN:\n(none)\n"}], "ac-negative-explain-without_skill": [{"name": "orders-svc/docs/ddd/service-design-rules.md", "type": "text", "content": "# Service design rules (orders-svc)\n\n- **R1 Module contract.** A module may import another module only through its public contract (`\u003cmodule>/__init__.py`). Importing `\u003cother>.domain`, `\u003cother>.infrastructure` or `\u003cother>.api` directly is forbidden.\n- **R2 Reference by id.** An aggregate refers to another aggregate or another module's entity by id only, never by holding the object.\n- **R3 Pure domain.** Code under `*/domain/` imports nothing from `*/infrastructure/`, `requests`, or any database or HTTP library.\n- **R4 Outbox.** Domain events are written to the outbox (`Session.outbox`) in the same transaction as the aggregate, and published by a relay. Publishing to the broker from a repository or handler is forbidden.\n- **R5 No cross-module FK.** No foreign key or join between tables owned by different modules (orders owns `orders`; billing owns `invoices`).\n- **R6 Endpoint paths.** Paths are `/api/v\u003cn>/\u003cplural-kebab-lowercase>[/{id}]`.\n- **R7 Error codes.** Error codes are `\u003cMODULE>.\u003cUPPER_SNAKE>`, for example `BILLING.INVALID_INVOICE`.\n"}, {"name": "orders-svc/migrations/0001_init.sql", "type": "text", "content": "CREATE TABLE orders (id TEXT PRIMARY KEY, customer_id TEXT NOT NULL);\nCREATE TABLE invoices (\n  id TEXT PRIMARY KEY,\n  order_id TEXT NOT NULL REFERENCES orders(id),\n  amount NUMERIC(12,2) NOT NULL\n);\n"}, {"name": "orders-svc/pyproject.toml", "type": "text", "content": "[project]\nname = \"orders-svc\"\nversion = \"0.3.0\"\nrequires-python = \">=3.11\"\ndependencies = [\"requests>=2.31\"]\n\n[tool.orders]\n# handlers are loaded by name at startup\nevent_handlers = [\"billing.handlers:on_invoice_created\"]\n"}, {"name": "orders-svc/README.md", "type": "text", "content": "# orders-svc\n\nRun tests: `python -m unittest discover -s tests -t .`\n"}, {"name": "orders-svc/src/billing/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/src/billing/handlers.py", "type": "text", "content": "from billing.service import invoice_text\n\n\ndef on_invoice_created(event: dict) -> str:\n    return f\"handled {event['invoice_id']}\"\n\n\ndef _unused_helper(x):\n    return x * 2\n"}, {"name": "orders-svc/src/billing/http.py", "type": "text", "content": "ROUTES = {\n    \"GET /api/v1/Invoices/{id}\": \"get_invoice\",\n    \"POST /api/v1/invoices\": \"create_invoice\",\n}\n\nERRORS = {\n    \"not_found\": {\"code\": \"ERR_404\", \"http\": 404},\n    \"invalid\": {\"code\": \"BILLING.INVALID_INVOICE\", \"http\": 422},\n}\n"}, {"name": "orders-svc/src/billing/service.py", "type": "text", "content": "from decimal import Decimal, ROUND_HALF_UP\n\nfrom orders.domain.order import Order\n\n\nclass Customer:\n    def __init__(self, customer_id: str, name: str):\n        self.customer_id = customer_id\n        self.name = name\n\n\ndef _fmt_money(amount: Decimal, currency: str) -> str:\n    q = amount.quantize(Decimal(\"0.01\"), rounding=ROUND_HALF_UP)\n    return f\"{q:,.2f} {currency.upper()}\"\n\n\ndef invoice_text(order: Order, currency: str = \"eur\") -> str:\n    return f\"Invoice {order.order_id}: {_fmt_money(order.total(), currency)}\"\n\n\ndef legacy_invoice_number(order_id: str) -> str:\n    return \"INV-\" + order_id.zfill(8)\n\n\ndef old_tax_rate() -> Decimal:\n    return Decimal(\"0.19\")\n\n\ndef tax_rate(region: str) -> Decimal:\n    fn = globals().get(f\"{region}_tax_rate\")\n    return fn() if fn else Decimal(\"0.20\")\n"}, {"name": "orders-svc/src/orders/__init__.py", "type": "text", "content": "\"\"\"Public contract of the orders module. Other modules import only from here.\"\"\"\nfrom orders.api import place_order, get_order_total\n\n__all__ = [\"place_order\", \"get_order_total\"]\n"}, {"name": "orders-svc/src/orders/api.py", "type": "text", "content": "from decimal import Decimal\n\nfrom orders.domain.order import Order\nfrom orders.infrastructure.repo import OrderRepository\n\n_repo = OrderRepository()\n\n\ndef place_order(order_id: str, customer_id: str, lines: list[tuple[str, Decimal]]) -> Order:\n    order = Order(order_id, customer_id)\n    for sku, price in lines:\n        order.add_line(sku, price)\n    _repo.save(order)\n    return order\n\n\ndef get_order_total(order_id: str) -> Decimal:\n    return _repo.get(order_id).total()\n"}, {"name": "orders-svc/src/orders/domain/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/src/orders/domain/order.py", "type": "text", "content": "from decimal import Decimal\n\nfrom typing import TYPE_CHECKING\n\nfrom orders.infrastructure.db import Session\n\nif TYPE_CHECKING:\n    from billing.service import Customer\n\n\nclass Order:\n    \"\"\"Order aggregate.\"\"\"\n\n    def __init__(self, order_id: str, customer_id: str):\n        self.order_id = order_id\n        self.customer_id = customer_id\n        self.customer: \"Customer | None\" = None\n        self.lines: list[tuple[str, Decimal]] = []\n        self.events: list[dict] = []\n\n    def add_line(self, sku: str, price: Decimal) -> None:\n        if price \u003c= 0:\n            raise ValueError(\"price must be positive\")\n        self.lines.append((sku, price))\n\n    def total(self) -> Decimal:\n        return sum((p for _, p in self.lines), Decimal(\"0\"))\n\n    def place(self) -> None:\n        self.events.append({\"type\": \"order.placed\", \"order_id\": self.order_id})\n\n    def persist(self) -> None:\n        Session().add(self)\n"}, {"name": "orders-svc/src/orders/infrastructure/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/src/orders/infrastructure/broker.py", "type": "text", "content": "BROKER_URL = \"http://broker.internal/publish\"\n\n\ndef publish(event: dict) -> None:\n    import requests\n\n    requests.post(BROKER_URL, json=event, timeout=5)\n"}, {"name": "orders-svc/src/orders/infrastructure/db.py", "type": "text", "content": "class Session:\n    _store: dict = {}\n    outbox: list = []\n\n    def add(self, obj) -> None:\n        self._store[obj.order_id] = obj\n\n    def get(self, key):\n        return self._store[key]\n\n    def commit(self) -> None:\n        pass\n"}, {"name": "orders-svc/src/orders/infrastructure/repo.py", "type": "text", "content": "from orders.infrastructure.db import Session\nfrom orders.infrastructure import broker\n\n\nclass OrderRepository:\n    def __init__(self):\n        self.session = Session()\n\n    def save(self, order) -> None:\n        self.session.add(order)\n        self.session.commit()\n        for event in order.events:\n            broker.publish(event)  # published after commit, not via outbox\n        order.events.clear()\n\n    def get(self, order_id: str):\n        return self.session.get(order_id)\n"}, {"name": "orders-svc/src/shared/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/src/shared/money.py", "type": "text", "content": "from decimal import Decimal, ROUND_HALF_UP\n\n\ndef format_money(amount: Decimal, currency: str) -> str:\n    q = amount.quantize(Decimal(\"0.01\"), rounding=ROUND_HALF_UP)\n    return f\"{q:,.2f} {currency.upper()}\"\n"}, {"name": "orders-svc/src/shared/text.py", "type": "text", "content": "import re\nimport unicodedata\n\n\ndef slugify(value: str, max_len: int = 80) -> str:\n    \"\"\"Lowercase ASCII slug for URLs: 'Cafe Order #12' -> 'cafe-order-12'.\"\"\"\n    norm = unicodedata.normalize(\"NFKD\", value).encode(\"ascii\", \"ignore\").decode()\n    slug = re.sub(r\"[^a-z0-9]+\", \"-\", norm.lower()).strip(\"-\")\n    return slug[:max_len].rstrip(\"-\")\n\n\ndef normalize_whitespace(value: str) -> str:\n    return \" \".join(value.split())\n"}, {"name": "orders-svc/tests/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/tests/test_orders.py", "type": "text", "content": "import sys\nimport unittest\nfrom decimal import Decimal\nfrom pathlib import Path\n\nsys.path.insert(0, str(Path(__file__).resolve().parent.parent / \"src\"))\n\nfrom shared.text import slugify  # noqa: E402\nfrom shared.money import format_money  # noqa: E402\nfrom billing.service import invoice_text, tax_rate  # noqa: E402\nfrom orders.domain.order import Order  # noqa: E402\n\n\nclass OrderTests(unittest.TestCase):\n    def test_total(self):\n        o = Order(\"1\", \"c1\")\n        o.add_line(\"a\", Decimal(\"2.50\"))\n        o.add_line(\"b\", Decimal(\"1.25\"))\n        self.assertEqual(o.total(), Decimal(\"3.75\"))\n\n    def test_invoice_text(self):\n        o = Order(\"7\", \"c1\")\n        o.add_line(\"a\", Decimal(\"1000\"))\n        self.assertEqual(invoice_text(o), \"Invoice 7: 1,000.00 EUR\")\n\n    def test_slugify(self):\n        self.assertEqual(slugify(\"Cafe Order #12\"), \"cafe-order-12\")\n\n    def test_format_money(self):\n        self.assertEqual(format_money(Decimal(\"3\"), \"usd\"), \"3.00 USD\")\n\n    def test_tax_rate_dynamic(self):\n        self.assertEqual(tax_rate(\"old\"), Decimal(\"0.19\"))\n\n\nif __name__ == \"__main__\":\n    unittest.main()\n"}, {"name": "reply.md", "type": "text", "content": "**Layered:** code is stacked (API -> service -> data access), and each layer calls the one below it. The business logic ends up depending on the persistence layer, usually through the ORM or DB models. It's simple and familiar, but over time the DB and framework details leak upward.\n\n**Hexagonal (ports and adapters):** the domain sits in the middle and defines ports (interfaces such as `OrderRepository` and `EventPublisher`). Adapters (HTTP, Postgres, the message broker) implement those ports and depend on the domain. Dependencies point inward, so you can test the domain without infrastructure and swap adapters easily. The cost is more interfaces and mapping code.\n\n**When to pick which for orders-svc:**\n- **Layered:** if it's mostly CRUD with little business logic, a small team, and stable infrastructure.\n- **Hexagonal:** if orders has real rules (state transitions, pricing, invariants), talks to several external systems (broker, billing, DB), or needs fast tests that don't need infrastructure.\n\nYour repo already has `orders/domain` and `orders/infrastructure`, so it's heading toward hexagonal. To get the full benefit, add explicit ports in the domain and have `infrastructure` implement them. Don't let `domain` import from `infrastructure`.\n\nSKILLS USED: none\nCOMMANDS RUN:\ncd \u003cproject root>/.. && find . -type f -not -path './.git/*' | head -50\ncat > reply.md (this file)\n"}], "ac-no-rules-with_skill": [{"name": "orders-svc/migrations/0001_init.sql", "type": "text", "content": "CREATE TABLE orders (id TEXT PRIMARY KEY, customer_id TEXT NOT NULL);\nCREATE TABLE invoices (\n  id TEXT PRIMARY KEY,\n  order_id TEXT NOT NULL REFERENCES orders(id),\n  amount NUMERIC(12,2) NOT NULL\n);\n"}, {"name": "orders-svc/pyproject.toml", "type": "text", "content": "[project]\nname = \"orders-svc\"\nversion = \"0.3.0\"\nrequires-python = \">=3.11\"\ndependencies = [\"requests>=2.31\"]\n\n[tool.orders]\n# handlers are loaded by name at startup\nevent_handlers = [\"billing.handlers:on_invoice_created\"]\n"}, {"name": "orders-svc/README.md", "type": "text", "content": "# orders-svc\n\nRun tests: `python -m unittest discover -s tests -t .`\n"}, {"name": "orders-svc/src/billing/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/src/billing/handlers.py", "type": "text", "content": "from billing.service import invoice_text\n\n\ndef on_invoice_created(event: dict) -> str:\n    return f\"handled {event['invoice_id']}\"\n\n\ndef _unused_helper(x):\n    return x * 2\n"}, {"name": "orders-svc/src/billing/http.py", "type": "text", "content": "ROUTES = {\n    \"GET /api/v1/Invoices/{id}\": \"get_invoice\",\n    \"POST /api/v1/invoices\": \"create_invoice\",\n}\n\nERRORS = {\n    \"not_found\": {\"code\": \"ERR_404\", \"http\": 404},\n    \"invalid\": {\"code\": \"BILLING.INVALID_INVOICE\", \"http\": 422},\n}\n"}, {"name": "orders-svc/src/billing/service.py", "type": "text", "content": "from decimal import Decimal, ROUND_HALF_UP\n\nfrom orders.domain.order import Order\n\n\nclass Customer:\n    def __init__(self, customer_id: str, name: str):\n        self.customer_id = customer_id\n        self.name = name\n\n\ndef _fmt_money(amount: Decimal, currency: str) -> str:\n    q = amount.quantize(Decimal(\"0.01\"), rounding=ROUND_HALF_UP)\n    return f\"{q:,.2f} {currency.upper()}\"\n\n\ndef invoice_text(order: Order, currency: str = \"eur\") -> str:\n    return f\"Invoice {order.order_id}: {_fmt_money(order.total(), currency)}\"\n\n\ndef legacy_invoice_number(order_id: str) -> str:\n    return \"INV-\" + order_id.zfill(8)\n\n\ndef old_tax_rate() -> Decimal:\n    return Decimal(\"0.19\")\n\n\ndef tax_rate(region: str) -> Decimal:\n    fn = globals().get(f\"{region}_tax_rate\")\n    return fn() if fn else Decimal(\"0.20\")\n"}, {"name": "orders-svc/src/orders/__init__.py", "type": "text", "content": "\"\"\"Public contract of the orders module. Other modules import only from here.\"\"\"\nfrom orders.api import place_order, get_order_total\n\n__all__ = [\"place_order\", \"get_order_total\"]\n"}, {"name": "orders-svc/src/orders/api.py", "type": "text", "content": "from decimal import Decimal\n\nfrom orders.domain.order import Order\nfrom orders.infrastructure.repo import OrderRepository\n\n_repo = OrderRepository()\n\n\ndef place_order(order_id: str, customer_id: str, lines: list[tuple[str, Decimal]]) -> Order:\n    order = Order(order_id, customer_id)\n    for sku, price in lines:\n        order.add_line(sku, price)\n    _repo.save(order)\n    return order\n\n\ndef get_order_total(order_id: str) -> Decimal:\n    return _repo.get(order_id).total()\n"}, {"name": "orders-svc/src/orders/domain/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/src/orders/domain/order.py", "type": "text", "content": "from decimal import Decimal\n\nfrom typing import TYPE_CHECKING\n\nfrom orders.infrastructure.db import Session\n\nif TYPE_CHECKING:\n    from billing.service import Customer\n\n\nclass Order:\n    \"\"\"Order aggregate.\"\"\"\n\n    def __init__(self, order_id: str, customer_id: str):\n        self.order_id = order_id\n        self.customer_id = customer_id\n        self.customer: \"Customer | None\" = None\n        self.lines: list[tuple[str, Decimal]] = []\n        self.events: list[dict] = []\n\n    def add_line(self, sku: str, price: Decimal) -> None:\n        if price \u003c= 0:\n            raise ValueError(\"price must be positive\")\n        self.lines.append((sku, price))\n\n    def total(self) -> Decimal:\n        return sum((p for _, p in self.lines), Decimal(\"0\"))\n\n    def place(self) -> None:\n        self.events.append({\"type\": \"order.placed\", \"order_id\": self.order_id})\n\n    def persist(self) -> None:\n        Session().add(self)\n"}, {"name": "orders-svc/src/orders/infrastructure/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/src/orders/infrastructure/broker.py", "type": "text", "content": "BROKER_URL = \"http://broker.internal/publish\"\n\n\ndef publish(event: dict) -> None:\n    import requests\n\n    requests.post(BROKER_URL, json=event, timeout=5)\n"}, {"name": "orders-svc/src/orders/infrastructure/db.py", "type": "text", "content": "class Session:\n    _store: dict = {}\n    outbox: list = []\n\n    def add(self, obj) -> None:\n        self._store[obj.order_id] = obj\n\n    def get(self, key):\n        return self._store[key]\n\n    def commit(self) -> None:\n        pass\n"}, {"name": "orders-svc/src/orders/infrastructure/repo.py", "type": "text", "content": "from orders.infrastructure.db import Session\nfrom orders.infrastructure import broker\n\n\nclass OrderRepository:\n    def __init__(self):\n        self.session = Session()\n\n    def save(self, order) -> None:\n        self.session.add(order)\n        self.session.commit()\n        for event in order.events:\n            broker.publish(event)  # published after commit, not via outbox\n        order.events.clear()\n\n    def get(self, order_id: str):\n        return self.session.get(order_id)\n"}, {"name": "orders-svc/src/shared/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/src/shared/money.py", "type": "text", "content": "from decimal import Decimal, ROUND_HALF_UP\n\n\ndef format_money(amount: Decimal, currency: str) -> str:\n    q = amount.quantize(Decimal(\"0.01\"), rounding=ROUND_HALF_UP)\n    return f\"{q:,.2f} {currency.upper()}\"\n"}, {"name": "orders-svc/src/shared/text.py", "type": "text", "content": "import re\nimport unicodedata\n\n\ndef slugify(value: str, max_len: int = 80) -> str:\n    \"\"\"Lowercase ASCII slug for URLs: 'Cafe Order #12' -> 'cafe-order-12'.\"\"\"\n    norm = unicodedata.normalize(\"NFKD\", value).encode(\"ascii\", \"ignore\").decode()\n    slug = re.sub(r\"[^a-z0-9]+\", \"-\", norm.lower()).strip(\"-\")\n    return slug[:max_len].rstrip(\"-\")\n\n\ndef normalize_whitespace(value: str) -> str:\n    return \" \".join(value.split())\n"}, {"name": "orders-svc/tests/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/tests/test_orders.py", "type": "text", "content": "import sys\nimport unittest\nfrom decimal import Decimal\nfrom pathlib import Path\n\nsys.path.insert(0, str(Path(__file__).resolve().parent.parent / \"src\"))\n\nfrom shared.text import slugify  # noqa: E402\nfrom shared.money import format_money  # noqa: E402\nfrom billing.service import invoice_text, tax_rate  # noqa: E402\nfrom orders.domain.order import Order  # noqa: E402\n\n\nclass OrderTests(unittest.TestCase):\n    def test_total(self):\n        o = Order(\"1\", \"c1\")\n        o.add_line(\"a\", Decimal(\"2.50\"))\n        o.add_line(\"b\", Decimal(\"1.25\"))\n        self.assertEqual(o.total(), Decimal(\"3.75\"))\n\n    def test_invoice_text(self):\n        o = Order(\"7\", \"c1\")\n        o.add_line(\"a\", Decimal(\"1000\"))\n        self.assertEqual(invoice_text(o), \"Invoice 7: 1,000.00 EUR\")\n\n    def test_slugify(self):\n        self.assertEqual(slugify(\"Cafe Order #12\"), \"cafe-order-12\")\n\n    def test_format_money(self):\n        self.assertEqual(format_money(Decimal(\"3\"), \"usd\"), \"3.00 USD\")\n\n    def test_tax_rate_dynamic(self):\n        self.assertEqual(tax_rate(\"old\"), Decimal(\"0.19\"))\n\n\nif __name__ == \"__main__\":\n    unittest.main()\n"}, {"name": "reply.md", "type": "text", "content": "I can't run the conformance check yet, because orders-svc has no written architecture rules to check against.\n\nI looked for the rules in the order the check uses:\n- `docs/ddd/service-design-rules.md`: not found. The `docs/` folder exists but is empty.\n- `ARCHITECTURE.md`: not found.\n- `CLAUDE.md`: not found.\n- `README.md`: exists, but it has no architecture or DDD rules.\n\nThe check only enforces rules your repo actually states. I won't substitute \"typical\" DDD rules, so I haven't judged `src/billing` or written a report.\n\nWhich file holds your DDD rules? Give me its path, or add one of the files above. I can also run the check against a rules file you name, for example `path src/billing docs/my-rules.md`. Once I have the rules, I'll check `src/billing` against them.\n\nSKILLS USED: architecture-conformance\nCOMMANDS RUN:\ncd D:/I-fikra/backend-claude-skills/backend-skills-pack/_work/evals/architecture-conformance-workspace/iteration-1/ac-no-rules/with_skill/outputs/orders-svc && find . -type f -not -path './.git/*' | head -100\ncd D:/I-fikra/backend-claude-skills/backend-skills-pack/_work/evals/architecture-conformance-workspace/iteration-1/ac-no-rules/with_skill/outputs/orders-svc && ls docs/ddd/service-design-rules.md ARCHITECTURE.md CLAUDE.md 2>&1; ls -a\ncd D:/I-fikra/backend-claude-skills/backend-skills-pack/_work/evals/architecture-conformance-workspace/iteration-1/ac-no-rules/with_skill/outputs/orders-svc && find docs; grep -n -i -E \"architect|rule|ddd\" README.md\n"}], "ac-no-rules-without_skill": [{"name": "orders-svc/migrations/0001_init.sql", "type": "text", "content": "CREATE TABLE orders (id TEXT PRIMARY KEY, customer_id TEXT NOT NULL);\nCREATE TABLE invoices (\n  id TEXT PRIMARY KEY,\n  order_id TEXT NOT NULL REFERENCES orders(id),\n  amount NUMERIC(12,2) NOT NULL\n);\n"}, {"name": "orders-svc/pyproject.toml", "type": "text", "content": "[project]\nname = \"orders-svc\"\nversion = \"0.3.0\"\nrequires-python = \">=3.11\"\ndependencies = [\"requests>=2.31\"]\n\n[tool.orders]\n# handlers are loaded by name at startup\nevent_handlers = [\"billing.handlers:on_invoice_created\"]\n"}, {"name": "orders-svc/README.md", "type": "text", "content": "# orders-svc\n\nRun tests: `python -m unittest discover -s tests -t .`\n"}, {"name": "orders-svc/src/billing/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/src/billing/handlers.py", "type": "text", "content": "from billing.service import invoice_text\n\n\ndef on_invoice_created(event: dict) -> str:\n    return f\"handled {event['invoice_id']}\"\n\n\ndef _unused_helper(x):\n    return x * 2\n"}, {"name": "orders-svc/src/billing/http.py", "type": "text", "content": "ROUTES = {\n    \"GET /api/v1/Invoices/{id}\": \"get_invoice\",\n    \"POST /api/v1/invoices\": \"create_invoice\",\n}\n\nERRORS = {\n    \"not_found\": {\"code\": \"ERR_404\", \"http\": 404},\n    \"invalid\": {\"code\": \"BILLING.INVALID_INVOICE\", \"http\": 422},\n}\n"}, {"name": "orders-svc/src/billing/service.py", "type": "text", "content": "from decimal import Decimal, ROUND_HALF_UP\n\nfrom orders.domain.order import Order\n\n\nclass Customer:\n    def __init__(self, customer_id: str, name: str):\n        self.customer_id = customer_id\n        self.name = name\n\n\ndef _fmt_money(amount: Decimal, currency: str) -> str:\n    q = amount.quantize(Decimal(\"0.01\"), rounding=ROUND_HALF_UP)\n    return f\"{q:,.2f} {currency.upper()}\"\n\n\ndef invoice_text(order: Order, currency: str = \"eur\") -> str:\n    return f\"Invoice {order.order_id}: {_fmt_money(order.total(), currency)}\"\n\n\ndef legacy_invoice_number(order_id: str) -> str:\n    return \"INV-\" + order_id.zfill(8)\n\n\ndef old_tax_rate() -> Decimal:\n    return Decimal(\"0.19\")\n\n\ndef tax_rate(region: str) -> Decimal:\n    fn = globals().get(f\"{region}_tax_rate\")\n    return fn() if fn else Decimal(\"0.20\")\n"}, {"name": "orders-svc/src/orders/__init__.py", "type": "text", "content": "\"\"\"Public contract of the orders module. Other modules import only from here.\"\"\"\nfrom orders.api import place_order, get_order_total\n\n__all__ = [\"place_order\", \"get_order_total\"]\n"}, {"name": "orders-svc/src/orders/api.py", "type": "text", "content": "from decimal import Decimal\n\nfrom orders.domain.order import Order\nfrom orders.infrastructure.repo import OrderRepository\n\n_repo = OrderRepository()\n\n\ndef place_order(order_id: str, customer_id: str, lines: list[tuple[str, Decimal]]) -> Order:\n    order = Order(order_id, customer_id)\n    for sku, price in lines:\n        order.add_line(sku, price)\n    _repo.save(order)\n    return order\n\n\ndef get_order_total(order_id: str) -> Decimal:\n    return _repo.get(order_id).total()\n"}, {"name": "orders-svc/src/orders/domain/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/src/orders/domain/order.py", "type": "text", "content": "from decimal import Decimal\n\nfrom typing import TYPE_CHECKING\n\nfrom orders.infrastructure.db import Session\n\nif TYPE_CHECKING:\n    from billing.service import Customer\n\n\nclass Order:\n    \"\"\"Order aggregate.\"\"\"\n\n    def __init__(self, order_id: str, customer_id: str):\n        self.order_id = order_id\n        self.customer_id = customer_id\n        self.customer: \"Customer | None\" = None\n        self.lines: list[tuple[str, Decimal]] = []\n        self.events: list[dict] = []\n\n    def add_line(self, sku: str, price: Decimal) -> None:\n        if price \u003c= 0:\n            raise ValueError(\"price must be positive\")\n        self.lines.append((sku, price))\n\n    def total(self) -> Decimal:\n        return sum((p for _, p in self.lines), Decimal(\"0\"))\n\n    def place(self) -> None:\n        self.events.append({\"type\": \"order.placed\", \"order_id\": self.order_id})\n\n    def persist(self) -> None:\n        Session().add(self)\n"}, {"name": "orders-svc/src/orders/infrastructure/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/src/orders/infrastructure/broker.py", "type": "text", "content": "BROKER_URL = \"http://broker.internal/publish\"\n\n\ndef publish(event: dict) -> None:\n    import requests\n\n    requests.post(BROKER_URL, json=event, timeout=5)\n"}, {"name": "orders-svc/src/orders/infrastructure/db.py", "type": "text", "content": "class Session:\n    _store: dict = {}\n    outbox: list = []\n\n    def add(self, obj) -> None:\n        self._store[obj.order_id] = obj\n\n    def get(self, key):\n        return self._store[key]\n\n    def commit(self) -> None:\n        pass\n"}, {"name": "orders-svc/src/orders/infrastructure/repo.py", "type": "text", "content": "from orders.infrastructure.db import Session\nfrom orders.infrastructure import broker\n\n\nclass OrderRepository:\n    def __init__(self):\n        self.session = Session()\n\n    def save(self, order) -> None:\n        self.session.add(order)\n        self.session.commit()\n        for event in order.events:\n            broker.publish(event)  # published after commit, not via outbox\n        order.events.clear()\n\n    def get(self, order_id: str):\n        return self.session.get(order_id)\n"}, {"name": "orders-svc/src/shared/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/src/shared/money.py", "type": "text", "content": "from decimal import Decimal, ROUND_HALF_UP\n\n\ndef format_money(amount: Decimal, currency: str) -> str:\n    q = amount.quantize(Decimal(\"0.01\"), rounding=ROUND_HALF_UP)\n    return f\"{q:,.2f} {currency.upper()}\"\n"}, {"name": "orders-svc/src/shared/text.py", "type": "text", "content": "import re\nimport unicodedata\n\n\ndef slugify(value: str, max_len: int = 80) -> str:\n    \"\"\"Lowercase ASCII slug for URLs: 'Cafe Order #12' -> 'cafe-order-12'.\"\"\"\n    norm = unicodedata.normalize(\"NFKD\", value).encode(\"ascii\", \"ignore\").decode()\n    slug = re.sub(r\"[^a-z0-9]+\", \"-\", norm.lower()).strip(\"-\")\n    return slug[:max_len].rstrip(\"-\")\n\n\ndef normalize_whitespace(value: str) -> str:\n    return \" \".join(value.split())\n"}, {"name": "orders-svc/tests/__init__.py", "type": "text", "content": ""}, {"name": "orders-svc/tests/test_orders.py", "type": "text", "content": "import sys\nimport unittest\nfrom decimal import Decimal\nfrom pathlib import Path\n\nsys.path.insert(0, str(Path(__file__).resolve().parent.parent / \"src\"))\n\nfrom shared.text import slugify  # noqa: E402\nfrom shared.money import format_money  # noqa: E402\nfrom billing.service import invoice_text, tax_rate  # noqa: E402\nfrom orders.domain.order import Order  # noqa: E402\n\n\nclass OrderTests(unittest.TestCase):\n    def test_total(self):\n        o = Order(\"1\", \"c1\")\n        o.add_line(\"a\", Decimal(\"2.50\"))\n        o.add_line(\"b\", Decimal(\"1.25\"))\n        self.assertEqual(o.total(), Decimal(\"3.75\"))\n\n    def test_invoice_text(self):\n        o = Order(\"7\", \"c1\")\n        o.add_line(\"a\", Decimal(\"1000\"))\n        self.assertEqual(invoice_text(o), \"Invoice 7: 1,000.00 EUR\")\n\n    def test_slugify(self):\n        self.assertEqual(slugify(\"Cafe Order #12\"), \"cafe-order-12\")\n\n    def test_format_money(self):\n        self.assertEqual(format_money(Decimal(\"3\"), \"usd\"), \"3.00 USD\")\n\n    def test_tax_rate_dynamic(self):\n        self.assertEqual(tax_rate(\"old\"), Decimal(\"0.19\"))\n\n\nif __name__ == \"__main__\":\n    unittest.main()\n"}, {"name": "reply.md", "type": "text", "content": "I can't run a conformance check against \"our DDD architecture\", because the repo doesn't define one. There is no rules file, no ADR, and no architecture doc. `docs/` is empty, and the README and pyproject say nothing about layering or boundaries. There is also no conformance tool in the repo. Without a written standard, I'd be inventing the pass/fail criteria. If you point me at the rules, or tell me the layers and dependency directions you want, I can run a real check.\n\nHere is what I saw reading `src/billing` and its neighbours, measured against generic DDD conventions rather than your rules:\n\n- **Billing has no layers.** It is flat: `service.py`, `handlers.py` and `http.py`, with no domain, application or infrastructure split. `service.py` holds the `Customer` class, formatting, tax logic and invoice text together. There is no Invoice aggregate or repository, although the routes and handlers refer to invoices.\n- **Billing depends on the orders domain.** `billing/service.py` imports `orders.domain.order.Order`. This is a cross-context dependency. It may be acceptable if billing is meant to be downstream, but nothing in the repo says so.\n- **The orders domain depends back on billing.** `orders/domain/order.py` imports `billing.service.Customer` under `TYPE_CHECKING`. That makes the two contexts depend on each other, even though the import only exists for type checking.\n- **The orders domain also imports infrastructure.** `Order` imports `orders.infrastructure.db.Session` and has a `persist()` method. This is a domain-to-infrastructure violation under any common DDD layering.\n- **Billing duplicates shared code.** `_fmt_money` repeats `shared/money.py:format_money`.\n- **Dead code in billing:**\n  - `_unused_helper` in `handlers.py`.\n  - `legacy_invoice_number` and `old_tax_rate` in `service.py`.\n  - `handlers.py` imports `invoice_text` without using it.\n- **`tax_rate` looks up functions by name.** It builds `f\"{region}_tax_rate\"` and finds it with `globals()`. That is fragile, and it makes `old_tax_rate` look like it is reached dynamically.\n- **The HTTP and error conventions are inconsistent.**\n  - The routes mix `/Invoices/{id}` (capitalised) and `/invoices`.\n  - The error codes use two styles, `ERR_404` and `BILLING.INVALID_INVOICE`.\n  - Whether either is a violation depends on your API standard.\n- **Handler registration is by name.** `on_invoice_created` is registered by string in `pyproject.toml`, so a tool that only follows imports would miss it.\n- **A related problem in orders.** `OrderRepository.save` publishes events after commit, with no outbox. That's a reliability issue rather than a layering one.\n\nBilling doesn't clearly follow DDD. It isn't structured as a bounded context, and its dependencies with orders run in both directions. I can't give a definitive pass or fail until the rules are written down.\n\nSKILLS USED: none\nCOMMANDS RUN:\ncd \"D:/I-fikra/backend-claude-skills/backend-skills-pack/_work/evals/architecture-conformance-workspace/iteration-1/ac-no-rules/without_skill/outputs/orders-svc\" && find . -type f -not -path './.git/*' | head -100\ncd \"$ROOT\" && cat README.md pyproject.toml; for f in src/billing/*.py src/orders/api.py src/orders/domain/order.py src/orders/infrastructure/repo.py; do echo \"=== $f\"; cat $f; done; ls -a; ls docs 2>/dev/null\ncd \"$ROOT\" && ls -la docs; grep -rn \"billing\" src tests migrations --include=* | grep -v \"^src/billing\"; cat src/shared/*.py | head -30\n(cat > reply.md heredocs to write this file)\n"}]}, "benchmark": {"metadata": {"skill_name": "architecture-conformance", "skill_path": "\u003cpath/to/skill>", "executor_model": "\u003cmodel-name>", "analyzer_model": "\u003cmodel-name>", "timestamp": "2026-11-15T17:42:30Z", "evals_run": ["ac-full-repo", "ac-negative-explain", "ac-no-rules"], "runs_per_configuration": 1}, "runs": [{"eval_id": "ac-full-repo", "eval_name": "ac-full-repo", "configuration": "with_skill", "run_number": 1, "result": {"pass_rate": 1.0, "passed": 10, "failed": 0, "total": 10, "time_seconds": 84, "tokens": 80174, "tool_calls": 0, "errors": 0}, "expectations": [{"text": "docs/reviews/architecture-2026-11-15.md exists", "passed": true, "evidence": "programmatic check"}, {"text": "Every rule R1-R7 appears in the report", "passed": true, "evidence": "programmatic check"}, {"text": "R1 violation cites src/billing/service.py importing orders.domain", "passed": true, "evidence": "programmatic check"}, {"text": "R3 violation cites src/orders/domain/order.py importing infrastructure", "passed": true, "evidence": "programmatic check"}, {"text": "R4 violation cites repo.py publishing to the broker", "passed": true, "evidence": "programmatic check"}, {"text": "R5 violation cites migrations/0001_init.sql REFERENCES orders", "passed": true, "evidence": "programmatic check"}, {"text": "R6 and R7 violations cite src/billing/http.py (Invoices path, ERR_404)", "passed": true, "evidence": "programmatic check"}, {"text": "R2 violation cites the Customer object held by Order", "passed": true, "evidence": "programmatic check"}, {"text": "The judgement rule R2 was checked by an opus subagent, not inline", "passed": true, "evidence": "programmatic check"}, {"text": "No source file was changed", "passed": true, "evidence": "programmatic check"}], "notes": []}, {"eval_id": "ac-negative-explain", "eval_name": "ac-negative-explain", "configuration": "with_skill", "run_number": 1, "result": {"pass_rate": 1.0, "passed": 2, "failed": 0, "total": 2, "time_seconds": 21, "tokens": 60583, "tool_calls": 0, "errors": 0}, "expectations": [{"text": "architecture-conformance was not used", "passed": true, "evidence": "programmatic check"}, {"text": "No architecture report was written", "passed": true, "evidence": "programmatic check"}], "notes": []}, {"eval_id": "ac-no-rules", "eval_name": "ac-no-rules", "configuration": "with_skill", "run_number": 1, "result": {"pass_rate": 1.0, "passed": 3, "failed": 0, "total": 3, "time_seconds": 27, "tokens": 63131, "tool_calls": 0, "errors": 0}, "expectations": [{"text": "It asks the user which file holds the rules", "passed": true, "evidence": "programmatic check"}, {"text": "No architecture report was written", "passed": true, "evidence": "programmatic check"}, {"text": "It reports no rule violations", "passed": true, "evidence": "programmatic check"}], "notes": []}, {"eval_id": "ac-full-repo", "eval_name": "ac-full-repo", "configuration": "without_skill", "run_number": 1, "result": {"pass_rate": 0.1, "passed": 1, "failed": 9, "total": 10, "time_seconds": 96, "tokens": 65561, "tool_calls": 0, "errors": 0}, "expectations": [{"text": "docs/reviews/architecture-2026-11-15.md exists", "passed": false, "evidence": "programmatic check"}, {"text": "Every rule R1-R7 appears in the report", "passed": false, "evidence": "programmatic check"}, {"text": "R1 violation cites src/billing/service.py importing orders.domain", "passed": false, "evidence": "programmatic check"}, {"text": "R3 violation cites src/orders/domain/order.py importing infrastructure", "passed": false, "evidence": "programmatic check"}, {"text": "R4 violation cites repo.py publishing to the broker", "passed": false, "evidence": "programmatic check"}, {"text": "R5 violation cites migrations/0001_init.sql REFERENCES orders", "passed": false, "evidence": "programmatic check"}, {"text": "R6 and R7 violations cite src/billing/http.py (Invoices path, ERR_404)", "passed": false, "evidence": "programmatic check"}, {"text": "R2 violation cites the Customer object held by Order", "passed": false, "evidence": "programmatic check"}, {"text": "The judgement rule R2 was checked by an opus subagent, not inline", "passed": false, "evidence": "programmatic check"}, {"text": "No source file was changed", "passed": true, "evidence": "programmatic check"}], "notes": []}, {"eval_id": "ac-negative-explain", "eval_name": "ac-negative-explain", "configuration": "without_skill", "run_number": 1, "result": {"pass_rate": 1.0, "passed": 2, "failed": 0, "total": 2, "time_seconds": 34, "tokens": 60007, "tool_calls": 0, "errors": 0}, "expectations": [{"text": "architecture-conformance was not used", "passed": true, "evidence": "programmatic check"}, {"text": "No architecture report was written", "passed": true, "evidence": "programmatic check"}], "notes": []}, {"eval_id": "ac-no-rules", "eval_name": "ac-no-rules", "configuration": "without_skill", "run_number": 1, "result": {"pass_rate": 1.0, "passed": 3, "failed": 0, "total": 3, "time_seconds": 51, "tokens": 63336, "tool_calls": 0, "errors": 0}, "expectations": [{"text": "It asks the user which file holds the rules", "passed": true, "evidence": "programmatic check"}, {"text": "No architecture report was written", "passed": true, "evidence": "programmatic check"}, {"text": "It reports no rule violations", "passed": true, "evidence": "programmatic check"}], "notes": []}], "run_summary": {"with_skill": {"pass_rate": {"mean": 1.0, "stddev": 0.0, "min": 1.0, "max": 1.0}, "time_seconds": {"mean": 44.0, "stddev": 34.7707, "min": 21, "max": 84}, "tokens": {"mean": 67962.6667, "stddev": 10651.7873, "min": 60583, "max": 80174}}, "without_skill": {"pass_rate": {"mean": 0.7, "stddev": 0.5196, "min": 0.1, "max": 1.0}, "time_seconds": {"mean": 60.3333, "stddev": 32.0364, "min": 34, "max": 96}, "tokens": {"mean": 62968.0, "stddev": 2795.2275, "min": 60007, "max": 65561}}, "delta": {"pass_rate": "+0.30", "time_seconds": "-16.3", "tokens": "+4995"}}, "notes": []}};
+
+    // ---- State ----
+    let feedbackMap = {};  // run_id -> feedback text
+    let currentIndex = 0;
+    let visitedRuns = new Set();
+
+    // ---- Init ----
+    async function init() {
+      // Load saved feedback from server — but only if this isn't a fresh
+      // iteration (indicated by previous_feedback being present). When
+      // previous feedback exists, the feedback.json on disk is stale from
+      // the prior iteration and should not pre-fill the textareas.
+      const hasPrevious = Object.keys(EMBEDDED_DATA.previous_feedback || {}).length > 0
+        || Object.keys(EMBEDDED_DATA.previous_outputs || {}).length > 0;
+      if (!hasPrevious) {
+        try {
+          const resp = await fetch("/api/feedback");
+          const data = await resp.json();
+          if (data.reviews) {
+            for (const r of data.reviews) feedbackMap[r.run_id] = r.feedback;
+          }
+        } catch { /* first run, no feedback yet */ }
+      }
+
+      document.getElementById("skill-name").textContent = EMBEDDED_DATA.skill_name;
+      showRun(0);
+
+      // Wire up feedback auto-save
+      const textarea = document.getElementById("feedback");
+      let saveTimeout = null;
+      textarea.addEventListener("input", () => {
+        clearTimeout(saveTimeout);
+        document.getElementById("feedback-status").textContent = "";
+        saveTimeout = setTimeout(() => saveCurrentFeedback(), 800);
+      });
+    }
+
+    // ---- Navigation ----
+    function navigate(delta) {
+      const newIndex = currentIndex + delta;
+      if (newIndex >= 0 && newIndex < EMBEDDED_DATA.runs.length) {
+        saveCurrentFeedback();
+        showRun(newIndex);
+      }
+    }
+
+    function updateNavButtons() {
+      document.getElementById("prev-btn").disabled = currentIndex === 0;
+      document.getElementById("next-btn").disabled =
+        currentIndex === EMBEDDED_DATA.runs.length - 1;
+    }
+
+    // ---- Show a run ----
+    function showRun(index) {
+      currentIndex = index;
+      const run = EMBEDDED_DATA.runs[index];
+
+      // Progress
+      document.getElementById("progress").textContent =
+        `${index + 1} of ${EMBEDDED_DATA.runs.length}`;
+
+      // Prompt
+      document.getElementById("prompt-text").textContent = run.prompt;
+
+      // Config badge
+      const badge = document.getElementById("config-badge");
+      const configMatch = run.id.match(/(with_skill|without_skill|new_skill|old_skill)/);
+      if (configMatch) {
+        const config = configMatch[1];
+        const isBaseline = config === "without_skill" || config === "old_skill";
+        badge.textContent = config.replace(/_/g, " ");
+        badge.className = "config-badge " + (isBaseline ? "config-baseline" : "config-primary");
+        badge.style.display = "inline-block";
+      } else {
+        badge.style.display = "none";
+      }
+
+      // Outputs
+      renderOutputs(run);
+
+      // Previous outputs
+      renderPrevOutputs(run);
+
+      // Grades
+      renderGrades(run);
+
+      // Previous feedback
+      const prevFb = (EMBEDDED_DATA.previous_feedback || {})[run.id];
+      const prevEl = document.getElementById("prev-feedback");
+      if (prevFb) {
+        document.getElementById("prev-feedback-text").textContent = prevFb;
+        prevEl.style.display = "block";
+      } else {
+        prevEl.style.display = "none";
+      }
+
+      // Feedback
+      document.getElementById("feedback").value = feedbackMap[run.id] || "";
+      document.getElementById("feedback-status").textContent = "";
+
+      updateNavButtons();
+
+      // Track visited runs and promote done button when all visited
+      visitedRuns.add(index);
+      const doneBtn = document.getElementById("done-btn");
+      if (visitedRuns.size >= EMBEDDED_DATA.runs.length) {
+        doneBtn.classList.add("ready");
+      }
+
+      // Scroll main content to top
+      document.querySelector(".main").scrollTop = 0;
+    }
+
+    // ---- Render outputs ----
+    function renderOutputs(run) {
+      const container = document.getElementById("outputs-body");
+      container.innerHTML = "";
+
+      const outputs = run.outputs || [];
+      if (outputs.length === 0) {
+        container.innerHTML = '<div class="empty-state">No output files</div>';
+        return;
+      }
+
+      for (const file of outputs) {
+        const fileDiv = document.createElement("div");
+        fileDiv.className = "output-file";
+
+        // Always show file header with download link
+        const header = document.createElement("div");
+        header.className = "output-file-header";
+        const nameSpan = document.createElement("span");
+        nameSpan.textContent = file.name;
+        header.appendChild(nameSpan);
+        const dlBtn = document.createElement("a");
+        dlBtn.className = "dl-btn";
+        dlBtn.textContent = "Download";
+        dlBtn.download = file.name;
+        dlBtn.href = getDownloadUri(file);
+        header.appendChild(dlBtn);
+        fileDiv.appendChild(header);
+
+        const content = document.createElement("div");
+        content.className = "output-file-content";
+
+        if (file.type === "text") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          content.appendChild(pre);
+        } else if (file.type === "image") {
+          const img = document.createElement("img");
+          img.src = file.data_uri;
+          img.alt = file.name;
+          content.appendChild(img);
+        } else if (file.type === "pdf") {
+          const iframe = document.createElement("iframe");
+          iframe.src = file.data_uri;
+          content.appendChild(iframe);
+        } else if (file.type === "xlsx") {
+          renderXlsx(content, file.data_b64);
+        } else if (file.type === "binary") {
+          const a = document.createElement("a");
+          a.className = "download-link";
+          a.href = file.data_uri;
+          a.download = file.name;
+          a.textContent = "Download " + file.name;
+          content.appendChild(a);
+        } else if (file.type === "error") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          pre.style.color = "var(--red)";
+          content.appendChild(pre);
+        }
+
+        fileDiv.appendChild(content);
+        container.appendChild(fileDiv);
+      }
+    }
+
+    // ---- XLSX rendering via SheetJS ----
+    function renderXlsx(container, b64Data) {
+      try {
+        const raw = Uint8Array.from(atob(b64Data), c => c.charCodeAt(0));
+        const wb = XLSX.read(raw, { type: "array" });
+
+        for (let i = 0; i < wb.SheetNames.length; i++) {
+          const sheetName = wb.SheetNames[i];
+          const ws = wb.Sheets[sheetName];
+
+          if (wb.SheetNames.length > 1) {
+            const sheetLabel = document.createElement("div");
+            sheetLabel.style.cssText =
+              "font-weight:600; font-size:0.8rem; color:#b0aea5; margin-top:0.5rem; margin-bottom:0.25rem;";
+            sheetLabel.textContent = "Sheet: " + sheetName;
+            container.appendChild(sheetLabel);
+          }
+
+          const htmlStr = XLSX.utils.sheet_to_html(ws, { editable: false });
+          const wrapper = document.createElement("div");
+          wrapper.innerHTML = htmlStr;
+          container.appendChild(wrapper);
+        }
+      } catch (err) {
+        container.textContent = "Error rendering spreadsheet: " + err.message;
+      }
+    }
+
+    // ---- Grades ----
+    function renderGrades(run) {
+      const section = document.getElementById("grades-section");
+      const content = document.getElementById("grades-content");
+
+      if (!run.grading) {
+        section.style.display = "none";
+        return;
+      }
+
+      const grading = run.grading;
+      section.style.display = "block";
+      // Reset to collapsed
+      content.classList.remove("open");
+      document.getElementById("grades-arrow").classList.remove("open");
+
+      const summary = grading.summary || {};
+      const expectations = grading.expectations || [];
+
+      let html = '<div style="padding: 1rem;">';
+
+      // Summary line
+      const passRate = summary.pass_rate != null
+        ? Math.round(summary.pass_rate * 100) + "%"
+        : "?";
+      const badgeClass = summary.pass_rate >= 0.8 ? "grade-pass" : summary.pass_rate >= 0.5 ? "" : "grade-fail";
+      html += '<div class="grades-summary">';
+      html += '<span class="grade-badge ' + badgeClass + '">' + passRate + '</span>';
+      html += '<span>' + escapeHtml(summary.passed || 0) + ' passed, ' + escapeHtml(summary.failed || 0) + ' failed of ' + escapeHtml(summary.total || 0) + '</span>';
+      html += '</div>';
+
+      // Assertions list
+      html += '<ul class="assertion-list">';
+      for (const exp of expectations) {
+        const statusClass = exp.passed ? "pass" : "fail";
+        const statusIcon = exp.passed ? "\u2713" : "\u2717";
+        html += '<li class="assertion-item">';
+        html += '<span class="assertion-status ' + statusClass + '">' + statusIcon + '</span>';
+        html += '<span>' + escapeHtml(exp.text) + '</span>';
+        if (exp.evidence) {
+          html += '<div class="assertion-evidence">' + escapeHtml(exp.evidence) + '</div>';
+        }
+        html += '</li>';
+      }
+      html += '</ul>';
+
+      html += '</div>';
+      content.innerHTML = html;
+    }
+
+    function toggleGrades() {
+      const content = document.getElementById("grades-content");
+      const arrow = document.getElementById("grades-arrow");
+      content.classList.toggle("open");
+      arrow.classList.toggle("open");
+    }
+
+    // ---- Previous outputs (collapsible) ----
+    function renderPrevOutputs(run) {
+      const section = document.getElementById("prev-outputs-section");
+      const content = document.getElementById("prev-outputs-content");
+      const prevOutputs = (EMBEDDED_DATA.previous_outputs || {})[run.id];
+
+      if (!prevOutputs || prevOutputs.length === 0) {
+        section.style.display = "none";
+        return;
+      }
+
+      section.style.display = "block";
+      // Reset to collapsed
+      content.classList.remove("open");
+      document.getElementById("prev-outputs-arrow").classList.remove("open");
+
+      // Render the files into the content area
+      content.innerHTML = "";
+      const wrapper = document.createElement("div");
+      wrapper.style.padding = "1rem";
+
+      for (const file of prevOutputs) {
+        const fileDiv = document.createElement("div");
+        fileDiv.className = "output-file";
+
+        const header = document.createElement("div");
+        header.className = "output-file-header";
+        const nameSpan = document.createElement("span");
+        nameSpan.textContent = file.name;
+        header.appendChild(nameSpan);
+        const dlBtn = document.createElement("a");
+        dlBtn.className = "dl-btn";
+        dlBtn.textContent = "Download";
+        dlBtn.download = file.name;
+        dlBtn.href = getDownloadUri(file);
+        header.appendChild(dlBtn);
+        fileDiv.appendChild(header);
+
+        const fc = document.createElement("div");
+        fc.className = "output-file-content";
+
+        if (file.type === "text") {
+          const pre = document.createElement("pre");
+          pre.textContent = file.content;
+          fc.appendChild(pre);
+        } else if (file.type === "image") {
+          const img = document.createElement("img");
+          img.src = file.data_uri;
+          img.alt = file.name;
+          fc.appendChild(img);
+        } else if (file.type === "pdf") {
+          const iframe = document.createElement("iframe");
+          iframe.src = file.data_uri;
+          fc.appendChild(iframe);
+        } else if (file.type === "xlsx") {
+          renderXlsx(fc, file.data_b64);
+        } else if (file.type === "binary") {
+          const a = document.createElement("a");
+          a.className = "download-link";
+          a.href = file.data_uri;
+          a.download = file.name;
+          a.textContent = "Download " + file.name;
+          fc.appendChild(a);
+        }
+
+        fileDiv.appendChild(fc);
+        wrapper.appendChild(fileDiv);
+      }
+
+      content.appendChild(wrapper);
+    }
+
+    function togglePrevOutputs() {
+      const content = document.getElementById("prev-outputs-content");
+      const arrow = document.getElementById("prev-outputs-arrow");
+      content.classList.toggle("open");
+      arrow.classList.toggle("open");
+    }
+
+    // ---- Feedback (saved to server -> feedback.json) ----
+    function saveCurrentFeedback() {
+      const run = EMBEDDED_DATA.runs[currentIndex];
+      const text = document.getElementById("feedback").value;
+
+      if (text.trim() === "") {
+        delete feedbackMap[run.id];
+      } else {
+        feedbackMap[run.id] = text;
+      }
+
+      // Build reviews array from map
+      const reviews = [];
+      for (const [run_id, feedback] of Object.entries(feedbackMap)) {
+        if (feedback.trim()) {
+          reviews.push({ run_id, feedback, timestamp: new Date().toISOString() });
+        }
+      }
+
+      fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reviews, status: "in_progress" }),
+      }).then(() => {
+        document.getElementById("feedback-status").textContent = "Saved";
+      }).catch(() => {
+        // Static mode or server unavailable — no-op on auto-save,
+        // feedback will be downloaded on final submit
+        document.getElementById("feedback-status").textContent = "Will download on submit";
+      });
+    }
+
+    // ---- Done ----
+    function showDoneDialog() {
+      // Save current textarea to feedbackMap (but don't POST yet)
+      const run = EMBEDDED_DATA.runs[currentIndex];
+      const text = document.getElementById("feedback").value;
+      if (text.trim() === "") {
+        delete feedbackMap[run.id];
+      } else {
+        feedbackMap[run.id] = text;
+      }
+
+      // POST once with status: complete — include ALL runs so the model
+      // can distinguish "no feedback" (looks good) from "not reviewed"
+      const reviews = [];
+      const ts = new Date().toISOString();
+      for (const r of EMBEDDED_DATA.runs) {
+        reviews.push({ run_id: r.id, feedback: feedbackMap[r.id] || "", timestamp: ts });
+      }
+      const payload = JSON.stringify({ reviews, status: "complete" }, null, 2);
+      fetch("/api/feedback", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: payload,
+      }).then(() => {
+        document.getElementById("done-overlay").classList.add("visible");
+      }).catch(() => {
+        // Server not available (static mode) — download as file
+        const blob = new Blob([payload], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "feedback.json";
+        a.click();
+        URL.revokeObjectURL(url);
+        document.getElementById("done-overlay").classList.add("visible");
+      });
+    }
+
+    function closeDoneDialog() {
+      // Reset status back to in_progress
+      saveCurrentFeedback();
+      document.getElementById("done-overlay").classList.remove("visible");
+    }
+
+    // ---- Toast ----
+    function showToast(message) {
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.classList.add("visible");
+      setTimeout(() => toast.classList.remove("visible"), 2000);
+    }
+
+    // ---- Keyboard nav ----
+    document.addEventListener("keydown", (e) => {
+      // Don't capture when typing in textarea
+      if (e.target.tagName === "TEXTAREA") return;
+
+      if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
+        e.preventDefault();
+        navigate(-1);
+      } else if (e.key === "ArrowRight" || e.key === "ArrowDown") {
+        e.preventDefault();
+        navigate(1);
+      }
+    });
+
+    // ---- Util ----
+    function getDownloadUri(file) {
+      if (file.data_uri) return file.data_uri;
+      if (file.data_b64) return "data:application/octet-stream;base64," + file.data_b64;
+      if (file.type === "text") return "data:text/plain;charset=utf-8," + encodeURIComponent(file.content);
+      return "#";
+    }
+
+    function escapeHtml(text) {
+      const div = document.createElement("div");
+      div.textContent = text;
+      return div.innerHTML.replace(/"/g, "&quot;");
+    }
+
+    // ---- View switching ----
+    function switchView(view) {
+      document.querySelectorAll(".view-tab").forEach(t => t.classList.remove("active"));
+      document.querySelectorAll(".view-panel").forEach(p => p.classList.remove("active"));
+      document.querySelector(`[onclick="switchView('${view}')"]`).classList.add("active");
+      document.getElementById("panel-" + view).classList.add("active");
+    }
+
+    // ---- Benchmark rendering ----
+    function renderBenchmark() {
+      const data = EMBEDDED_DATA.benchmark;
+      if (!data) return;
+
+      // Show the tabs
+      document.getElementById("view-tabs").style.display = "flex";
+
+      const container = document.getElementById("benchmark-content");
+      const summary = data.run_summary || {};
+      const metadata = data.metadata || {};
+      const notes = data.notes || [];
+
+      let html = "";
+
+      // Header
+      html += "<h2 style='font-family: Poppins, sans-serif; margin-bottom: 0.5rem;'>Benchmark Results</h2>";
+      html += "<p style='color: var(--text-muted); font-size: 0.875rem; margin-bottom: 1.25rem;'>";
+      if (metadata.skill_name) html += "<strong>" + escapeHtml(metadata.skill_name) + "</strong> &mdash; ";
+      if (metadata.timestamp) html += escapeHtml(metadata.timestamp) + " &mdash; ";
+      if (metadata.evals_run) html += "Evals: " + escapeHtml(metadata.evals_run.join(", ")) + " &mdash; ";
+      html += escapeHtml(metadata.runs_per_configuration || "?") + (metadata.runs_per_configuration === 1 ? " run" : " runs") + " per configuration";
+      html += "</p>";
+
+      // Summary table
+      html += '<table class="benchmark-table">';
+
+      function fmtStat(stat, pct) {
+        if (!stat) return "—";
+        const suffix = pct ? "%" : "";
+        const m = pct ? (stat.mean * 100).toFixed(0) : stat.mean.toFixed(1);
+        const s = pct ? (stat.stddev * 100).toFixed(0) : stat.stddev.toFixed(1);
+        return m + suffix + " ± " + s + suffix;
+      }
+
+      function deltaClass(val) {
+        if (!val) return "";
+        const n = parseFloat(val);
+        if (n > 0) return "benchmark-delta-positive";
+        if (n < 0) return "benchmark-delta-negative";
+        return "";
+      }
+
+      // Discover config names dynamically (everything except "delta")
+      const configs = Object.keys(summary).filter(k => k !== "delta");
+      const configA = configs[0] || "config_a";
+      const configB = configs[1] || "config_b";
+      const labelA = configA.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+      const labelB = configB.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+      const a = summary[configA] || {};
+      const b = summary[configB] || {};
+      const delta = summary.delta || {};
+      // With a single configuration there is nothing to compare: only its column is shown
+      const compare = cells => configs.length >= 2 ? cells : "";
+
+      html += "<thead><tr><th>Metric</th><th>" + escapeHtml(labelA) + "</th>" + compare("<th>" + escapeHtml(labelB) + "</th><th>Delta</th>") + "</tr></thead>";
+      html += "<tbody>";
+
+      html += "<tr><td><strong>Pass Rate</strong></td>";
+      html += "<td>" + fmtStat(a.pass_rate, true) + "</td>";
+      html += compare("<td>" + fmtStat(b.pass_rate, true) + "</td>");
+      html += compare('<td class="' + deltaClass(delta.pass_rate) + '">' + escapeHtml(delta.pass_rate || "—") + "</td>") + "</tr>";
+
+      // Time (only show row if data exists)
+      if (a.time_seconds || b.time_seconds) {
+        html += "<tr><td><strong>Time (s)</strong></td>";
+        html += "<td>" + fmtStat(a.time_seconds, false) + "</td>";
+        html += compare("<td>" + fmtStat(b.time_seconds, false) + "</td>");
+        html += compare('<td class="' + deltaClass(delta.time_seconds) + '">' + escapeHtml(delta.time_seconds ? delta.time_seconds + "s" : "—") + "</td>") + "</tr>";
+      }
+
+      // Tokens (only show row if data exists)
+      if (a.tokens || b.tokens) {
+        html += "<tr><td><strong>Tokens</strong></td>";
+        html += "<td>" + fmtStat(a.tokens, false) + "</td>";
+        html += compare("<td>" + fmtStat(b.tokens, false) + "</td>");
+        html += compare('<td class="' + deltaClass(delta.tokens) + '">' + escapeHtml(delta.tokens || "—") + "</td>") + "</tr>";
+      }
+
+      html += "</tbody></table>";
+
+      // Per-eval breakdown (if runs data available)
+      const runs = data.runs || [];
+      if (runs.length > 0) {
+        // Numeric ids first, then ids that are names
+        const rank = id => typeof id === "number" ? 0 : 1;
+        const evalIds = [...new Set(runs.map(r => r.eval_id))].sort((a, b) =>
+          rank(a) - rank(b) || (rank(a) ? String(a).localeCompare(String(b)) : a - b));
+
+        html += "<h3 style='font-family: Poppins, sans-serif; margin-bottom: 0.75rem;'>Per-Eval Breakdown</h3>";
+
+        const hasTime = runs.some(r => r.result && r.result.time_seconds != null);
+        const hasErrors = runs.some(r => r.result && r.result.errors > 0);
+
+        for (const evalId of evalIds) {
+          const evalRuns = runs.filter(r => r.eval_id === evalId);
+          const evalName = evalRuns[0] && evalRuns[0].eval_name ? evalRuns[0].eval_name : "Eval " + evalId;
+
+          html += "<h4 style='font-family: Poppins, sans-serif; margin: 1rem 0 0.5rem; color: var(--text);'>" + escapeHtml(evalName) + "</h4>";
+          html += '<table class="benchmark-table">';
+          html += "<thead><tr><th>Config</th><th>Run</th><th>Pass Rate</th>";
+          if (hasTime) html += "<th>Time (s)</th>";
+          if (hasErrors) html += "<th>Crashes During Execution</th>";
+          html += "</tr></thead>";
+          html += "<tbody>";
+
+          // Group by config and render with average rows
+          const configGroups = [...new Set(evalRuns.map(r => r.configuration))];
+          for (let ci = 0; ci < configGroups.length; ci++) {
+            const config = configGroups[ci];
+            const configRuns = evalRuns.filter(r => r.configuration === config);
+            if (configRuns.length === 0) continue;
+
+            const rowClass = ci === 0 ? "benchmark-row-with" : "benchmark-row-without";
+            const configLabel = escapeHtml(config.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase()));
+
+            for (const run of configRuns) {
+              const r = run.result || {};
+              const prClass = r.pass_rate >= 0.8 ? "benchmark-delta-positive" : r.pass_rate < 0.5 ? "benchmark-delta-negative" : "";
+              html += '<tr class="' + rowClass + '">';
+              html += "<td>" + configLabel + "</td>";
+              html += "<td>" + escapeHtml(run.run_number) + "</td>";
+              html += '<td class="' + prClass + '">' + ((r.pass_rate || 0) * 100).toFixed(0) + "% (" + escapeHtml(r.passed || 0) + "/" + escapeHtml(r.total || 0) + ")</td>";
+              if (hasTime) html += "<td>" + (r.time_seconds != null ? r.time_seconds.toFixed(1) : "—") + "</td>";
+              if (hasErrors) html += "<td>" + escapeHtml(r.errors || 0) + "</td>";
+              html += "</tr>";
+            }
+
+            // Average row
+            const rates = configRuns.map(r => (r.result || {}).pass_rate || 0);
+            const avgRate = rates.reduce((a, b) => a + b, 0) / rates.length;
+            const avgPrClass = avgRate >= 0.8 ? "benchmark-delta-positive" : avgRate < 0.5 ? "benchmark-delta-negative" : "";
+            html += '<tr class="benchmark-row-avg ' + rowClass + '">';
+            html += "<td>" + configLabel + "</td>";
+            html += "<td>Avg</td>";
+            html += '<td class="' + avgPrClass + '">' + (avgRate * 100).toFixed(0) + "%</td>";
+            if (hasTime) {
+              const times = configRuns.map(r => (r.result || {}).time_seconds).filter(t => t != null);
+              html += "<td>" + (times.length ? (times.reduce((a, b) => a + b, 0) / times.length).toFixed(1) : "—") + "</td>";
+            }
+            if (hasErrors) html += "<td></td>";
+            html += "</tr>";
+          }
+          html += "</tbody></table>";
+
+          // Per-assertion detail for this eval
+          const runsWithExpectations = {};
+          for (const config of configGroups) {
+            runsWithExpectations[config] = evalRuns.filter(r => r.configuration === config && r.expectations && r.expectations.length > 0);
+          }
+          const hasAnyExpectations = Object.values(runsWithExpectations).some(runs => runs.length > 0);
+          if (hasAnyExpectations) {
+            // Collect all unique assertion texts across all configs
+            const allAssertions = [];
+            const seen = new Set();
+            for (const config of configGroups) {
+              for (const run of runsWithExpectations[config]) {
+                for (const exp of (run.expectations || [])) {
+                  if (!seen.has(exp.text)) {
+                    seen.add(exp.text);
+                    allAssertions.push(exp.text);
+                  }
+                }
+              }
+            }
+
+            html += '<table class="benchmark-table" style="margin-top: 0.5rem;">';
+            html += "<thead><tr><th>Assertion</th>";
+            for (const config of configGroups) {
+              const label = config.replace(/_/g, " ").replace(/\b\w/g, c => c.toUpperCase());
+              html += "<th>" + escapeHtml(label) + "</th>";
+            }
+            html += "</tr></thead><tbody>";
+
+            for (const assertionText of allAssertions) {
+              html += "<tr><td>" + escapeHtml(assertionText) + "</td>";
+
+              for (const config of configGroups) {
+                html += "<td>";
+                for (const run of runsWithExpectations[config]) {
+                  const exp = (run.expectations || []).find(e => e.text === assertionText);
+                  if (exp) {
+                    const cls = exp.passed ? "benchmark-delta-positive" : "benchmark-delta-negative";
+                    const icon = exp.passed ? "\u2713" : "\u2717";
+                    html += '<span class="' + cls + '" title="Run ' + escapeHtml(run.run_number) + ': ' + escapeHtml(exp.evidence || "") + '">' + icon + "</span> ";
+                  } else {
+                    html += "— ";
+                  }
+                }
+                html += "</td>";
+              }
+              html += "</tr>";
+            }
+            html += "</tbody></table>";
+          }
+        }
+      }
+
+      // Notes
+      if (notes.length > 0) {
+        html += '<div class="benchmark-notes">';
+        html += "<h3>Analysis Notes</h3>";
+        html += "<ul>";
+        for (const note of notes) {
+          html += "<li>" + escapeHtml(note) + "</li>";
+        }
+        html += "</ul></div>";
+      }
+
+      container.innerHTML = html;
+    }
+
+    // ---- Start ----
+    init();
+    renderBenchmark();
+  </script>
+</body>
+</html>

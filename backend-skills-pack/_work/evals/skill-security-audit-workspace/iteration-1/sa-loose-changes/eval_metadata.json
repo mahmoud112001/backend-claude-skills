@@ -1,0 +1,11 @@
+{
+  "eval_name": "sa-loose-changes",
+  "prompt": "/skill-security-audit TARGET/loose-skill",
+  "assertions": [
+    "docs/reviews/skill-audit-loose-skill.md exists",
+    "The verdict is SAFE-WITH-CHANGES",
+    "A required change scopes Bash to the git commands it uses",
+    "A required change scopes Write/Edit to docs/release-notes.md",
+    "It records the licence (MIT)"
+  ]
+}

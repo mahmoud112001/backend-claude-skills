@@ -1,0 +1,40 @@
+{
+  "expectations": [
+    {
+      "text": "Job 1 (rename) is routed to sonnet",
+      "passed": true,
+      "evidence": "programmatic check"
+    },
+    {
+      "text": "Job 2 (outbox design) is routed to opus or fable",
+      "passed": true,
+      "evidence": "programmatic check"
+    },
+    {
+      "text": "Job 3 (TODO list) is routed to haiku or a plain grep/script",
+      "passed": true,
+      "evidence": "programmatic check"
+    },
+    {
+      "text": "It names the skill's `model:` frontmatter field",
+      "passed": true,
+      "evidence": "programmatic check"
+    },
+    {
+      "text": "It states the skill model applies only to that skill's turn/run, not the main session",
+      "passed": false,
+      "evidence": "programmatic check"
+    },
+    {
+      "text": "No model version numbers are written",
+      "passed": true,
+      "evidence": "programmatic check"
+    }
+  ],
+  "summary": {
+    "passed": 5,
+    "failed": 1,
+    "total": 6,
+    "pass_rate": 0.83
+  }
+}

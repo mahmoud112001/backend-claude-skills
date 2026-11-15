@@ -1,0 +1,16 @@
+{
+  "eval_name": "dc-report",
+  "prompt": "/dead-code-cleaner report",
+  "assertions": [
+    "docs/reviews/cleanup-2026-11-15.md exists",
+    "legacy_invoice_number is SAFE-TO-DELETE",
+    "_unused_helper is SAFE-TO-DELETE",
+    "on_invoice_created is not SAFE-TO-DELETE (named in pyproject.toml)",
+    "old_tax_rate is not SAFE-TO-DELETE (dynamic lookup)",
+    "The _fmt_money duplicate of shared/money.py format_money is reported",
+    "No source file was changed (report mode)",
+    "No tool was installed",
+    "normalize_whitespace (public, in shared/) is not SAFE-TO-DELETE",
+    "The chat reply is at most 15 lines"
+  ]
+}

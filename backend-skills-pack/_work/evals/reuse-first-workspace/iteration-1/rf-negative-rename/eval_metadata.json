@@ -1,0 +1,9 @@
+{
+  "eval_name": "rf-negative-rename",
+  "prompt": "In orders-svc, rename the parameter `amount` to `value` in format_money (src/shared/money.py). Keep behaviour the same.",
+  "assertions": [
+    "reuse-first was not used",
+    "format_money now takes `value`",
+    "The reply contains no REUSE/ADD/WRITE verdict"
+  ]
+}

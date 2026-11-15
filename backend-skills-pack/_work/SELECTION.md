@@ -25,6 +25,9 @@ The current description budget is about 45 words, roughly 300 characters. Every 
 | Multi-agent orchestration | ADAPT | dispatching-parallel-agents | quarantine superpowers@22f0b46 (MIT) | SAFE | 106 | Short and correct: one agent per independent domain, self-contained prompts, verify after. Add the 300-word reply cap and file hand-offs (CONVENTIONS rule 6), and cut 167 lines to 150 or fewer. subagent-driven-development was rejected as bloated. | sonnet |
 | Testing and verification | ADOPT + ADAPT | verification-before-completion (ADOPT), test-driven-development (ADAPT) | quarantine superpowers | SAFE / SAFE | 225 / 79 | Verification: 120 lines, no scripts, "evidence before claims", fits as is. TDD: a clean red-green-verify loop. Cut 330 lines to 150 or fewer and move "Good tests" to references/. tdd-workflow (590 lines) was rejected. | sonnet |
 | Code review | ADAPT | ponytail-review | quarantine ponytail@96608e0 (MIT) | SAFE-WITH-CHANGES | 370 | Reviews a local diff and its callers, requires a concrete case per finding, and changes no code. It overlaps the bundled `/code-review` (decision 2). The official `code-review` plugin is GitHub-PR-only, spawns about 9 subagents and can post comments (`commands/code-review.md:7-50`). | opus |
+| Skill security audit (session 2) | BUILD | — (the session-1 `scripts/scan.py` moved into it) | — | — | — | Added in session 2 at the user's request. Audits third-party skills without running them: pinned quarantine copy, scan, verdict with file:line evidence. Manual only. | opus |
+
+Session 2 decisions **[sourced: user instruction 2026-11-15]**: reuse-first is the ADAPT of search-first. model-router routes on haiku, not the proposed sonnet, because routing is a table lookup plus a script.
 
 Total for the selected descriptions as they stand: 4,614 characters, about 1.15k tokens. After cutting to 45 words each, I expect under 800 tokens for about 21 skills (15 picked + 6 BUILD) **[proposed]**.
 

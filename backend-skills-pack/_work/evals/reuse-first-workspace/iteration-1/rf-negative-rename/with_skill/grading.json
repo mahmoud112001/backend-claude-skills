@@ -1,0 +1,25 @@
+{
+  "expectations": [
+    {
+      "text": "reuse-first was not used",
+      "passed": true,
+      "evidence": "programmatic check"
+    },
+    {
+      "text": "format_money now takes `value`",
+      "passed": true,
+      "evidence": "programmatic check"
+    },
+    {
+      "text": "The reply contains no REUSE/ADD/WRITE verdict",
+      "passed": true,
+      "evidence": "programmatic check"
+    }
+  ],
+  "summary": {
+    "passed": 3,
+    "failed": 0,
+    "total": 3,
+    "pass_rate": 1.0
+  }
+}

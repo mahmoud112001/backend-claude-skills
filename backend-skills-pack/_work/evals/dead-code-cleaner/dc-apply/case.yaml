@@ -1,0 +1,5 @@
+schema_version: "1.1"
+name: dc-apply
+expected_outcome: |
+  Branch cleanup/2026-11-15; only SAFE-TO-DELETE removed in tested commits; dynamic/config-referenced code kept; tests pass; report has Applied section.
+  should_trigger: true

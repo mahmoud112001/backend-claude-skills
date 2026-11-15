@@ -1,0 +1,25 @@
+{
+  "expectations": [
+    {
+      "text": "dead-code-cleaner was not used",
+      "passed": true,
+      "evidence": "programmatic check"
+    },
+    {
+      "text": "No file changed and no report written",
+      "passed": true,
+      "evidence": "programmatic check"
+    },
+    {
+      "text": "The reply says it is unused / has no callers",
+      "passed": true,
+      "evidence": "programmatic check"
+    }
+  ],
+  "summary": {
+    "passed": 3,
+    "failed": 0,
+    "total": 3,
+    "pass_rate": 1.0
+  }
+}

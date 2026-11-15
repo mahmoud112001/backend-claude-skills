@@ -1,0 +1,60 @@
+{
+  "expectations": [
+    {
+      "text": "docs/reviews/architecture-2026-11-15.md exists",
+      "passed": true,
+      "evidence": "programmatic check"
+    },
+    {
+      "text": "Every rule R1-R7 appears in the report",
+      "passed": true,
+      "evidence": "programmatic check"
+    },
+    {
+      "text": "R1 violation cites src/billing/service.py importing orders.domain",
+      "passed": true,
+      "evidence": "programmatic check"
+    },
+    {
+      "text": "R3 violation cites src/orders/domain/order.py importing infrastructure",
+      "passed": true,
+      "evidence": "programmatic check"
+    },
+    {
+      "text": "R4 violation cites repo.py publishing to the broker",
+      "passed": true,
+      "evidence": "programmatic check"
+    },
+    {
+      "text": "R5 violation cites migrations/0001_init.sql REFERENCES orders",
+      "passed": true,
+      "evidence": "programmatic check"
+    },
+    {
+      "text": "R6 and R7 violations cite src/billing/http.py (Invoices path, ERR_404)",
+      "passed": true,
+      "evidence": "programmatic check"
+    },
+    {
+      "text": "R2 violation cites the Customer object held by Order",
+      "passed": true,
+      "evidence": "programmatic check"
+    },
+    {
+      "text": "The judgement rule R2 was checked by an opus subagent, not inline",
+      "passed": true,
+      "evidence": "programmatic check"
+    },
+    {
+      "text": "No source file was changed",
+      "passed": true,
+      "evidence": "programmatic check"
+    }
+  ],
+  "summary": {
+    "passed": 10,
+    "failed": 0,
+    "total": 10,
+    "pass_rate": 1.0
+  }
+}

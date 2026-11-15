@@ -1,0 +1,5 @@
+schema_version: "1.1"
+name: ac-full-repo
+expected_outcome: |
+  Report with R1-R7; R1..R7 all FAIL with the planted file:line evidence; no code change; no invented rule.
+  should_trigger: true
