@@ -1,0 +1,16 @@
+need,decision,name,group,source
+reuse-first/library-search,ADAPT,search-first,user-skills,mine
+project-understanding-from-prototype,ADAPT,codebase-onboarding,user-skills,mine
+architecture-conformance-review,BUILD (reference source),hexagonal-architecture,user-skills,mine
+database-design/erd,ADAPT,data-modeling-discipline,backend-design,plugin
+rest/openapi-design,ADAPT,api-design,user-skills,mine
+rest/openapi-design,ADAPT (reference),contract-first,user-skills,mine
+design-review/bug-finding,ADAPT,ponytail-audit,ponytail,quarantine
+code-review,ADAPT,ponytail-review,ponytail,quarantine
+requirements-gap-analysis,ADAPT,intent-driven-development,user-skills,mine
+docs/file-organisation,ADAPT,living-docs-governance,user-skills,mine
+docs/file-organisation,ADAPT,architecture-decision-records,user-skills,mine
+skill-authoring,ADOPT,skill-creator,anthropics-skills,quarantine
+multi-agent-orchestration,ADAPT,dispatching-parallel-agents,superpowers,quarantine
+testing/verification,ADOPT,verification-before-completion,superpowers,quarantine
+testing/verification,ADAPT,test-driven-development,superpowers,quarantine

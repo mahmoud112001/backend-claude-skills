@@ -1,0 +1,39 @@
+ALWAYS-LOADED BASELINE (name + description chars; tokens ~= chars/4)
+
+Installed (mine + plugin): 415 skills, 145889 chars, ~36472 tokens  <-- number to beat
+All incl. quarantine:      519 skills, 187863 chars, ~46965 tokens
+
+By source:
+  mine         329 skills  111417 chars ~ 27854 tokens
+  plugin        86 skills   34472 chars ~  8618 tokens
+  quarantine   104 skills   41974 chars ~ 10493 tokens
+
+By group (installed only):
+  user-skills                               317 skills ~ 25789 tokens
+  claude-for-manufacturing                   17 skills ~  3374 tokens
+  superpowers                                15 skills ~   657 tokens
+  backend-design                             13 skills ~  1069 tokens
+  synced-account                             12 skills ~  2064 tokens
+  champion-kit                                7 skills ~   333 tokens
+  plugin-dev                                  7 skills ~   763 tokens
+  mcp-server-dev                              3 skills ~   345 tokens
+  claude-code-setup                           2 skills ~   191 tokens
+  cwc-makers                                  2 skills ~   191 tokens
+  discord                                     2 skills ~   111 tokens
+  example-plugin                              2 skills ~    90 tokens
+  imessage                                    2 skills ~   106 tokens
+  math-proof                                  2 skills ~   201 tokens
+  telegram                                    2 skills ~   112 tokens
+  claude-md-management                        1 skills ~    89 tokens
+  claude-security                             1 skills ~   115 tokens
+  frontend-design                             1 skills ~    54 tokens
+  hookify                                     1 skills ~    53 tokens
+  math-olympiad                               1 skills ~   179 tokens
+  playground                                  1 skills ~    69 tokens
+  project-artifact                            1 skills ~   230 tokens
+  receipts                                    1 skills ~   153 tokens
+  session-report                              1 skills ~    42 tokens
+  skill-creator                               1 skills ~    83 tokens
+
+Caveat: plugins present in a marketplace folder but not enabled are not loaded
+by Claude Code; this baseline counts every SKILL.md found, as requested.
