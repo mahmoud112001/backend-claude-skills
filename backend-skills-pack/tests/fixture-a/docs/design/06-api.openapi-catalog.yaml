@@ -1,0 +1,105 @@
+# ## Inputs
+# - docs/design/06-api.md (Operations: addBook, searchCatalog, getBookDetails); 02-tactical-catalog.md.
+# ## Decisions
+# - Catalog module paths and schemas (06-api.md D6-1). Availability comes from the BookAvailability read model (Catalog D2-4).
+# ## Open questions
+# - CQ-1 to CQ-8 (02-tactical-catalog.md); AQ-3, AQ-6 (06-api.md).
+paths:
+  /v1/books:
+    get:
+      operationId: searchCatalog
+      tags: [catalog]
+      summary: SearchCatalog (REQ-1, REQ-2, REQ-3)
+      description: Case-insensitive substring of title or author; empty q lists all (CQ-3). Sorted by title, then bookId.
+      security: [{}, {bearerAuth: []}]
+      x-actor: Visitor
+      x-error-codes: [validation-failed, rate-limited]
+      parameters:
+        - {name: q, in: query, required: false, schema: {type: string, maxLength: 200}}
+        - $ref: './06-api.openapi-common.yaml#/components/parameters/Cursor'
+        - $ref: './06-api.openapi-common.yaml#/components/parameters/Limit'
+      responses:
+        '200':
+          description: One page of books.
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [items, nextCursor]
+                properties:
+                  items: {type: array, items: {$ref: '#/components/schemas/BookSummary'}}
+                  nextCursor: {$ref: './06-api.openapi-common.yaml#/components/schemas/NextCursor'}
+        '400': {$ref: './06-api.openapi-common.yaml#/components/responses/BadRequest'}
+        '429': {$ref: './06-api.openapi-common.yaml#/components/responses/TooManyRequests'}
+    post:
+      operationId: addBook
+      tags: [catalog]
+      summary: AddBook (REQ-24)
+      x-actor: Librarian
+      x-idempotency: Idempotency-Key required; natural key isbn (duplicate-isbn)
+      x-error-codes: [validation-failed, idempotency-key-required, unauthenticated, not-librarian, title-missing, author-missing, invalid-isbn, duplicate-isbn, idempotency-key-reused, idempotency-key-in-use, rate-limited]
+      parameters:
+        - $ref: './06-api.openapi-common.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title, author, isbn]
+              additionalProperties: false
+              properties:
+                title: {type: string, maxLength: 500}
+                author: {type: string, maxLength: 500}
+                isbn: {type: string, maxLength: 17, description: ISBN-10 or ISBN-13, hyphens allowed (CQ-2)}
+      responses:
+        '201':
+          description: Book added; availability starts at 0 of 0 (Catalog D2-6).
+          headers:
+            Location: {schema: {type: string}, description: /v1/books/{bookId}}
+            Idempotent-Replayed: {$ref: './06-api.openapi-common.yaml#/components/headers/IdempotentReplayed'}
+          content:
+            application/json: {schema: {$ref: '#/components/schemas/BookDetails'}}
+        '400': {$ref: './06-api.openapi-common.yaml#/components/responses/BadRequest'}
+        '401': {$ref: './06-api.openapi-common.yaml#/components/responses/Unauthenticated'}
+        '403': {$ref: './06-api.openapi-common.yaml#/components/responses/Forbidden'}
+        '409': {$ref: './06-api.openapi-common.yaml#/components/responses/Conflict'}
+        '422': {$ref: './06-api.openapi-common.yaml#/components/responses/Unprocessable'}
+        '429': {$ref: './06-api.openapi-common.yaml#/components/responses/TooManyRequests'}
+  /v1/books/{bookId}:
+    get:
+      operationId: getBookDetails
+      tags: [catalog]
+      summary: GetBookDetails (REQ-3, REQ-4)
+      security: [{}, {bearerAuth: []}]
+      x-actor: Visitor (CQ-4)
+      x-error-codes: [validation-failed, book-not-found, rate-limited]
+      parameters:
+        - {name: bookId, in: path, required: true, schema: {$ref: './06-api.openapi-common.yaml#/components/schemas/Uuid'}}
+      responses:
+        '200':
+          description: Book with availability.
+          content:
+            application/json: {schema: {$ref: '#/components/schemas/BookDetails'}}
+        '400': {$ref: './06-api.openapi-common.yaml#/components/responses/BadRequest'}
+        '404': {$ref: './06-api.openapi-common.yaml#/components/responses/NotFound'}
+        '429': {$ref: './06-api.openapi-common.yaml#/components/responses/TooManyRequests'}
+components:
+  schemas:
+    BookSummary:
+      type: object
+      required: [bookId, title, author, availableCount, totalCount]
+      properties:
+        bookId: {$ref: './06-api.openapi-common.yaml#/components/schemas/Uuid'}
+        title: {type: string}
+        author: {type: string}
+        availableCount: {type: integer, minimum: 0}
+        totalCount: {type: integer, minimum: 0}
+    BookDetails:
+      allOf:
+        - $ref: '#/components/schemas/BookSummary'
+        - type: object
+          required: [isbn, earliestDueDate]
+          properties:
+            isbn: {type: string, pattern: '^[0-9]{13}$', description: Normalised ISBN-13 (CQ-2)}
+            earliestDueDate: {type: [string, 'null'], format: date, description: Shown when availableCount is 0 (CQ-5)}

@@ -1,0 +1,79 @@
+# ## Inputs
+# - docs/design/06-api.md (Operations: getMyFines, recordFinePayment; D6-8, D6-11, D6-14, D6-17); 02-tactical-fines.md.
+# ## Decisions
+# - Fines module paths and schemas (06-api.md D6-1). Money is {amountMinor, currency} (D6-14); a payment takes amountMinor only, the account currency applies (D3-F3).
+# ## Open questions
+# - FQ-1 to FQ-9 (02-tactical-fines.md); AQ-8, AQ-11 (06-api.md).
+paths:
+  /v1/members/me/fines:
+    get:
+      operationId: getMyFines
+      tags: [fines]
+      summary: GetMyFines (REQ-18)
+      description: Balance of the signed-in member's Account (resolved via ResolveCurrentMember, Fines D2-10). v1 returns the balance only (AQ-11, FQ-6).
+      x-actor: Member
+      x-error-codes: [unauthenticated, not-member, account-not-found, rate-limited]
+      responses:
+        '200':
+          description: Current balance.
+          content:
+            application/json: {schema: {$ref: '#/components/schemas/MyFines'}}
+        '401': {$ref: './06-api.openapi-common.yaml#/components/responses/Unauthenticated'}
+        '403': {$ref: './06-api.openapi-common.yaml#/components/responses/Forbidden'}
+        '404': {$ref: './06-api.openapi-common.yaml#/components/responses/NotFound'}
+        '429': {$ref: './06-api.openapi-common.yaml#/components/responses/TooManyRequests'}
+  /v1/fine-payments:
+    post:
+      operationId: recordFinePayment
+      tags: [fines]
+      summary: RecordFinePayment (REQ-23)
+      description: Finds the Account by card number (Fines D2-11). Partial payments allowed; overpayment rejected (FQ-2).
+      x-actor: Librarian
+      x-idempotency: Idempotency-Key required (money; no natural key)
+      x-error-codes: [validation-failed, idempotency-key-required, unauthenticated, not-librarian, account-not-found, invalid-payment-amount, payment-exceeds-balance, concurrency-conflict, idempotency-key-reused, idempotency-key-in-use, rate-limited]
+      parameters:
+        - $ref: './06-api.openapi-common.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [cardNumber, amountMinor]
+              additionalProperties: false
+              properties:
+                cardNumber: {type: string, maxLength: 64, description: Normalised as in Membership (OQ-M4)}
+                amountMinor:
+                  type: integer
+                  format: int64
+                  description: Minor units of the account currency; zero or negative gives invalid-payment-amount (D6-14).
+      responses:
+        '201':
+          description: Payment recorded; FineBalanceChanged published (D6-17, no Location, AQ-8).
+          headers:
+            Idempotent-Replayed: {$ref: './06-api.openapi-common.yaml#/components/headers/IdempotentReplayed'}
+          content:
+            application/json: {schema: {$ref: '#/components/schemas/FinePayment'}}
+        '400': {$ref: './06-api.openapi-common.yaml#/components/responses/BadRequest'}
+        '401': {$ref: './06-api.openapi-common.yaml#/components/responses/Unauthenticated'}
+        '403': {$ref: './06-api.openapi-common.yaml#/components/responses/Forbidden'}
+        '404': {$ref: './06-api.openapi-common.yaml#/components/responses/NotFound'}
+        '409': {$ref: './06-api.openapi-common.yaml#/components/responses/Conflict'}
+        '422': {$ref: './06-api.openapi-common.yaml#/components/responses/Unprocessable'}
+        '429': {$ref: './06-api.openapi-common.yaml#/components/responses/TooManyRequests'}
+components:
+  schemas:
+    MyFines:
+      type: object
+      required: [balance]
+      properties:
+        balance: {$ref: './06-api.openapi-common.yaml#/components/schemas/Money'}
+    FinePayment:
+      type: object
+      required: [paymentId, cardNumber, amount, balance, recordedAt]
+      properties:
+        paymentId: {$ref: './06-api.openapi-common.yaml#/components/schemas/Uuid'}
+        cardNumber: {type: string}
+        amount: {$ref: './06-api.openapi-common.yaml#/components/schemas/Money'}
+        balance: {$ref: './06-api.openapi-common.yaml#/components/schemas/Money', description: New balance after the payment (FQ-8)}
+        recordedAt: {type: string, format: date-time}

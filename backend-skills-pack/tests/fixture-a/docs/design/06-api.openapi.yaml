@@ -1,0 +1,65 @@
+# ## Inputs
+# - docs/design/06-api.md (Operations, Errors, Conventions); docs/design/project-profile.md (REST, OpenAPI, RFC 9457 with "code").
+# ## Decisions
+# - Root of the single authoritative contract (06-api.md D6-1). Module files hold paths and schemas, each under 300 lines (DOC-01).
+# - All other decisions: 06-api.md D6-1 to D6-20 and Fixed F3, F4, F6, F7, F10.
+# ## Open questions
+# - See 06-api.md AQ-3 to AQ-12 and RQ-2 (AQ-1, AQ-2 closed).
+openapi: 3.1.0
+info:
+  title: Shelfmark API
+  version: 1.0.0
+  description: >
+    REST API of the Shelfmark library (modular monolith: Catalog, Lending, Membership, Fines).
+    Errors are RFC 9457 application/problem+json with a "code" extension member.
+    Version 1 changes are additive only (D6-4).
+servers:
+  - url: /
+security:
+  - bearerAuth: []
+tags:
+  - name: catalog
+  - name: lending
+  - name: membership
+  - name: fines
+paths:
+  /v1/books:
+    $ref: './06-api.openapi-catalog.yaml#/paths/~1v1~1books'
+  /v1/books/{bookId}:
+    $ref: './06-api.openapi-catalog.yaml#/paths/~1v1~1books~1{bookId}'
+  /v1/loans:
+    $ref: './06-api.openapi-lending.yaml#/paths/~1v1~1loans'
+  /v1/loans/{loanId}:
+    $ref: './06-api.openapi-lending.yaml#/paths/~1v1~1loans~1{loanId}'
+  /v1/loans/{loanId}/renew:
+    $ref: './06-api.openapi-lending.yaml#/paths/~1v1~1loans~1{loanId}~1renew'
+  /v1/holds:
+    $ref: './06-api.openapi-lending.yaml#/paths/~1v1~1holds'
+  /v1/holds/{holdId}/cancel:
+    $ref: './06-api.openapi-lending.yaml#/paths/~1v1~1holds~1{holdId}~1cancel'
+  /v1/members/me/loans:
+    $ref: './06-api.openapi-lending.yaml#/paths/~1v1~1members~1me~1loans'
+  /v1/members/me/holds:
+    $ref: './06-api.openapi-lending.yaml#/paths/~1v1~1members~1me~1holds'
+  /v1/overdue-loans:
+    $ref: './06-api.openapi-lending.yaml#/paths/~1v1~1overdue-loans'
+  /v1/copies:
+    $ref: './06-api.openapi-lending.yaml#/paths/~1v1~1copies'
+  /v1/copies/{barcode}/check-in:
+    $ref: './06-api.openapi-lending.yaml#/paths/~1v1~1copies~1{barcode}~1check-in'
+  /v1/copies/{barcode}/withdraw:
+    $ref: './06-api.openapi-lending.yaml#/paths/~1v1~1copies~1{barcode}~1withdraw'
+  /v1/members:
+    $ref: './06-api.openapi-membership.yaml#/paths/~1v1~1members'
+  /v1/members/me:
+    $ref: './06-api.openapi-membership.yaml#/paths/~1v1~1members~1me'
+  /v1/members/me/fines:
+    $ref: './06-api.openapi-fines.yaml#/paths/~1v1~1members~1me~1fines'
+  /v1/fine-payments:
+    $ref: './06-api.openapi-fines.yaml#/paths/~1v1~1fine-payments'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: Token from the identity provider (Q-1). Role and member are resolved by ResolveCurrentMember (D6-16).

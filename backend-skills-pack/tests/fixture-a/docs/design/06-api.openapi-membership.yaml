@@ -1,0 +1,86 @@
+# ## Inputs
+# - docs/design/06-api.md (Operations: registerMember, resolveCurrentMember; D6-8, D6-11, D6-16, D6-17); 02-tactical-membership.md.
+# ## Decisions
+# - Membership module paths and schemas (06-api.md D6-1). CurrentMember shape (roles list plus nullable member) is *proposed*; no token answers as a Visitor (D2-4).
+# - Fixed F10: email maxLength 254 (06-api.md Decisions).
+# ## Open questions
+# - OQ-M1 to OQ-M6 (02-tactical-membership.md); AQ-8 (06-api.md).
+paths:
+  /v1/members:
+    post:
+      operationId: registerMember
+      tags: [membership]
+      summary: RegisterMember (REQ-28)
+      x-actor: Librarian
+      x-idempotency: Idempotency-Key required; natural key cardNumber (card-number-taken)
+      x-error-codes: [validation-failed, idempotency-key-required, unauthenticated, not-librarian, invalid-name, invalid-email, invalid-card-number, card-number-taken, email-taken, idempotency-key-reused, idempotency-key-in-use, rate-limited]
+      parameters:
+        - $ref: './06-api.openapi-common.yaml#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, cardNumber]
+              additionalProperties: false
+              properties:
+                name: {type: string, maxLength: 200, description: Non-empty after trimming (PersonName)}
+                email: {type: string, maxLength: 254, description: 'Valid address syntax, unique case-insensitively (OQ-M5); 254 matches 03 ck_member_email (F10)'}
+                cardNumber: {type: string, maxLength: 64, description: 1 to 32 letters or digits, stored trimmed and upper-case (OQ-M4)}
+      responses:
+        '201':
+          description: Member registered; MemberRegistered published (D6-17, no Location, AQ-8).
+          headers:
+            Idempotent-Replayed: {$ref: './06-api.openapi-common.yaml#/components/headers/IdempotentReplayed'}
+          content:
+            application/json: {schema: {$ref: '#/components/schemas/Member'}}
+        '400': {$ref: './06-api.openapi-common.yaml#/components/responses/BadRequest'}
+        '401': {$ref: './06-api.openapi-common.yaml#/components/responses/Unauthenticated'}
+        '403': {$ref: './06-api.openapi-common.yaml#/components/responses/Forbidden'}
+        '409': {$ref: './06-api.openapi-common.yaml#/components/responses/Conflict'}
+        '422': {$ref: './06-api.openapi-common.yaml#/components/responses/Unprocessable'}
+        '429': {$ref: './06-api.openapi-common.yaml#/components/responses/TooManyRequests'}
+  /v1/members/me:
+    get:
+      operationId: resolveCurrentMember
+      tags: [membership]
+      summary: ResolveCurrentMember (REQ-29)
+      description: >
+        Maps the signed-in identity to a Member (verified email, OQ-M2) and a role (identity provider claim, OQ-M3).
+        No token, or a token matching no Member and no Librarian role, answers as a Visitor; only an invalid token gives 401.
+      security: [{}, {bearerAuth: []}]
+      x-actor: Visitor, Member, Librarian
+      x-error-codes: [unauthenticated, rate-limited]
+      responses:
+        '200':
+          description: The caller's actor role and member record, if any.
+          content:
+            application/json: {schema: {$ref: '#/components/schemas/CurrentMember'}}
+        '401': {$ref: './06-api.openapi-common.yaml#/components/responses/Unauthenticated'}
+        '429': {$ref: './06-api.openapi-common.yaml#/components/responses/TooManyRequests'}
+components:
+  schemas:
+    Member:
+      type: object
+      required: [memberId, name, email, cardNumber, registeredAt]
+      properties:
+        memberId: {$ref: './06-api.openapi-common.yaml#/components/schemas/Uuid'}
+        name: {type: string}
+        email: {type: string}
+        cardNumber: {type: string, description: Normalised (OQ-M4)}
+        registeredAt: {type: string, format: date-time}
+    CurrentMember:
+      type: object
+      required: [roles, member]
+      properties:
+        roles:
+          type: array
+          uniqueItems: true
+          description: Empty for a Visitor (REQ-29).
+          items: {type: string, enum: [member, librarian]}
+        member:
+          description: Null when the identity matches no Member.
+          oneOf:
+            - {type: 'null'}
+            - $ref: '#/components/schemas/Member'
