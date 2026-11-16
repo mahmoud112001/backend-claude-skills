@@ -1,0 +1,337 @@
+{
+ "00-project-brief.md": {
+  "path": "00-project-brief.md",
+  "words": 1792,
+  "headings": [
+   "# 00 Project brief: Shelfmark",
+   "## Inputs",
+   "## Decisions",
+   "## Open questions",
+   "## Goals",
+   "## Actors",
+   "## Screens / entry points",
+   "## Requirements",
+   "## Data seen in the prototype",
+   "## Unknowns"
+  ]
+ },
+ "00-state.md": {
+  "path": "00-state.md",
+  "words": 607,
+  "headings": [
+   "# Design state",
+   "## Phases",
+   "## Waiting for user",
+   "## Rule conflicts (the project rule overrides the default)",
+   "## Open questions (business decisions; workers never resolve these)",
+   "## Review loops",
+   "## Medium and Low gate findings carried forward"
+  ]
+ },
+ "01-strategic.md": {
+  "path": "01-strategic.md",
+  "words": 2715,
+  "headings": [
+   "# 01 Strategic design",
+   "## Inputs",
+   "## Decisions",
+   "## Open questions",
+   "## Domain",
+   "## Subdomains",
+   "## Bounded contexts",
+   "## Context map",
+   "## Published language",
+   "## Ubiquitous language"
+  ]
+ },
+ "02-tactical-catalog.md": {
+  "path": "02-tactical-catalog.md",
+  "words": 1397,
+  "headings": [
+   "# 02 Tactical design: Catalog",
+   "## Inputs",
+   "## Decisions",
+   "## Open questions",
+   "## Aggregates",
+   "## Entities and value objects",
+   "## Commands",
+   "## Domain events",
+   "## Policies",
+   "## Queries and read models",
+   "## Out of scope"
+  ]
+ },
+ "02-tactical-fines.md": {
+  "path": "02-tactical-fines.md",
+  "words": 1602,
+  "headings": [
+   "# 02 Tactical design: Fines",
+   "## Inputs",
+   "## Decisions",
+   "## Open questions",
+   "## Aggregates",
+   "## Entities and value objects",
+   "## Commands",
+   "## Domain events",
+   "## Policies",
+   "## Queries and read models",
+   "## Out of scope"
+  ]
+ },
+ "02-tactical-lending.md": {
+  "path": "02-tactical-lending.md",
+  "words": 3460,
+  "headings": [
+   "# 02 Tactical design: Lending",
+   "## Inputs",
+   "## Decisions",
+   "## Open questions",
+   "## Aggregates",
+   "## Entities and value objects",
+   "## Commands",
+   "## Domain events",
+   "## Policies",
+   "## Queries and read models",
+   "## Out of scope"
+  ]
+ },
+ "02-tactical-membership.md": {
+  "path": "02-tactical-membership.md",
+  "words": 1215,
+  "headings": [
+   "# 02 Tactical design: Membership",
+   "## Inputs",
+   "## Decisions",
+   "## Open questions",
+   "## Aggregates",
+   "## Entities and value objects",
+   "## Commands",
+   "## Domain events",
+   "## Policies",
+   "## Queries and read models",
+   "## Out of scope"
+  ]
+ },
+ "03-db-design-fines.md": {
+  "path": "03-db-design-fines.md",
+  "words": 1207,
+  "headings": [
+   "# 03 Database design: Fines",
+   "## Inputs",
+   "## Decisions",
+   "## Open questions",
+   "## Tables",
+   "### Table: fines.account (module: Fines)",
+   "### Table: fines.fine (module: Fines)",
+   "### Table: fines.payment (module: Fines)",
+   "### Table: fines.outbox (module: Fines)",
+   "### Table: fines.inbox (module: Fines)",
+   "### Table: fines.idempotency_record (module: Fines)",
+   "## Enforced in code"
+  ]
+ },
+ "03-db-design-lending.md": {
+  "path": "03-db-design-lending.md",
+  "words": 2827,
+  "headings": [
+   "# 03 Database design: Lending",
+   "## Inputs",
+   "## Decisions",
+   "## Open questions",
+   "## Tables",
+   "### Table: lending.book_circulation (module: Lending)",
+   "### Table: lending.book_copy (module: Lending)",
+   "### Table: lending.loan (module: Lending)",
+   "### Table: lending.hold (module: Lending)",
+   "### Table: lending.borrower (module: Lending)",
+   "### Table: lending.loan_slot (module: Lending)",
+   "### Table: lending.hold_ready_notification (module: Lending)",
+   "### Table: lending.outbox (module: Lending)",
+   "### Table: lending.inbox (module: Lending)",
+   "### Table: lending.idempotency_record (module: Lending)",
+   "## Enforced in code"
+  ]
+ },
+ "03-db-design.md": {
+  "path": "03-db-design.md",
+  "words": 2899,
+  "headings": [
+   "# 03 Database design",
+   "## Inputs",
+   "## Decisions",
+   "## Open questions",
+   "## Modules",
+   "## Tables",
+   "### Table: catalog.book (module: Catalog)",
+   "### Table: catalog.book_availability (module: Catalog)",
+   "### Table: catalog.outbox (module: Catalog)",
+   "### Table: catalog.inbox (module: Catalog)",
+   "### Table: catalog.idempotency_record (module: Catalog)",
+   "### Table: membership.member (module: Membership)",
+   "### Table: membership.outbox (module: Membership)",
+   "### Table: membership.idempotency_record (module: Membership)",
+   "## Enforced in code",
+   "## Caches"
+  ]
+ },
+ "04-erd.md": {
+  "path": "04-erd.md",
+  "words": 887,
+  "headings": [
+   "# 04 ERD",
+   "## Inputs",
+   "## Decisions",
+   "## Open questions",
+   "## Overview: modules and cross-module REFs",
+   "## Catalog",
+   "## Lending",
+   "## Fines",
+   "## Membership"
+  ]
+ },
+ "05-diagrams-flows.md": {
+  "path": "05-diagrams-flows.md",
+  "words": 625,
+  "headings": [
+   "# 05 Diagrams: key flows",
+   "## Inputs",
+   "## Decisions",
+   "## Open questions",
+   "## Key flows",
+   "### FLOW-1 RegisterMember",
+   "### FLOW-2 AddBook",
+   "### FLOW-3 BorrowBook",
+   "### FLOW-4 CheckInCopy",
+   "### FLOW-5 ExpireShelvedHold",
+   "### FLOW-6 RecordFinePayment"
+  ]
+ },
+ "05-diagrams.md": {
+  "path": "05-diagrams.md",
+  "words": 797,
+  "headings": [
+   "# 05 Diagrams",
+   "## Inputs",
+   "## Decisions",
+   "## Open questions",
+   "## Use cases",
+   "### UC-Catalog",
+   "### UC-Lending",
+   "### UC-Fines",
+   "### UC-Membership",
+   "## Database modules",
+   "### DB-modules",
+   "## Key flows",
+   "## Context map",
+   "### CTX-map"
+  ]
+ },
+ "06-api.md": {
+  "path": "06-api.md",
+  "words": 3416,
+  "headings": [
+   "# 06 API design",
+   "## Inputs",
+   "## Decisions",
+   "## Open questions",
+   "## Conventions",
+   "## Operations",
+   "## Errors",
+   "## Not exposed"
+  ]
+ },
+ "06-api.openapi-catalog.yaml": {
+  "path": "06-api.openapi-catalog.yaml",
+  "words": 366,
+  "headings": []
+ },
+ "06-api.openapi-common.yaml": {
+  "path": "06-api.openapi-common.yaml",
+  "words": 412,
+  "headings": []
+ },
+ "06-api.openapi-fines.yaml": {
+  "path": "06-api.openapi-fines.yaml",
+  "words": 290,
+  "headings": []
+ },
+ "06-api.openapi-lending.yaml": {
+  "path": "06-api.openapi-lending.yaml",
+  "words": 1442,
+  "headings": []
+ },
+ "06-api.openapi-membership.yaml": {
+  "path": "06-api.openapi-membership.yaml",
+  "words": 352,
+  "headings": []
+ },
+ "06-api.openapi.yaml": {
+  "path": "06-api.openapi.yaml",
+  "words": 206,
+  "headings": []
+ },
+ "07-fixes-loop1.md": {
+  "path": "07-fixes-loop1.md",
+  "words": 569,
+  "headings": [
+   "# 07 Fixes (loop 1)",
+   "## Inputs",
+   "## Decisions",
+   "## Open questions",
+   "## Fixes",
+   "## Lint after fixes",
+   "## Skill or agent bugs noticed"
+  ]
+ },
+ "07-lint.md": {
+  "path": "07-lint.md",
+  "words": 68,
+  "headings": [
+   "# 07 Lint",
+   "## Inputs",
+   "## Decisions",
+   "## Open questions",
+   "## Findings"
+  ]
+ },
+ "07-review-loop1.md": {
+  "path": "07-review-loop1.md",
+  "words": 2444,
+  "headings": [
+   "# 07 Design review (loop 1)",
+   "## Inputs",
+   "## Decisions",
+   "## Open questions",
+   "## Findings",
+   "## Lint findings rejected",
+   "## Requirement trace",
+   "## Not checked"
+  ]
+ },
+ "07-review.md": {
+  "path": "07-review.md",
+  "words": 2349,
+  "headings": [
+   "# 07 Design review (loop 2)",
+   "## Inputs",
+   "## Decisions",
+   "## Open questions",
+   "## Findings",
+   "## Lint findings rejected",
+   "## Requirement trace",
+   "## Not checked"
+  ]
+ },
+ "project-profile.md": {
+  "path": "project-profile.md",
+  "words": 494,
+  "headings": [
+   "# Project profile: Shelfmark",
+   "## Inputs",
+   "## Decisions",
+   "## Open questions",
+   "## Profile",
+   "## Rule overrides"
+  ]
+ }
+}

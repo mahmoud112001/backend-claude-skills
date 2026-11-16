@@ -9,7 +9,7 @@
 - D7F-2 07-review.md renamed to 07-review-loop1.md so the loop 2 reviewer writes a fresh 07-review.md; all references updated.
 
 ## Open questions
-- RQ-1..RQ-5, listed in [00-state.md](00-state.md) and in the owning files (brief RQ-1; 06 RQ-2; 01 RQ-3; 02 Lending RQ-4; 02 Membership RQ-5).
+- RQ-1..RQ-5, listed in [00-state.md](../00-state.md) and in the owning files (brief RQ-1; 06 RQ-2; 01 RQ-3; 02 Lending RQ-4; 02 Membership RQ-5).
 
 ## Fixes
 | Id | Sev | Before this pass | Change (file: anchor) |

@@ -75,7 +75,8 @@ Spawn every tactical-designer **in one message**, one per context in 01. Each pr
 1. Run `design_check.py lint <out> --write`. It writes 07-lint.md.
 2. Spawn a **new** design-reviewer every time, never a resumed one. It gets the paths of the profile, the brief, the prototype, the rules, every artifact and 07-lint.md, and writes 07-review.md.
 3. For each High or Medium finding, send its id and fix to the **author** of its file (the phase table above), grouped by author. Authors fix in place and add `Fixed F<n>` to their Decisions. Anything that needs a business decision goes to Open questions in 07-review.md and the state, never into the design.
-4. Re-run steps 1 and 2. Stop when there are no High findings or after 2 fix loops. High findings that remain go to the user, and the phase is set to `blocked`.
+4. Before the next review, write `07-fixes-loop<k>.md` (finding id, file:line changed, or moved to open questions) and rename `07-review.md` to `07-review-loop<k>.md`, so no loop's record is overwritten.
+5. Re-run steps 1 and 2. Stop when there are no High findings or after 2 fix loops. High findings that remain go to the user, and the phase is set to `blocked`.
 
 ## Phase 8: arrange
 
@@ -87,7 +88,7 @@ Spawn **doc-librarian** with `<out>` and the profile's version_control. Its repl
 You are <agent>. Root: <abs root>. Out: <abs out>. Profile: <abs out>/project-profile.md. Rules: <abs rulebook>[, <abs project rules>].
 Read: <paths + sections>. Write only: <paths>. [Context: <name>] [Fix findings: <ids + text>]
 Reply in at most 300 words: files written, decisions (count), open questions (count + the top 3),
-self-check table "rule id: PASS/FAIL (evidence)".
+self-check table "rule id: PASS/FAIL (evidence)", and the model you ran on.
 ```
 
 ## Final message to the user
