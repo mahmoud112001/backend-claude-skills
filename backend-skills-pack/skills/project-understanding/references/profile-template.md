@@ -31,7 +31,8 @@ D0-P1 <only when a field needed interpretation, with why>
 | naming_convention | <casing for tables, columns, fields, paths, messages> | |
 | error_format | <the envelope or standard used by the project> | |
 | diagram_format | <mermaid (default) / plantuml / ...> | |
-| output_folder | <docs/design/ (default)> | |
+| project_root | <absolute path of the project root (from the caller)> | |
+| output_folder | <docs/design/ (default), relative to project_root> | |
 | project_rules_file | <path / none> | |
 | version_control | <git / other / none> | |
 

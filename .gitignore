@@ -4,3 +4,4 @@ __pycache__/
 # session 2 evals: per-run fixture copies (nested .git) and regenerable fixtures
 backend-skills-pack/_work/evals/*-workspace/**/outputs/
 backend-skills-pack/_work/evals/fixtures/*/
+.claude/

@@ -3,8 +3,8 @@ name: backend-design-team
 description: Runs a DDD backend design team on any project's prototype. Covers profile, strategic and tactical design, database, ERD, diagrams, API, independent review and docs, with gates and a resumable state file. Use to design a backend from a prototype or spec. Not for writing code.
 model: sonnet
 disable-model-invocation: true
-argument-hint: "[start | resume | from <phase> | review-only] [prototype path] [--out <dir>]"
-allowed-tools: Read Glob Grep Write Edit Agent AskUserQuestion Bash(python3 *) Bash(python *) Bash(git rev-parse*) Bash(git status*)
+argument-hint: "[start | resume | from <phase> | review-only] [prototype path] [--root <dir>] [--out <dir>]"
+allowed-tools: Read Glob Grep Write Edit Agent AskUserQuestion Bash(python3 *) Bash(python *) Bash(git rev-parse*) Bash(git status*) Bash(git add *) Bash(git commit *)
 ---
 
 # backend-design-team
@@ -16,7 +16,7 @@ It is manual-only (`disable-model-invocation`) because one run starts about 10 o
 
 ## Files (every hand-off is a file)
 
-`<out>` is the profile's output folder, `docs/design/` by default, or `--out`.
+**Paths.** Project root `<root>`: `--root`, else the profile's `project_root`, else the top level of the prototype's git repo, else the prototype's folder. `<out>`: `--out`, else the profile's `output_folder` (default `docs/design/`), resolved against `<root>`, never against the current directory. Make both absolute, and create `<out>` if missing. If `<out>` is outside `<root>`, or in a temp or scratchpad folder, stop and ask the user. Pass `<root>` and `<out>` as absolute paths to every worker.
 - `<out>/project-profile.md` is the only source of project facts. Every worker reads it first. Never assume a stack, store, style or convention that is not in it.
 - `<out>/00-state.md` holds the phase table, the gate results, the loop counts, open questions, rule conflicts and file paths. Format: [references/state-template.md](references/state-template.md). Update it after every step, so that a new session (after `/clear`) can resume from it alone.
 - Rules: [references/default-rulebook.md](references/default-rulebook.md), plus the project rules file if the profile names one. Pass both paths to every worker as absolute paths, and the current state of the rule overrides with them.
@@ -60,6 +60,12 @@ Token rule: a worker reads only the Decisions and Open questions of the previous
 3. **Pass** = the script exits 0, and no MUST rule failed in the self-check. Medium and Low findings go in the state and do not block.
 4. **Fail:** send the High findings to the same agent type, with the finding list and the file path. At most 2 retries per gate. If it still fails, set the phase to `blocked`, record why, and ask the user.
 
+## Checkpoint (after every phase, 0 to 8)
+
+1. **Guard:** every file in the phase's Writes column exists under `<out>` and is not empty. If one is missing or empty, set the phase to `blocked`, record which file, and stop and report. Never pass a phase on a worker's reply alone.
+2. Update `<out>/00-state.md`.
+3. If the profile's `version_control` is `git`: `git add` only that phase's files and 00-state.md, by path (never `-A`), then `git commit -m "Design: phase N <phase name>"`.
+
 ## Phase 2: one worker per bounded context, in parallel
 
 Spawn every tactical-designer **in one message**, one per context in 01. Each prompt holds the profile path, the 01 path, the rule paths, its context name, and the file it writes. Wait for every reply before the gate. Never end your turn while workers are still running. At most 20 subagents run at once, so batch anything larger.
@@ -78,7 +84,7 @@ Spawn **doc-librarian** with `<out>` and the profile's version_control. Its repl
 ## Worker prompt (all phases)
 
 ```
-You are <agent>. Profile: <abs out>/project-profile.md. Rules: <abs rulebook>[, <abs project rules>].
+You are <agent>. Root: <abs root>. Out: <abs out>. Profile: <abs out>/project-profile.md. Rules: <abs rulebook>[, <abs project rules>].
 Read: <paths + sections>. Write only: <paths>. [Context: <name>] [Fix findings: <ids + text>]
 Reply in at most 300 words: files written, decisions (count), open questions (count + the top 3),
 self-check table "rule id: PASS/FAIL (evidence)".

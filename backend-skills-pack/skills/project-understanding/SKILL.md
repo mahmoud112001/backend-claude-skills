@@ -13,7 +13,7 @@ Source: the recon steps adapt codebase-onboarding (ECC, MIT) without its CLAUDE.
 
 ## Inputs
 
-The prototype location (from the caller, or detected). Output folder `<out>` (default `docs/design/`).
+The prototype location (from the caller, or detected). The project root and the output folder `<out>` as absolute paths from the caller. Never derive them from the current directory, a temp folder or a scratchpad. Record both in the profile (`project_root`, `output_folder` relative to it).
 Write only `<out>/project-profile.md` and `<out>/00-project-brief.md`.
 
 ## 1. Find and type the prototype
