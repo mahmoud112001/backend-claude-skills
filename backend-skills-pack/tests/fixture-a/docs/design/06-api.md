@@ -34,6 +34,7 @@
 - Fixed F7: `Loan` has `barcode` (the copy LendCopy assigned, from Loan.copyId), null while pending or refused. The matching rule at the shelf stays RQ-2.
 - Fixed F10: registerMember `email` has `maxLength: 254` in the membership contract, matching 03 `ck_member_email`.
 - Fixed REV-03: REQ-30 (pick up a shelved hold copy) maps to borrowBook, following the proposed default of brief RQ-1: the holder uses Borrow and the shelf copy is lent to them. No new operation; RQ-1 stays open (see Open questions). If RQ-1 chooses a desk action, a new Librarian command operation is added in v1 (additive, D6-4) once 02 defines the command.
+- Fixed F10 (loop 2): the lending contract borrowBook `summary` lists `REQ-30 (RQ-1 default)`, so the contract alone matches the Operations row.
 - Fixed F3 (follow-on): closed AQ-2; idempotency storage is the per-module `idempotency_record` table (03 D3-17 to D3-20), D6-8 cites it.
 
 ## Open questions

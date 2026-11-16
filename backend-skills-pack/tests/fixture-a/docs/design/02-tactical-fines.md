@@ -9,7 +9,7 @@
 ## Decisions
 - D2-1 One aggregate, Account, per member. It holds the member's fines and payments, so "balance = fines minus payments" (REQ-18) and the payment check (Q-7) are consistent in one transaction. Why: a payment is validated against the balance, and both fines and payments change it; splitting them would make the balance eventually consistent with itself. Proposed.
 - D2-2 Fine and Payment are entities inside Account (they have ids and are listed to the member and desk), not separate aggregates. Their lifecycle is the account's; they are never edited after they are recorded (append-only ledger). Why: TAC-11 smallness is acceptable for one small library (brief Goals); see FQ-6 if histories grow. Proposed.
-- D2-3 Account is created by policy from the Membership integration event MemberRegistered (context map Membership -> Fines), copying member id and card number. Fines never calls Membership. Source: 01 context map; mechanism proposed.
+- D2-3 Account is created by policy from the Membership integration event MemberRegistered (context map Membership -> Fines), copying member id and card number. Fines never calls Membership, except the API-guard query ResolveCurrentMember (01 D1-10, D2-10). Source: 01 context map; mechanism proposed.
 - D2-4 A fine is created only from the Lending integration event LoanEnded (D1-6, REQ-19). Fines computes days late and the amount; Lending never computes money (D1-6).
 - D2-5 At most one fine per loan id per account. Why: LoanEnded can be delivered more than once by the outbox worker; the loan id is the natural idempotency key. Proposed.
 - D2-6 Fine amount = 0.25 x days late, in the library currency (REQ-19). Days late uses the proposed default of Q-11 (calendar days after the due date). The rate 0.25 is from REQ-19; the currency and any cap stay open (Q-5).
@@ -18,6 +18,7 @@
 - D2-9 A loan returned on time produces no fine and no event; ChargeLateFine is then a no-op. Proposed.
 - D2-10 GetMyFines resolves the signed-in member through the Membership public operation ResolveCurrentMember at the API layer (01 Published language), then reads the Account by member id. Proposed.
 - D2-11 RecordFinePayment finds the account by card number (REQ-23). Card number uniqueness follows the proposed default of Q-10. Proposed.
+- Fixed F3 (loop 2): D2-3 now allows the one exception, the API-guard query ResolveCurrentMember (01 D1-10, D2-10), so it no longer contradicts D2-10 and the NotLibrarian guard.
 
 ## Open questions
 | Id | Question | Why it matters | Proposed default |

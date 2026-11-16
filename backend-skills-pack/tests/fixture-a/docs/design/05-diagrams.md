@@ -17,6 +17,7 @@ Key flows are in [05-diagrams-flows.md](05-diagrams-flows.md).
 - D5-5 Database modules diagram shows the four `REF` lines found in 03 (lending.book_circulation, lending.borrower, fines.account, fines.fine). Inbox and outbox tables are listed as in the 03 Modules table.
 - Fixed F1: CTX-map now draws Membership upstream of Catalog, Lending and Fines via open host service, synchronous in-process ResolveCurrentMember at the API guard (01 Context map, D1-10, D1-12). The Catalog/Membership "separate ways" edge is removed.
 - Fixed F12: DB-modules edge `f2 -.->|ref| l3` (fines.fine.loan_id references lending.loan, as in 04-erd.md).
+- Fixed F4 (loop 2): UC-Lending adds GetBorrowRequest (REQ-5, REQ-29) with a Member edge; REQ-30 added to BorrowBook and LendCopy, REQ-5 to CancelLoanSlot; DB-modules adds the four `idempotency_record` nodes (24 tables, as the 03 Modules table).
 - Fixed L1: file was 311 lines (over 300). Key flows (D5-6, D5-7) moved unchanged to 05-diagrams-flows.md; this file links to it.
 
 ## Open questions
@@ -51,7 +52,8 @@ flowchart LR
   Member((Member))
   Librarian((Librarian))
   subgraph Lending["Lending system boundary"]
-    BB["BorrowBook (REQ-5, REQ-8, REQ-9, REQ-29)"]
+    BB["BorrowBook (REQ-5, REQ-8, REQ-9, REQ-29, REQ-30)"]
+    GBR["GetBorrowRequest (REQ-5, REQ-29)"]
     PH["PlaceHold (REQ-6, REQ-7, REQ-29)"]
     CH["CancelHold (REQ-15)"]
     RL["RenewLoan (REQ-12, REQ-13, REQ-29)"]
@@ -64,13 +66,14 @@ flowchart LR
     P1["RegisterBorrower <<policy>> (REQ-8, REQ-9)"]
     P2["RecordFineStatus <<policy>> (REQ-9)"]
     P3["OpenBookCirculation <<policy>> (REQ-25)"]
-    P4["LendCopy <<policy>> (REQ-5, REQ-7, REQ-10, REQ-17)"]
-    P5["CancelLoanSlot <<policy>> (REQ-8)"]
+    P4["LendCopy <<policy>> (REQ-5, REQ-7, REQ-10, REQ-17, REQ-30)"]
+    P5["CancelLoanSlot <<policy>> (REQ-5, REQ-8)"]
     P6["ReleaseLoanSlot <<policy>> (REQ-8)"]
     P7["ExpireShelvedHold <<policy>> (REQ-17)"]
     P8["SendHoldReadyEmail <<policy>> (REQ-16)"]
   end
   Member --> BB
+  Member --> GBR
   Member --> PH
   Member --> CH
   Member --> RL
@@ -121,6 +124,7 @@ flowchart LR
     c2["catalog.book_availability"]
     c3["catalog.outbox"]
     c4["catalog.inbox"]
+    c5["catalog.idempotency_record"]
   end
   subgraph lending["Lending (schema lending)"]
     l1["lending.book_circulation"]
@@ -132,6 +136,7 @@ flowchart LR
     l7["lending.hold_ready_notification"]
     l8["lending.outbox"]
     l9["lending.inbox"]
+    l10["lending.idempotency_record"]
   end
   subgraph fines["Fines (schema fines)"]
     f1["fines.account"]
@@ -139,10 +144,12 @@ flowchart LR
     f3["fines.payment"]
     f4["fines.outbox"]
     f5["fines.inbox"]
+    f6["fines.idempotency_record"]
   end
   subgraph membership["Membership (schema membership)"]
     m1["membership.member"]
     m2["membership.outbox"]
+    m3["membership.idempotency_record"]
   end
   l1 -.->|ref| c1
   l5 -.->|ref| m1

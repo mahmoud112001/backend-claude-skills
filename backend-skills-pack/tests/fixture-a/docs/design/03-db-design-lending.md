@@ -12,8 +12,10 @@
 - D3-L3 `lending.loan_slot` has a lifecycle state (02 D2-15). CancelLoanSlot sets `state = 'refused'` with `refused_at` and `reason` and keeps the row, so GetBorrowRequest can report the refusal. ReleaseLoanSlot still hard deletes a `reserved` slot after LoanEnded: the loan row keeps that history (DB-11). Refused rows are excluded from the 3-loan count and from `uq_slot_member_book`, and are hard deleted by a purge job after the LQ-12 retention (proposed 30 days).
 - D3-L4 `lending.hold_ready_notification` has an FK only to `lending.hold`. Its member_id and book_id are copies taken from the hold when the row is created.
 - D3-L5 `lending.outbox.target_consumer` (F2): null = deliver to all handlers; a value = deliver only to that policy. CopyPlacedOnHoldShelf is always written as two targeted rows, so NotifyHolderOnHoldShelf never sees the delayed row and the email is sent once per placement (HoldReadyNotification invariant a).
-- D3-L6 BookAvailability rebuild (F8). Maintenance job RepublishBookAvailability (*proposed* name; technical, not a 02 command, changes no aggregate state): for each `lending.book_circulation` row, in pages ordered by `book_id`, one transaction reads the row, its `book_copy` rows and active `loan` rows, and writes one BookAvailabilityChanged outbox row with a new message_id and `version` = the row's current `version`. Catalog applies it through its normal upsert; a book whose Catalog row already holds that version is skipped by the `source_version` guard (D3-9). Run by an operator after `catalog.book_availability` is truncated or found wrong.
+- D3-L6 BookAvailability rebuild (F8). Maintenance job RepublishBookAvailability (*proposed* name; technical, not a 02 command, changes no aggregate state): for each `lending.book_circulation` row, in pages ordered by `book_id`, one transaction reads the row, its `book_copy` rows and active `loan` rows, and writes one BookAvailabilityChanged outbox row with a new message_id and `version` = the row's current `version`. Catalog applies it through its normal upsert; a book whose Catalog row already holds that version is skipped by the `source_version` guard (D3-9). Run by an operator after `catalog.book_availability` is truncated (always truncate first, as 03-db-design.md:90 says).
 - D3-L7 `lending.idempotency_record` serves borrowBook, placeHold, addCopy, checkInCopy and the optional key of renewLoan, cancelHold, withdrawCopy (F3, D3-17 to D3-20). A replayed borrowBook returns the stored 202; the outcome is then read through GetBorrowRequest.
+- Fixed F1 (loop 2): the `lending.hold.pickup_deadline` note cites RQ-4 and its proposed default instead of stating "shelved time + 3 days"; the rule stays open in RQ-4.
+- Fixed F5 (loop 2): D3-L6 requires truncating `catalog.book_availability` before RepublishBookAvailability, because an equal `source_version` is skipped.
 
 ## Open questions
 | Id | Question | Why it matters | Proposed default |
@@ -91,7 +93,7 @@ Aggregate: BookCirculation (child of BookCirculation)
 | state | text | no | 'waiting' | ck_hold_state | |
 | placed_at | timestamptz | no | none | | REQ-6 |
 | copy_id | uuid | yes | null | FK, ck_hold_shelf | set when shelved; null = never shelved |
-| pickup_deadline | timestamptz | yes | null | ck_hold_shelf | shelved time + 3 days (REQ-17); null = never shelved |
+| pickup_deadline | timestamptz | yes | null | ck_hold_shelf | per RQ-4 (proposed: end of the third calendar day in the library time zone) (REQ-17); null = never shelved |
 | closed_at | timestamptz | yes | null | ck_hold_closed | null = open (waiting or on_shelf) |
 - PK hold_id
 - FK book_id -> lending.book_circulation(book_id) ON DELETE RESTRICT

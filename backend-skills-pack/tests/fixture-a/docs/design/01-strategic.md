@@ -20,6 +20,7 @@
 - D1-11 Rules with stated values are taken from the brief as facts: 3 loans (REQ-8), 14 days (REQ-10, REQ-12), one renewal (REQ-12), 3-day hold shelf (REQ-17), 0.25 per day late (REQ-19). Everything else the brief leaves open stays an open question.
 - D1-12 Fixed F1 (07-review-loop1.md, STR-03; closes carried-forward CQ-7 at the strategic level): the Catalog/Membership "separate ways" row is replaced by Membership upstream of Catalog, open host service, synchronous in-process query ResolveCurrentMember at the API guard; the same query is added to the Membership to Lending and Membership to Fines rows; D1-10 names it as the sole synchronous exception. Why: the Librarian check for AddBook (REQ-24) and the member checks in Lending and Fines need the role from Membership (REQ-29).
 - D1-13 Fixed F9 (07-review-loop1.md): REQ-30 (pick up a shelved hold copy) is owned by Lending alone, proposed, pending RQ-1. Why: Lending owns holds, the hold shelf and copies (REQ-17, REQ-21, D1-2), and the pickup turns a shelved copy into a loan; either answer to RQ-1 (holder's Borrow or a librarian desk action) stays inside Lending, so the owner does not depend on RQ-1. RQ-1 itself is not decided here. Proposed.
+- D1-14 Fixed F6 (loop 2) (07-review.md, DOC-04): GetBorrowRequest, the public Lending query exposed by 06-api.md:79, is added to the Lending public operations in Published language.
 
 ## Open questions
 | Id | Question | Why it matters | Proposed default |
@@ -86,7 +87,7 @@ External: Lending calls a bought email service through an anticorruption adapter
 | Context | Integration events (names) | Public operations (names) |
 |---|---|---|
 | Catalog | BookAdded | SearchCatalog, GetBookDetails, AddBook |
-| Lending | BookAvailabilityChanged, LoanEnded | BorrowBook, PlaceHold, CancelHold, RenewLoan, CheckInCopy, AddCopy, WithdrawCopy, ListMyLoans, ListMyHolds, ListOverdueLoans |
+| Lending | BookAvailabilityChanged, LoanEnded | BorrowBook, PlaceHold, CancelHold, RenewLoan, CheckInCopy, AddCopy, WithdrawCopy, ListMyLoans, ListMyHolds, ListOverdueLoans, GetBorrowRequest |
 | Fines | FineBalanceChanged | GetMyFines, RecordFinePayment |
 | Membership | MemberRegistered | RegisterMember, ResolveCurrentMember |
 

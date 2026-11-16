@@ -15,4 +15,4 @@ None.
 
 | # | Severity | Rule | Location | Problem |
 |---|---|---|---|---|
-| L1 | Medium | TAC-04 | 02-tactical-lending.md:103 | event CopyPlacedOnHoldShelf does not read as a past-tense fact |
+| L1 | Medium | TAC-04 | 02-tactical-lending.md:107 | event CopyPlacedOnHoldShelf does not read as a past-tense fact |

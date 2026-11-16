@@ -10,7 +10,7 @@ paths:
     post:
       operationId: borrowBook
       tags: [lending]
-      summary: BorrowBook (REQ-5, REQ-8, REQ-9, REQ-29)
+      summary: BorrowBook (REQ-5, REQ-8, REQ-9, REQ-29, REQ-30 (RQ-1 default))
       description: Reserves a loan slot, then waits up to 2 seconds for LendCopy (D6-3). 201 when LoanStarted arrived, 202 when still pending; read the outcome with getBorrowRequest.
       x-actor: Member
       x-idempotency: Idempotency-Key required; replay returns the same loanId (Lending D2-5); natural guard loan-for-book-exists

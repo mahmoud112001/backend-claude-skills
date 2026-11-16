@@ -1,8 +1,7 @@
 # Design state
 
 Profile: [project-profile.md](project-profile.md) · Rules: D:/I-fikra/backend-claude-skills/.claude/skills/backend-design-team/references/default-rulebook.md
-eferences\default-rulebook.md
-Updated: 2026-11-16 · Current phase: 7 · Status: running
+Updated: 2026-11-16 · Current phase: 8 · Status: running
 
 ## Phases
 | # | Phase | Status | Gate (script High / self-check MUST fails) | Retries | Files |
@@ -14,7 +13,7 @@ Updated: 2026-11-16 · Current phase: 7 · Status: running
 | 4 | ERD | passed | 0 High / 0 MUST fails | 0 | [erd](04-erd.md) |
 | 5 | Diagrams | passed | 0 High after 1 retry (DOC-01 line count, fixed by split) / 0 MUST fails | 1 | [diagrams](05-diagrams.md), [flows](05-diagrams-flows.md) |
 | 6 | API | passed | 0 High / 0 MUST fails (API-01..08, DOC-01..04 PASS); no OpenAPI validator run | 0 | [api](06-api.md), [root](06-api.openapi.yaml), [common](06-api.openapi-common.yaml), [catalog](06-api.openapi-catalog.yaml), [lending](06-api.openapi-lending.yaml), [membership](06-api.openapi-membership.yaml), [fines](06-api.openapi-fines.yaml) |
-| 7 | Review and fix (loop 1/2 done; review 2 next) | running | review 1: 3 High, 7 Medium, 3 Low; all 13 fixed; lint after fixes 0 High (L1 Medium rejected by review 1) | 0 | [lint](07-lint.md), [review 1](07-review-loop1.md), [fixes 1](07-fixes-loop1.md) |
+| 7 | Review and fix (2 of 2 loops) | passed | review 1: 3 High, 7 Medium, 3 Low, 13 fixed; review 2 (installed design-reviewer, fable): 0 High, 5 Medium, 7 Low, 11 fixed by authors + F12 by orchestrator, F11 left open; lint after fixes 0 High (L1 rejected twice) | 0 | [lint](07-lint.md), [review 1](07-review-loop1.md), [fixes 1](07-fixes-loop1.md), [review 2](07-review.md) |
 | 8 | Arrange | pending | | | |
 
 ## Waiting for user
@@ -39,6 +38,7 @@ none (all profile answers received and written to the profile, 2026-11-15)
 | Loop | High | Medium | Low | Fixed | Left open |
 |---|---|---|---|---|---|
 | 1 | 3 | 7 | 3 | 13 of 13 (F1..F13; see [fixes 1](07-fixes-loop1.md)) | RQ-1..RQ-5 raised as business questions (see 07-review-loop1.md) |
+| 2 | 0 | 5 | 7 | 11 of 12 (F1..F10, F12; authors add "Fixed F<n> (loop 2)" to Decisions); not re-reviewed (loop cap) | F11 Low: brief Q-8 (renew an overdue loan?) has no proposed default; a business decision, left open |
 
 ## Medium and Low gate findings carried forward
 - none. L1 TAC-04 rejected by review 1 (lint heuristic false positive); CQ-6 resolved (F11, 03 D3-9); CQ-7 resolved (F1).
