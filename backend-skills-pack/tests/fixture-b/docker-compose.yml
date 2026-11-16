@@ -1,0 +1,18 @@
+services:
+  app:
+    build: .
+    ports: ["50051:50051"]
+    environment:
+      DB_DSN: "stockroom:stockroom@tcp(db:3306)/stockroom?parseTime=true"
+      NATS_URL: "nats://broker:4222"
+    depends_on: [db, broker]
+  db:
+    image: mariadb:11.4
+    environment:
+      MARIADB_DATABASE: stockroom
+      MARIADB_USER: stockroom
+      MARIADB_PASSWORD: stockroom
+      MARIADB_ROOT_PASSWORD: root
+  broker:
+    image: nats:2.10
+    command: ["-js"]

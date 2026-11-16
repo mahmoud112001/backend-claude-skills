@@ -1,0 +1,23 @@
+# Terms that must never appear in skills/ or agents/ (case-insensitive regex, one per line).
+# category | regex
+# --- our own project, company and people names
+project | \bi-?fikra\b|\bfikra\b|i-fikra-hub
+people | \bmahmoud\b|\bawad\b|ifikra\.backend|@gmail\.com
+# --- domain words from our own project docs (data design, SRS)
+our-domain | \borders\b|order_lines?|\bbilling\b|\binvoices?\b|\benrol+ments?\b|\bsubscriptions?\b
+our-domain | \bcourses?\b|\bbookings?\b|\bpayments?\b|\bwallets?\b|\bmarketplace_\w+|\bacademy\b|\btalents?\b
+our-domain | \bperson_id\b|\bplatform_id\b|\bbuyer\b|\bvendor_id\b|\bprice_(usd|egp)\b|\bname_ar\b
+# --- the test fixtures' domains (skills must not be tuned to them)
+fixture-a | (?<!doc-)\blibrarian\b|\bbooks?\b|\bloans?\b|\bborrow|\bshelfmark\b|\bisbn\b|\blibrary (card|member|loan|book)s?\b
+# Documented exceptions (generic software words, not domain words), so they are not in the regexes:
+# bare "library" (a software package: "standard library", "a maintained library" in reuse-first);
+# the agent name "doc-librarian" (named by the user); a "vendor"/vendored directory; a Claude Code
+# plugin "marketplace". Bare "library" IS checked in the design-output leak test (grade_runs.py).
+fixture-b | \bsku\b|\bwarehouses?\b|\bstock\b|\binventory\b|\bstockroom\b|\breorder\b
+# --- a store, broker, framework, currency or event format used as an assumption
+store | \bpostgres(ql)?\b|\bmysql\b|\bmariadb\b|\bmongo(db)?\b|\bsqlite\b|\boracle\b|sql ?server|\bdynamodb\b|\bcassandra\b|\bredis\b|\bneo4j\b|\bsupabase\b
+broker | \bkafka\b|\brabbitmq\b|\bnats\b|\bjetstream\b|\bsqs\b|\bcloudevents\b|\bavro\b
+stack | \bnestjs\b|\bdjango\b|\bspring\b|\blaravel\b|\bexpress\.?js\b|\brails\b|\bktor\b|\bfastapi\b
+currency | \b(usd|egp|eur|gbp|sar)\b
+# --- absolute paths and usernames
+path | (?<![A-Za-z])[A-Za-z]:[\\/][A-Za-z]|/Users/|/home/|\\Users\\|~/\.claude/projects

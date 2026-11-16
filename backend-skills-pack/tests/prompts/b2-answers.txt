@@ -1,0 +1,8 @@
+/backend-design-team resume
+
+Answers to the questions you are waiting for (use only the ones you asked; I confirm your proposed defaults for anything else):
+- Architecture: modular monolith, a single Go binary, one package per bounded context
+- API contract file: yes, a .proto file
+- Output folder: docs/design/ (I confirm the default)
+- Anything about stack, ids, errors, events, naming or diagrams: follow README.md, ARCHITECTURE.md and docker-compose.yml.
+Business questions (reservation expiry, thresholds) stay open questions; do not decide them.

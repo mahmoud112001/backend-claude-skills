@@ -1,0 +1,62 @@
+<!doctype html>
+<!-- Fixture A: one-page clickable prototype of a small library lending app.
+     No backend exists yet. This file is the whole prototype. -->
+<html lang="en">
+<head><meta charset="utf-8"><title>Shelfmark – prototype</title></head>
+<body>
+<h1>Shelfmark</h1>
+<p>A lending app for one small public library. Members find books, borrow copies and place holds; librarians run the desk.</p>
+
+<section id="screen-catalog">
+  <h2>Screen 1 – Catalog (any visitor)</h2>
+  <input placeholder="Search title or author"> <button>Search</button>
+  <table>
+    <tr><th>Title</th><th>Author</th><th>Available copies</th><th></th></tr>
+    <tr><td>The Salt Road</td><td>A. Rivera</td><td>2 of 3</td><td><a href="#screen-book">Details</a></td></tr>
+    <tr><td>Night Orchard</td><td>K. Osei</td><td>0 of 1</td><td><a href="#screen-book">Details</a></td></tr>
+  </table>
+</section>
+
+<section id="screen-book">
+  <h2>Screen 2 – Book detail (signed-in member)</h2>
+  <p>Night Orchard · K. Osei · ISBN 978-0-00-000000-0 · 1 copy, currently on loan (due 12 May)</p>
+  <button>Borrow</button> <small>Shown only when a copy is available.</small>
+  <button>Place hold</button> <small>Shown when no copy is available. Holds are served first come, first served.</small>
+  <p class="note">You can have at most 3 books on loan. You cannot borrow while you owe fines.</p>
+</section>
+
+<section id="screen-my-loans">
+  <h2>Screen 3 – My loans (signed-in member)</h2>
+  <table>
+    <tr><th>Title</th><th>Borrowed</th><th>Due</th><th></th></tr>
+    <tr><td>The Salt Road</td><td>1 May</td><td>15 May</td><td><button>Renew</button></td></tr>
+  </table>
+  <p class="note">Loans last 14 days. A loan can be renewed once, for another 14 days, unless another member holds the book.</p>
+  <h3>My holds</h3>
+  <table><tr><th>Title</th><th>Position</th><th></th></tr>
+    <tr><td>Night Orchard</td><td>1</td><td><button>Cancel hold</button></td></tr></table>
+  <p class="note">When your held book comes back, we email you and keep it on the hold shelf for 3 days.</p>
+  <h3>My fines</h3>
+  <p>Total owed: 0.75 · <small>Fines are added automatically when a book is returned late: 0.25 per day late.</small></p>
+</section>
+
+<section id="screen-desk">
+  <h2>Screen 4 – Librarian desk</h2>
+  <label>Scan copy barcode <input></label> <button>Check in</button>
+  <small>Checking in a returned copy ends the loan. If someone holds the book, the copy goes to the hold shelf.</small>
+  <h3>Overdue loans</h3>
+  <table><tr><th>Member</th><th>Title</th><th>Days late</th></tr>
+    <tr><td>J. Park</td><td>Tide Tables</td><td>4</td></tr></table>
+  <h3>Take a fine payment</h3>
+  <label>Member card <input></label> <label>Amount <input></label> <button>Record payment</button>
+</section>
+
+<section id="screen-admin">
+  <h2>Screen 5 – Catalogue admin (librarian)</h2>
+  <button>Add book</button> <small>Title, author, ISBN.</small>
+  <button>Add copy</button> <small>Barcode for a new physical copy of a book.</small>
+  <button>Withdraw copy</button> <small>Damaged or lost copies; a copy on loan cannot be withdrawn.</small>
+  <button>Register member</button> <small>Name, email, card number.</small>
+</section>
+</body>
+</html>

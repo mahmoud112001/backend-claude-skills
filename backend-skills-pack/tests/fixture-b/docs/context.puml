@@ -1,0 +1,10 @@
+@startuml
+title Stockroom – system context (prototype)
+actor "Warehouse staff" as staff
+actor "Purchasing" as purchasing
+node "Outbound shipping system" as shipping
+rectangle "Stockroom" as stockroom
+staff --> stockroom : receive, count, adjust
+purchasing --> stockroom : review reorder suggestions
+shipping --> stockroom : reserve / release / pick (gRPC)
+@enduml
