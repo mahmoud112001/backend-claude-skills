@@ -7,7 +7,7 @@ Usage:
 Spec: a JSON list of checks, each one of
   {"id": "R3", "kind": "import", "from": "src/*/domain/**", "forbid": "infrastructure|^requests$",
    "severity": "high", "fix": "inject a port"}
-  {"id": "R5", "kind": "grep", "files": "migrations/**/*.sql", "pattern": "REFERENCES\\s+orders",
+  {"id": "R5", "kind": "grep", "files": "migrations/**/*.sql", "pattern": "REFERENCES\\s+other_module\\.",
    "severity": "high", "fix": "..."}
 "from"/"files" are globs relative to ROOT (** = any depth). "forbid"/"pattern" are regexes,
 matched against the imported module name or the line. An optional "unless" regex skips a

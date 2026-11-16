@@ -15,7 +15,7 @@ Use aliases only: `haiku`, `sonnet`, `opus`, `fable`. Never write a version numb
 
 | Task type | Alias | Why |
 |---|---|---|
-| Search, listing, inventory, summaries, triage, log reading | haiku | No judgement, so speed and cost matter most |
+| Search, listing, cataloguing, summaries, triage, log reading | haiku | No judgement, so speed and cost matter most |
 | Routine edits, mechanical fixes, renames, test scaffolding, diagrams, tool-driven checks | sonnet | Reliable code changes at moderate cost |
 | Design, architecture, DDD modelling, security review, independent review of someone else's work | opus | Judgement-heavy, where a wrong call costs more than the tokens |
 | The hardest and longest-running work: multi-day design, deep audits, problems sonnet and opus both failed | fable | Highest capability, highest cost. Use rarely |

@@ -36,7 +36,7 @@ Typical mappings, used only when the rulebook states the rule:
 | Rule | Check |
 |---|---|
 | A module reaches another only through its public contract | `import` from `src/<a>/**` forbid `^<b>\.(domain|infrastructure|api)\b` (one check per module pair, or a regex excluding self) |
-| Domain imports no infrastructure | `import` from `**/domain/**` forbid `infrastructure|^requests|^sqlalchemy|^django|EntityFramework` |
+| Domain imports no infrastructure | `import` from `**/domain/**` forbid `infrastructure|<the persistence, HTTP and framework packages the rulebook names>` |
 | Aggregates refer to others by id | manual. Grep helps: other modules' types in domain fields or annotations |
 | Events go to the outbox in the same transaction | `grep` for `publish(` / `send(` in repositories and handlers, plus manual review of the save path |
 | No FK or join across modules | `grep` `REFERENCES\s+<other-module-table>` and `JOIN\s+<other-table>` in migrations, SQL and ORM mappings |
