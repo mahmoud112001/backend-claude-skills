@@ -1,0 +1,2 @@
+# path	line	match	reason (judged generic, S4 2026-11-17)
+skills/backend-design-team/SKILL.md	44	Order	generic English ("Order matters"), not the Orders domain
