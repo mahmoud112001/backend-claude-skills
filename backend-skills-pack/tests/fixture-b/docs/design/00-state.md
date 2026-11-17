@@ -1,7 +1,7 @@
 # Design state
 
 Profile: [project-profile.md](project-profile.md) · Rules: D:/I-fikra/backend-claude-skills/.claude/skills/backend-design-team/references/default-rulebook.md, D:/I-fikra/backend-claude-skills/backend-skills-pack/tests/fixture-b/ARCHITECTURE.md
-Updated: 2026-11-17 · Current phase: 5 · Status: running
+Updated: 2026-11-17 · Current phase: 6 · Status: running
 
 ## Phases
 | # | Phase | Status | Gate (script High / self-check MUST fails) | Retries | Files |
@@ -11,8 +11,8 @@ Updated: 2026-11-17 · Current phase: 5 · Status: running
 | 2 | Tactical (cat, stk, pur) | passed | 0 / 0 | 0 | [cat](02-tactical-catalog.md), [stk](02-tactical-stock.md), [pur](02-tactical-purchasing.md) |
 | 3 | Database | passed | 0 / 0 | 0 | [03](03-db-design.md) + catalog, stock, purchasing parts |
 | 4 | ERD | passed | 0 / 0 | 0 | [04](04-erd.md) |
-| 5 | Diagrams | running | | 0 | |
-| 6 | API | pending | | | |
+| 5 | Diagrams | passed | 0 / 0 | 0 | [05](05-diagrams.md) |
+| 6 | API | running | | 0 | |
 | 7 | Review and fix (loop 0/2) | pending | | | |
 | 8 | Arrange | pending | | | |
 
