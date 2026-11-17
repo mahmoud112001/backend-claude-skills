@@ -4,7 +4,7 @@ Usage: python -I scripts/check_skill.py [SKILL_DIR ...]   (default: every folder
 Checks: name == folder; description <= 45 words; body <= 150 lines; references/ one level,
 each <= 200 lines; no README in the skill folder; model is an alias and a "Model:" reason
 line exists; scripts import only the standard library and no network modules.
-Exit 1 if any check fails. Standard library only.
+Exit 1 if any check fails. Documented exceptions (EXCEPTIONS) print as WARN. Standard library only.
 """
 from __future__ import annotations
 
@@ -18,6 +18,16 @@ import skillmeta as sm  # noqa: E402
 MAX_DESC_WORDS, MAX_BODY, MAX_REF = 45, 150, 200
 ALIASES = {"haiku", "sonnet", "opus", "fable", "inherit"}
 NETWORK = {"socket", "http", "urllib.request", "requests", "httpx", "ftplib", "smtplib", "aiohttp"}
+# Documented, accepted exceptions (SELECTION.md, AUDIT.md): reported as WARN, never as PASS.
+EXCEPTIONS = {
+    "skill-creator": {
+        "body <= 150 lines": "upstream body kept (SELECTION.md: the one exception to the 150-line rule)",
+        "references one level, <= 200 lines": "upstream references/schemas.md kept",
+        "quick_validate.py: stdlib only, no network": "imports yaml (PyYAML, third party): quick_validate needs it",
+        "package_skill.py: stdlib only, no network": "imports quick_validate, which needs PyYAML",
+        "generate_review.py: stdlib only, no network": "http.server on 127.0.0.1 only, for the local eval viewer; --static avoids it",
+    },
+}
 
 
 def script_imports(path: Path) -> set[str]:
@@ -51,9 +61,9 @@ def check(skill: Path) -> list[tuple[str, bool, str]]:
         long = [f"{p.name}:{len(p.read_text(encoding='utf-8').splitlines())}" for p in refs.glob("*.md")
                 if len(p.read_text(encoding="utf-8").splitlines()) > MAX_REF]
         res.append(("references one level, <= 200 lines", not nested and not long, ", ".join(long)))
-    for script in sorted((skill / "scripts").glob("*.py")) if (skill / "scripts").is_dir() else []:
+    for script in sorted(p for p in skill.rglob("*.py") if "__pycache__" not in p.parts):
         mods = script_imports(script)
-        local = {p.stem for p in script.parent.glob("*.py")}
+        local = {p.stem for p in script.parent.glob("*.py")} | {d.name for d in skill.iterdir() if d.is_dir()}
         bad = sorted(m for m in mods if m.split(".")[0] not in sys.stdlib_module_names and m.split(".")[0] not in local)
         net = sorted(m for m in mods if m in NETWORK or m.split(".")[0] in NETWORK)
         res.append((f"{script.name}: stdlib only, no network", not bad and not net, ", ".join(bad + net)))
@@ -66,12 +76,17 @@ def main(argv: list[str] | None = None) -> int:
     failed = 0
     for d in dirs:
         results = check(d)
-        bad = [r for r in results if not r[1]]
+        allowed = EXCEPTIONS.get(d.name, {})
+        bad = [r for r in results if not r[1] and r[0] not in allowed]
+        warn = [r for r in results if not r[1] and r[0] in allowed]
         failed += bool(bad)
         summary = "; ".join(f"{n}: {v}" for n, ok, v in results if v and n.startswith(("desc", "body")))
-        print(f"{'PASS' if not bad else 'FAIL'} {d.name}  ({summary})")
+        status = "FAIL" if bad else ("WARN" if warn else "PASS")
+        print(f"{status} {d.name}  ({summary})")
         for name, _, detail in bad:
             print(f"   x {name} {detail}")
+        for name, _, detail in warn:
+            print(f"   ! {name} {detail} -- accepted: {allowed[name]}")
     return 1 if failed else 0
 
 

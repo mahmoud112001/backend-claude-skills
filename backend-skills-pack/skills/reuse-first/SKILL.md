@@ -1,6 +1,6 @@
 ---
 name: reuse-first
-description: Before writing a helper, utility, integration or dependency, finds what already exists (repo, standard library, installed packages, then at most two libraries compared) and returns one REUSE, ADD or WRITE verdict. Not for renames, bug fixes, explanations or edits to existing code.
+description: Use before writing a helper, utility, integration or dependency, or when asked whether to write code or use a library. Finds what exists (repo, standard library, installed packages, at most two libraries compared) and returns REUSE, ADD or WRITE. Not for renames or bug fixes.
 context: fork
 agent: Explore
 model: haiku

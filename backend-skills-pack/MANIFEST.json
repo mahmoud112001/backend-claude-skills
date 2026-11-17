@@ -1,0 +1,298 @@
+{
+  "pack": "backend-skills-pack",
+  "token_rule": "(len(name) + len(description)) / 4",
+  "skills": [
+    {
+      "name": "api-endpoints",
+      "origin": "adapted",
+      "upstream_skill": "api-design + contract-first",
+      "source": "github.com/affaan-m/ECC v2.2.3 (installed copy)",
+      "sha": "none: no pinned clone (AUDIT.md, Not verified)",
+      "licence": "MIT",
+      "audit_verdict": "SAFE",
+      "model": "opus",
+      "manual_only": false,
+      "description_chars": 302,
+      "description_tokens": 75
+    },
+    {
+      "name": "architecture-conformance",
+      "origin": "mine",
+      "upstream_skill": "-",
+      "source": "-",
+      "sha": "-",
+      "licence": "yours (no licence file)",
+      "audit_verdict": "own; pack gate",
+      "model": "sonnet",
+      "manual_only": false,
+      "description_chars": 323,
+      "description_tokens": 80
+    },
+    {
+      "name": "backend-design-team",
+      "origin": "mine",
+      "upstream_skill": "-",
+      "source": "-",
+      "sha": "-",
+      "licence": "yours (no licence file)",
+      "audit_verdict": "own; pack gate",
+      "model": "sonnet",
+      "manual_only": true,
+      "description_chars": 294,
+      "description_tokens": 73
+    },
+    {
+      "name": "db-design-erd",
+      "origin": "adapted",
+      "upstream_skill": "data-modeling-discipline",
+      "source": "backend-design plugin v0.2.0 by sheitabrk (installed copy)",
+      "sha": "none: no pinned clone (SELECTION decision 1)",
+      "licence": "MIT",
+      "audit_verdict": "SAFE",
+      "model": "opus",
+      "manual_only": false,
+      "description_chars": 295,
+      "description_tokens": 73
+    },
+    {
+      "name": "ddd-strategic",
+      "origin": "mine",
+      "upstream_skill": "-",
+      "source": "-",
+      "sha": "-",
+      "licence": "yours (no licence file)",
+      "audit_verdict": "own; pack gate",
+      "model": "opus",
+      "manual_only": false,
+      "description_chars": 280,
+      "description_tokens": 70
+    },
+    {
+      "name": "ddd-tactical",
+      "origin": "mine",
+      "upstream_skill": "-",
+      "source": "-",
+      "sha": "-",
+      "licence": "yours (no licence file)",
+      "audit_verdict": "own; pack gate",
+      "model": "opus",
+      "manual_only": false,
+      "description_chars": 296,
+      "description_tokens": 74
+    },
+    {
+      "name": "dead-code-cleaner",
+      "origin": "mine",
+      "upstream_skill": "-",
+      "source": "-",
+      "sha": "-",
+      "licence": "yours (no licence file)",
+      "audit_verdict": "own; pack gate",
+      "model": "sonnet",
+      "manual_only": true,
+      "description_chars": 270,
+      "description_tokens": 67
+    },
+    {
+      "name": "design-diagrams",
+      "origin": "mine",
+      "upstream_skill": "-",
+      "source": "-",
+      "sha": "-",
+      "licence": "yours (no licence file)",
+      "audit_verdict": "own; pack gate",
+      "model": "sonnet",
+      "manual_only": false,
+      "description_chars": 265,
+      "description_tokens": 66
+    },
+    {
+      "name": "design-docs-organizer",
+      "origin": "adapted",
+      "upstream_skill": "living-docs-governance",
+      "source": "github.com/affaan-m/ECC v2.2.3 (installed copy)",
+      "sha": "none: no pinned clone (AUDIT.md, Not verified)",
+      "licence": "MIT",
+      "audit_verdict": "SAFE",
+      "model": "haiku",
+      "manual_only": false,
+      "description_chars": 273,
+      "description_tokens": 68
+    },
+    {
+      "name": "design-review-fix",
+      "origin": "adapted",
+      "upstream_skill": "ponytail-audit (+ intent-driven-development, yours)",
+      "source": "github.com/DietrichGebert/ponytail",
+      "sha": "96608e078b2d5ea607c5c3b8b5a54d1c1fba6846",
+      "licence": "MIT",
+      "audit_verdict": "SAFE-WITH-CHANGES",
+      "model": "fable",
+      "manual_only": false,
+      "description_chars": 296,
+      "description_tokens": 74
+    },
+    {
+      "name": "dispatching-parallel-agents",
+      "origin": "adapted",
+      "upstream_skill": "dispatching-parallel-agents",
+      "source": "github.com/obra/superpowers",
+      "sha": "22f0b463e7a5e579904dd6211a520321035526f7",
+      "licence": "MIT",
+      "audit_verdict": "SAFE",
+      "model": "sonnet",
+      "manual_only": false,
+      "description_chars": 316,
+      "description_tokens": 79
+    },
+    {
+      "name": "model-router",
+      "origin": "mine",
+      "upstream_skill": "-",
+      "source": "-",
+      "sha": "-",
+      "licence": "yours (no licence file)",
+      "audit_verdict": "own; pack gate",
+      "model": "haiku",
+      "manual_only": false,
+      "description_chars": 313,
+      "description_tokens": 78
+    },
+    {
+      "name": "project-understanding",
+      "origin": "adapted",
+      "upstream_skill": "codebase-onboarding (+ intent-driven-development, yours)",
+      "source": "github.com/affaan-m/ECC v2.2.3 (installed copy)",
+      "sha": "none: no pinned clone (AUDIT.md, Not verified)",
+      "licence": "MIT",
+      "audit_verdict": "SAFE",
+      "model": "sonnet",
+      "manual_only": false,
+      "description_chars": 277,
+      "description_tokens": 69
+    },
+    {
+      "name": "reuse-first",
+      "origin": "adapted",
+      "upstream_skill": "search-first",
+      "source": "github.com/affaan-m/ECC v2.2.3 (installed copy)",
+      "sha": "none: no pinned clone (AUDIT.md, Not verified)",
+      "licence": "MIT",
+      "audit_verdict": "SAFE",
+      "model": "haiku",
+      "manual_only": false,
+      "description_chars": 287,
+      "description_tokens": 71
+    },
+    {
+      "name": "skill-creator",
+      "origin": "adopted",
+      "upstream_skill": "skill-creator",
+      "source": "github.com/anthropics/skills",
+      "sha": "1780c5e5a552fd4d1c9d6a7b0cab26b0c2bef064",
+      "licence": "Apache-2.0",
+      "audit_verdict": "SAFE-WITH-CHANGES",
+      "model": "opus",
+      "manual_only": true,
+      "description_chars": 230,
+      "description_tokens": 57
+    },
+    {
+      "name": "skill-security-audit",
+      "origin": "mine",
+      "upstream_skill": "-",
+      "source": "-",
+      "sha": "-",
+      "licence": "yours (no licence file)",
+      "audit_verdict": "own; pack gate",
+      "model": "opus",
+      "manual_only": true,
+      "description_chars": 292,
+      "description_tokens": 73
+    },
+    {
+      "name": "test-driven-development",
+      "origin": "adapted",
+      "upstream_skill": "test-driven-development",
+      "source": "github.com/obra/superpowers",
+      "sha": "22f0b463e7a5e579904dd6211a520321035526f7",
+      "licence": "MIT",
+      "audit_verdict": "SAFE",
+      "model": "sonnet",
+      "manual_only": false,
+      "description_chars": 291,
+      "description_tokens": 72
+    },
+    {
+      "name": "verification-before-completion",
+      "origin": "adopted",
+      "upstream_skill": "verification-before-completion",
+      "source": "github.com/obra/superpowers",
+      "sha": "22f0b463e7a5e579904dd6211a520321035526f7",
+      "licence": "MIT",
+      "audit_verdict": "SAFE",
+      "model": "sonnet",
+      "manual_only": false,
+      "description_chars": 259,
+      "description_tokens": 64
+    }
+  ],
+  "agents": [
+    {
+      "name": "api-designer",
+      "model": "opus",
+      "preloads": "api-endpoints",
+      "description_chars": 308,
+      "description_tokens": 77
+    },
+    {
+      "name": "db-designer",
+      "model": "opus",
+      "preloads": "db-design-erd",
+      "description_chars": 263,
+      "description_tokens": 65
+    },
+    {
+      "name": "design-reviewer",
+      "model": "fable",
+      "preloads": "design-review-fix",
+      "description_chars": 271,
+      "description_tokens": 67
+    },
+    {
+      "name": "diagram-writer",
+      "model": "sonnet",
+      "preloads": "db-design-erd, design-diagrams",
+      "description_chars": 281,
+      "description_tokens": 70
+    },
+    {
+      "name": "doc-librarian",
+      "model": "haiku",
+      "preloads": "design-docs-organizer",
+      "description_chars": 269,
+      "description_tokens": 67
+    },
+    {
+      "name": "project-reader",
+      "model": "sonnet",
+      "preloads": "project-understanding",
+      "description_chars": 206,
+      "description_tokens": 51
+    },
+    {
+      "name": "strategic-designer",
+      "model": "opus",
+      "preloads": "ddd-strategic",
+      "description_chars": 264,
+      "description_tokens": 66
+    },
+    {
+      "name": "tactical-designer",
+      "model": "opus",
+      "preloads": "ddd-tactical",
+      "description_chars": 277,
+      "description_tokens": 69
+    }
+  ]
+}

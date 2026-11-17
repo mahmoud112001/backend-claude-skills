@@ -1,0 +1,20 @@
+# Reviewed false positives for scripts/scan.py. One per line: path-glob<TAB>pattern<TAB>reason.
+# Add a line only after reading the hit. The gate lists every waived hit, and unused waivers are reported.
+skills/skill-security-audit/scripts/scan.py	bang-injection	regex definition of the pattern itself (line 30); nothing runs
+skills/skill-security-audit/scripts/scan.py	base64	regex definition
+skills/skill-security-audit/scripts/scan.py	curl/wget	regex definition
+skills/skill-security-audit/scripts/scan.py	fetch/http-lib	regex definition
+skills/skill-security-audit/scripts/scan.py	netcat/ssh	regex definition
+skills/skill-security-audit/scripts/scan.py	cred-paths	regex definition
+skills/skill-security-audit/scripts/scan.py	dangerous-flag	regex definition
+skills/skill-security-audit/scripts/scan.py	telemetry	regex definition
+skills/skill-security-audit/scripts/scan.py	exfil	regex definition
+skills/skill-security-audit/SKILL.md	git-push	example of a required change in an audit report ("the body runs git push"); this skill runs no push
+scripts/scan.py	curl/wget	pattern names in the REJECT_CLASS set
+scripts/scan.py	netcat/ssh	pattern names in the REJECT_CLASS set
+scripts/scan.py	telemetry	pattern names in the REJECT_CLASS set
+scripts/check_skill.py	fetch/http-lib	set of network module names that the checker forbids
+skills/skill-creator/SKILL.md	exfil	prose that forbids malware and exfiltration in skills (upstream line "skills must not contain malware")
+skills/skill-creator/eval-viewer/viewer.html	fetch/http-lib	same-origin fetch("/api/feedback") to the 127.0.0.1 viewer server; no external host
+skills/skill-creator/eval-viewer/viewer.html	base64	atob() decodes output files embedded in the page for display; no code is evaluated
+skills/api-endpoints/references/api-styles.md	bang-injection	GraphQL non-null marker "Payload!" before a closing backtick, in a references file read with Read (not a SKILL.md body)

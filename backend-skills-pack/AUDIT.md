@@ -1,6 +1,6 @@
 # AUDIT — session 1 (2026-11-15)
 
-Read `CONVENTIONS.md` first. Every statement here is tagged **[sourced]** (seen in a file, with path:line) or **[proposed]** (my judgement). Nothing in `_quarantine/` was run, installed, enabled or sourced. Only my own stdlib scripts (`scripts/*.py`, run with `python -I`) read the files.
+Read `_work/CONVENTIONS.md` first. The CSV files named here (`scan_hits.csv`, `scan_summary.csv`, `inventory.csv`, …) are in `_work/`. Every statement here is tagged **[sourced]** (seen in a file, with path:line) or **[proposed]** (my judgement). Nothing in `_quarantine/` was run, installed, enabled or sourced. Only my own stdlib scripts (`scripts/*.py`, run with `python -I`) read the files.
 
 ## Method
 
@@ -109,3 +109,12 @@ Not cloned (installed already, not in the source list):
 - Whether the frontmatter field `model` accepts the aliases `haiku`/`sonnet`/`opus`/`fable`. The docs say "the same values as `/model`, or `inherit`" and don't list them (code.claude.com/docs/en/skills).
 - The script bodies of non-shortlisted quarantine skills (pdf, docx, pptx, xlsx, sdd-* scripts): only grep-level coverage.
 - backend-design and ECC have no pinned-SHA clone, so the installed copies were audited, not upstream.
+
+## Session 3 (2026-11-16): changes applied when the pack was assembled
+
+- **skill-creator** (SAFE-WITH-CHANGES): `eval-viewer/generate_review.py` no longer calls or defines `_kill_port` (it sent SIGTERM to any process on port 3117); the existing fallback picks a free port. Frontmatter: `disable-model-invocation: true` (its scripts write `.claude/commands/` and spawn billed `claude -p` runs) and `model: opus`. Remaining, accepted: a 127.0.0.1-only HTTP server for the viewer (`--static` avoids it), and `quick_validate.py` needs PyYAML.
+- **verification-before-completion** (SAFE): copied as is plus `model: sonnet`. No `allowed-tools`, so test commands keep their permission prompts.
+- **test-driven-development**, **dispatching-parallel-agents** (SAFE): adapted (see each SKILL.md Source line); no scripts.
+- **ponytail-review**: not added; it overlaps the bundled `/code-review` (SELECTION decision 2 is still open).
+- **skill-security-audit** (own): reworded `SKILL.md:18,37,44,45` so the body no longer contains an exclamation mark followed by a backticked command, because whether Claude Code expands that pattern inside inline code is unverified.
+- The whole pack passes `scripts/scan.py` (0 unwaived REJECT-class hits; each waiver is in `tests/scan-waivers.tsv` with its reason).

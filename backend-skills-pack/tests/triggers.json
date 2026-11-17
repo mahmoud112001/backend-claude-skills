@@ -1,0 +1,129 @@
+{
+  "_doc": "Trigger cases: per skill, 2 prompts that should trigger it and 1 that should not. For manual-only skills (disable-model-invocation: true), 'should trigger' means the user typed /name, and the 'should not' prompt asks for the same work in plain words: it must NOT auto-invoke. Run with tests/run_triggers.py.",
+  "api-endpoints": {
+    "yes": [
+      "Our tactical design for the Orders context has the commands PlaceOrder and CancelOrder and the query GetOrder. Do phase 6 of the backend design: map them to API operations with errors, idempotency and pagination.",
+      "Design the API contract for the commands and queries in our DDD tactical design: operations, error codes and idempotency keys. Design only, no code."
+    ],
+    "no": "Implement the POST /orders handler in Express with request validation."
+  },
+  "architecture-conformance": {
+    "yes": [
+      "Check whether the code in src/ follows the architecture rules written in ARCHITECTURE.md and list every violation.",
+      "Does my diff against main break any of the layering rules we wrote in docs/ddd/service-design-rules.md?"
+    ],
+    "no": "Explain in two sentences what hexagonal architecture is."
+  },
+  "backend-design-team": {
+    "yes": [
+      "/backend-design-team start prototype/",
+      "/backend-design-team resume"
+    ],
+    "no": "Run a full DDD backend design team on my prototype: profile, strategic and tactical design, database, ERD, diagrams, API, review and docs."
+  },
+  "db-design-erd": {
+    "yes": [
+      "Phase 3 of the backend design: map the aggregates of our tactical design to PostgreSQL tables with constraints, indexes and an outbox, then draw the ERD.",
+      "Turn our DDD aggregates into a database design per module and an ER diagram. Design only."
+    ],
+    "no": "Write an Alembic migration that adds a nullable phone column to the users table."
+  },
+  "ddd-strategic": {
+    "yes": [
+      "From this brief, do the DDD strategic design: subdomains (core, supporting, generic), bounded contexts, context map and ubiquitous language. Brief: a clinic app where patients book visits, doctors manage calendars, and the clinic bills insurers.",
+      "Phase 1 of a backend design for a used-goods marketplace: identify the bounded contexts and the context map between them."
+    ],
+    "no": "Write a Java class for an Order entity with getters and setters."
+  },
+  "ddd-tactical": {
+    "yes": [
+      "For the Booking bounded context, define the aggregates with their invariants, the commands and what triggers them, domain events and policies.",
+      "Phase 2 tactical design for the Payments context: entities, value objects, domain events, read models and caches."
+    ],
+    "no": "Which bounded contexts should a food delivery platform have? Just list them."
+  },
+  "dead-code-cleaner": {
+    "yes": [
+      "/dead-code-cleaner report src",
+      "/dead-code-cleaner report"
+    ],
+    "no": "Find the unused functions and the duplicated code in this repo and delete them."
+  },
+  "design-diagrams": {
+    "yes": [
+      "Phase 5 of the backend design: draw the use-case diagrams per bounded context, the database module diagram and the key command and event flows from our design files.",
+      "From our DDD design files, draw the cross-context flows of commands, events and policies as diagrams in the profile's format."
+    ],
+    "no": "Draw a Mermaid pie chart of our monthly costs: rent 50, food 30, other 20."
+  },
+  "design-docs-organizer": {
+    "yes": [
+      "Phase 8 of the backend design: move the design files into phase folders, fix the links and write the README index with a reading order.",
+      "Organize the numbered backend design files (00-project-brief.md to 07-review.md) into folders, keep every link working and prove no content was lost."
+    ],
+    "no": "Write a README for a small Python library that parses dates."
+  },
+  "design-review-fix": {
+    "yes": [
+      "Phase 7: independently review our backend design files against the prototype and the brief, and find bugs, rule violations and missing requirements.",
+      "Review the backend design documents (strategic, tactical, database, API) for DDD mistakes and requirements they miss. Do not change them."
+    ],
+    "no": "Review this Python function for bugs: def add(a, b): return a - b"
+  },
+  "dispatching-parallel-agents": {
+    "yes": [
+      "Three unrelated test files fail for different reasons: auth.test.ts (token expiry), billing.test.ts (rounding) and search.test.ts (pagination). Fix them in parallel with subagents.",
+      "I have four independent subsystems to investigate, with no shared files. Split the work across parallel agents and combine the results."
+    ],
+    "no": "Fix the single failing test in utils.test.ts; it expects trim() to remove tabs."
+  },
+  "model-router": {
+    "yes": [
+      "Which Claude model alias should I use for bulk file renaming versus a security review, and how do I switch between them in Claude Code?",
+      "Should my new subagent run on haiku or opus, and where do I set that?"
+    ],
+    "no": "Write a haiku about autumn rain."
+  },
+  "project-understanding": {
+    "yes": [
+      "Phase 0 of a backend design: read the prototype in prototype/ and write the draft project profile and the project brief.",
+      "Read our UI mockups and README and draft project-profile.md, marking each field as detected or missing, before we design the backend."
+    ],
+    "no": "Write a CONTRIBUTING.md that explains how to open a pull request."
+  },
+  "reuse-first": {
+    "yes": [
+      "I need a helper that turns titles into URL slugs in our Node app. Before writing it, check whether something already exists that we should reuse.",
+      "We need retry with exponential backoff for HTTP calls in our Python service. Should we write it ourselves or use a library?"
+    ],
+    "no": "Rename the variable usr to user in app.py."
+  },
+  "skill-creator": {
+    "yes": [
+      "/skill-creator create a skill that formats SQL files",
+      "/skill-creator improve the description of the reuse-first skill"
+    ],
+    "no": "Create a new Claude Code skill that summarizes git logs."
+  },
+  "skill-security-audit": {
+    "yes": [
+      "/skill-security-audit https://github.com/example/some-skill",
+      "/skill-security-audit .claude/skills/reuse-first"
+    ],
+    "no": "Is this third-party skill safe to install? Audit it for me: https://github.com/example/some-skill"
+  },
+  "test-driven-development": {
+    "yes": [
+      "Implement a function that validates IBAN numbers in our Python project.",
+      "Fix the bug where submit_form accepts an empty email address."
+    ],
+    "no": "Add a .gitignore entry for .env files."
+  },
+  "verification-before-completion": {
+    "yes": [
+      "I've finished the refactor. Confirm that everything passes, then tell me it's done.",
+      "Is the login bug fixed now? If the tests pass, say it's complete so I can open the PR."
+    ],
+    "no": "What does the -I flag of the Python interpreter do?"
+  }
+}

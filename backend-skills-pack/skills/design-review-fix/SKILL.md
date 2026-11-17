@@ -1,6 +1,6 @@
 ---
 name: design-review-fix
-description: Phase 7 of a backend design. Independently reviews the design files against the prototype, the brief, the default rulebook and the project rules. Finds bugs, rule violations and missing requirements, each with a concrete case and the smallest fix. Writes 07-review.md. Read-only on the design.
+description: Use to review backend design documents (phase 7). Independently checks the design files against the prototype, the brief and the rules; finds bugs, rule violations and missing requirements, each with a concrete case and smallest fix. Writes 07-review.md. Read-only on the design.
 model: fable
 allowed-tools: Read Glob Grep Write
 ---
