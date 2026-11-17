@@ -73,7 +73,9 @@ def agent_rows() -> list[dict]:
     for f in sorted((PACK / "agents").glob("*.md")):
         fm = meta(f)
         chars, tokens = cost(fm["name"], fm.get("description", ""))
-        rows.append({"name": fm["name"], "model": fm.get("model", ""), "preloads": fm.get("skills", ""),
+        rows.append({"name": fm["name"], "origin": "mine", "source": "-", "sha": "-",
+                     "licence": "yours (no licence file)", "audit_verdict": "own; pack gate",
+                     "model": fm.get("model", ""), "preloads": fm.get("skills", ""),
                      "description_chars": chars, "description_tokens": tokens})
     return rows
 

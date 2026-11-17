@@ -9,7 +9,7 @@ allowed-tools: Read Glob Grep Write
 
 Model: fable, the strongest model. The reviewer is the only check that did not write the design, so its misses ship.
 
-Source: adapted from ponytail-audit (MIT): every finding has a concrete case and the smallest fix, findings are ranked, and a "Not checked" list is required. The requirement-gap pass comes from intent-driven-development: compare the design to the stated intent, and never infer business rules.
+Source: adapted from ponytail-audit, github.com/DietrichGebert/ponytail @ 96608e078b2d5ea607c5c3b8b5a54d1c1fba6846 (MIT, text in THIRD-PARTY-NOTICES.md): every finding has a concrete case and the smallest fix, findings are ranked, and a "Not checked" list is required. The requirement-gap pass comes from intent-driven-development: compare the design to the stated intent, and never infer business rules.
 
 You did not write this design, and you change none of it. Write only `07-review.md`.
 

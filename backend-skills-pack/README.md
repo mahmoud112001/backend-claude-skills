@@ -10,6 +10,7 @@ A small, audited set of Claude Code skills and agents for backend work: designin
    ```
    bash backend-skills-pack/scripts/install.sh --project /path/to/your/project
    ```
+   On Windows PowerShell: `powershell -ExecutionPolicy Bypass -File backend-skills-pack\scripts\install.ps1 -Project C:\path\to\your\project` (same options: `-User`, `-Apply`).
    Each line says `NEW`, `SAME` or `CHANGED`. Use `--user` instead to install into `~/.claude/` for every project.
 2. **Install** by adding `--apply`. Skills are copied, never symlinked, into `<project>/.claude/skills/`, and agents into `<project>/.claude/agents/`. A copy that already exists and differs is moved to `.claude/.backend-skills-pack-backup/<time>/` first. Nothing is downloaded, and no hook or setting is changed.
 3. **Start a new session** (or `/clear`) in that project.
@@ -59,19 +60,19 @@ Each section gives what the skill does, its hard rules, when it runs, its model,
 - No production code without a failing test first; code written before its test is deleted.
 - Watch the test fail for the right reason, then pass; then run the **whole** suite.
 - Least code to pass; refactor only when green.
-- Auto · sonnet · adapted from superpowers (MIT), SAFE · 72 tokens.
+- Auto · sonnet (the loop is routine coding work) · adapted from superpowers (MIT), SAFE · 72 tokens.
 
 **verification-before-completion**: Evidence before claims. Before saying "done", "fixed" or "passing", run the command that proves it and read the output.
 - No completion claim without a fresh run in the same message.
 - An agent's "success" is checked against the diff.
 - No "should work" or "probably".
-- Auto · sonnet · adopted from superpowers (MIT), SAFE (description reworded) · 64 tokens.
+- Auto · sonnet (running a command and reading its output is routine work) · adopted from superpowers (MIT), SAFE (description reworded) · 64 tokens.
 
 **dispatching-parallel-agents**: Splits independent tasks across parallel subagents and checks the combined result.
 - One agent per independent domain, all started in one message.
 - Each prompt is self-contained and names a hand-off file; each reply is 300 words or fewer.
 - Afterwards: check for conflicts in the diff, run the full suite, spot-check one change.
-- Auto · sonnet · adapted from superpowers (MIT), SAFE · 79 tokens.
+- Auto · sonnet (splitting work and checking results is routine coordination) · adapted from superpowers (MIT), SAFE · 79 tokens.
 
 **model-router**: Says which model alias a task needs and how to switch to it, and builds the model column of this README.
 - Aliases only (haiku, sonnet, opus, fable), never version numbers.
@@ -89,9 +90,9 @@ Each section gives what the skill does, its hard rules, when it runs, its model,
 
 **skill-creator**: Writes a new skill or improves one, runs eval prompts with and without it, and tunes its description.
 - Its scripts start nested `claude -p` runs, which are billed, and write temporary files in `.claude/commands/`.
-- Upstream body kept (483 lines): the one accepted exception to the 150-line rule.
+- Upstream body kept (481 lines upstream, 484 with the pack's Model and Source lines): the one accepted exception to the 150-line rule.
 - Pack change: the eval viewer no longer kills other processes on its port.
-- Manual · opus · adopted from anthropics/skills (Apache-2.0), SAFE-WITH-CHANGES · 57 tokens.
+- Manual · opus (writing and judging a skill is design work) · adopted from anthropics/skills (Apache-2.0), SAFE-WITH-CHANGES · 57 tokens.
 
 ### The backend design team (one orchestrator, 8 phase skills, 8 agents)
 
@@ -144,7 +145,7 @@ The design team writes the rules and the design. architecture-conformance later 
 | 4 | diagram-writer (db-design-erd, ERD part) | `04-erd.md` |
 | 5 | diagram-writer (design-diagrams) | `05-diagrams.md` |
 | 6 | api-designer (api-endpoints) | `06-api.md` (+ a contract file if the profile asks) |
-| 7 | design-reviewer (design-review-fix), then the authors fix | `07-lint.md`, `07-review.md`, `07-fixes-loop<k>.md` |
+| 7 | design-reviewer (design-review-fix), then the authors fix | `07-review.md` only (the orchestrator writes `07-lint.md` and `07-fixes-loop<k>.md`) |
 | 8 | doc-librarian (design-docs-organizer) | `README.md`, final folders |
 
 The orchestrator also keeps `00-state.md` (phase table, gates, open questions), so `/backend-design-team resume` works in a new session.
@@ -197,6 +198,7 @@ A skill enters the pack only like this:
    python -I scripts/check_skill.py           # name = folder, <= 45 words, <= 150 lines, model, stdlib-only scripts
    python -I scripts/scan.py                  # security gate
    python -I scripts/pack_report.py           # MANIFEST.json + TOKEN-REPORT.md
+   python -I scripts/verify-pack.py           # full pack verification (checks A-K); exit 0 = no FAIL
    bash scripts/install.sh --project <tmp> --apply
    python -I tests/run_triggers.py <tmp> --only <name>   # billed: starts claude -p runs
    ```
@@ -222,5 +224,5 @@ Full texts: [THIRD-PARTY-NOTICES.md](THIRD-PARTY-NOTICES.md). The per-skill tabl
 - **Token counts are estimates** (characters / 4), not tokenizer counts. That manual-only descriptions stay out of the listing comes from the docs, and the test in TOKEN-REPORT.md checks it.
 - **skill-creator** needs PyYAML for `quick_validate.py`, and its eval viewer serves on 127.0.0.1 (use `--static` to avoid that).
 - **The 8 phase skills are auto skills** (an agent cannot preload a manual-only skill), so their 569 tokens are listed even when you are not designing.
-- **Windows:** use `python` or `python3` with `-I`. `install.sh` needs Git Bash (or any bash with `tar` and `diff`).
+- **Windows:** use `python` or `python3` with `-I`. `install.sh` needs Git Bash (or any bash with `tar` and `diff`); `install.ps1` needs only Windows PowerShell 5.1.
 - **Not included:** a code-review skill (ponytail-review overlaps the bundled `/code-review`) and architecture-decision-records.

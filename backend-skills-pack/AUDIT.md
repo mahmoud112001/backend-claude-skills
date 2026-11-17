@@ -113,7 +113,7 @@ Not cloned (installed already, not in the source list):
 ## Session 3 (2026-11-16): changes applied when the pack was assembled
 
 - **skill-creator** (SAFE-WITH-CHANGES): `eval-viewer/generate_review.py` no longer calls or defines `_kill_port` (it sent SIGTERM to any process on port 3117); the existing fallback picks a free port. Frontmatter: `disable-model-invocation: true` (its scripts write `.claude/commands/` and spawn billed `claude -p` runs) and `model: opus`. Remaining, accepted: a 127.0.0.1-only HTTP server for the viewer (`--static` avoids it), and `quick_validate.py` needs PyYAML.
-- **verification-before-completion** (SAFE): copied as is plus `model: sonnet`. No `allowed-tools`, so test commands keep their permission prompts.
+- **verification-before-completion** (SAFE): copied as is plus `model: sonnet`, a reworded frontmatter description (trigger first) and two added body lines (Model, Source); SKILL.md is the only changed file. No `allowed-tools`, so test commands keep their permission prompts.
 - **test-driven-development**, **dispatching-parallel-agents** (SAFE): adapted (see each SKILL.md Source line); no scripts.
 - **ponytail-review**: not added; it overlaps the bundled `/code-review` (SELECTION decision 2 is still open).
 - **skill-security-audit** (own): reworded `SKILL.md:18,37,44,45` so the body no longer contains an exclamation mark followed by a backticked command, because whether Claude Code expands that pattern inside inline code is unverified.
