@@ -1,14 +1,14 @@
 # Design state
 
 Profile: [project-profile.md](project-profile.md) · Rules: D:/I-fikra/backend-claude-skills/.claude/skills/backend-design-team/references/default-rulebook.md, D:/I-fikra/backend-claude-skills/backend-skills-pack/tests/fixture-b/ARCHITECTURE.md
-Updated: 2026-11-17 · Current phase: 1 · Status: running
+Updated: 2026-11-17 · Current phase: 2 · Status: running
 
 ## Phases
 | # | Phase | Status | Gate (script High / self-check MUST fails) | Retries | Files |
 |---|---|---|---|---|---|
 | 0 | Profile and brief | passed | 0 / 0 | 0 | [profile](project-profile.md), [brief](00-project-brief.md) |
-| 1 | Strategic | running | - | 0 | |
-| 2 | Tactical | pending | | | |
+| 1 | Strategic | passed | 0 / 0 | 0 | [01](01-strategic.md) |
+| 2 | Tactical (cat, stk, pur) | running | | 0 | |
 | 3 | Database | pending | | | |
 | 4 | ERD | pending | | | |
 | 5 | Diagrams | pending | | | |
