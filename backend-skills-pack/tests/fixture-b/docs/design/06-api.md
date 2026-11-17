@@ -28,6 +28,8 @@ The authoritative contract is [06-api.proto](06-api.proto), generated from the O
 | D6-14 | Internal read models (KnownProducts, KnownWarehouses, KnownBins, KnownAvailability) are not exposed; they serve pre-checks only. No operation returns another context's data (no product name or warehouse name outside Catalog). | API-07; R1. | stk D2-8; pur D2-8 |
 | D6-15 | `decided_by` is taken from the caller's credentials, never from the request body. | A caller must not record a decision in another person's name. | *proposed* |
 | D6-16 | Enum values follow proto style with a type prefix and a zero UNSPECIFIED value; mapping to 02: `Open`/`Released`/`Picked`/`Expired` -> `RESERVATION_STATUS_*`, `Raised`/`Accepted`/`Dismissed` -> `SUGGESTION_STATUS_*`. | Proto3 enum convention; explicit mapping keeps names traceable (DOC-04). | R6; *proposed* |
+| D6-17 | Fixed F5: ListReorderSuggestions traces to REQ-21 "Purchasing lists reorder suggestions". | Listing is now a brief requirement. | 07 F5 |
+| D6-18 | Fixed F7: ReceiveGoods and AdjustStock map a duplicate key on first root creation (same SKU and warehouse) to CONCURRENT_UPDATE [ABORTED]; retry is safe (same `request_id`). Both rows already list it; the Errors table meaning is widened. | No unmapped internal error for the race. | 07 F7; stk D2-10 |
 
 ## Open questions
 | Id | Question | Why it matters | Proposed default |
@@ -72,7 +74,7 @@ Common errors on every operation (not repeated per row): `UNAUTHENTICATED`, `ACT
 | SetLowStockThreshold | `rpc SetLowStockThreshold(SetLowStockThresholdRequest) returns (SetLowStockThresholdResponse)` | command | SetLowStockThreshold | WarehouseStaff (Q6-6) | Natural key (`sku`, `warehouse_id`), upsert: the same quantity again leaves state unchanged and raises nothing (pur D2-9, D2-3) | MISSING_FIELD [INVALID_ARGUMENT]; INVALID_THRESHOLD [INVALID_ARGUMENT]; SKU_NOT_FOUND [NOT_FOUND, retryable]; WAREHOUSE_NOT_FOUND [NOT_FOUND, retryable]; CONCURRENT_UPDATE [ABORTED] | REQ-12, REQ-13 |
 | AcceptReorderSuggestion | `rpc AcceptReorderSuggestion(AcceptReorderSuggestionRequest) returns (AcceptReorderSuggestionResponse)` | command | AcceptReorderSuggestion | Purchasing (Q6-6) | Safe to retry because a second accept succeeds with no change and no event (pur D2-7) | MISSING_FIELD [INVALID_ARGUMENT]; SUGGESTION_NOT_FOUND [NOT_FOUND]; SUGGESTION_ALREADY_DECIDED [FAILED_PRECONDITION]; CONCURRENT_UPDATE [ABORTED] | REQ-15 |
 | DismissReorderSuggestion | `rpc DismissReorderSuggestion(DismissReorderSuggestionRequest) returns (DismissReorderSuggestionResponse)` | command | DismissReorderSuggestion | Purchasing (Q6-6) | Safe to retry because a second dismiss succeeds with no change and no event (pur D2-7) | MISSING_FIELD [INVALID_ARGUMENT]; SUGGESTION_NOT_FOUND [NOT_FOUND]; SUGGESTION_ALREADY_DECIDED [FAILED_PRECONDITION]; CONCURRENT_UPDATE [ABORTED] | REQ-16 |
-| ListReorderSuggestions | `rpc ListReorderSuggestions(ListReorderSuggestionsRequest) returns (ListReorderSuggestionsResponse)` | query | ListReorderSuggestions | Purchasing (Q6-6) | n/a (read) | INVALID_PAGE_TOKEN [INVALID_ARGUMENT]; INVALID_PAGE_SIZE [INVALID_ARGUMENT] | REQ-13, REQ-15, REQ-16 |
+| ListReorderSuggestions | `rpc ListReorderSuggestions(ListReorderSuggestionsRequest) returns (ListReorderSuggestionsResponse)` | query | ListReorderSuggestions | Purchasing (Q6-6) | n/a (read) | INVALID_PAGE_TOKEN [INVALID_ARGUMENT]; INVALID_PAGE_SIZE [INVALID_ARGUMENT] | REQ-13, REQ-15, REQ-16, REQ-21 |
 
 ## Errors
 | Code | Meaning | Raised by | Retry? |
@@ -102,7 +104,7 @@ Common errors on every operation (not repeated per row): `UNAUTHENTICATED`, `ACT
 | INVALID_THRESHOLD [INVALID_ARGUMENT] | quantity < 0 (pur Q2-4) | SetLowStockThreshold | No |
 | SUGGESTION_NOT_FOUND [NOT_FOUND] | No suggestion with that id | AcceptReorderSuggestion, DismissReorderSuggestion | No |
 | SUGGESTION_ALREADY_DECIDED [FAILED_PRECONDITION] | Suggestion already has the opposite decision | AcceptReorderSuggestion, DismissReorderSuggestion | No |
-| CONCURRENT_UPDATE [ABORTED] | Version conflict after bounded server retries | all Stock commands, Purchasing commands | Yes, same request |
+| CONCURRENT_UPDATE [ABORTED] | Version conflict, or a duplicate key when two first ReceiveGoods/AdjustStock calls create the same SKU and warehouse root, after bounded server retries | all Stock commands, Purchasing commands | Yes, same request |
 | INVALID_PAGE_TOKEN [INVALID_ARGUMENT] | Token malformed or from other filters | ListReorderSuggestions | No; restart listing |
 | INVALID_PAGE_SIZE [INVALID_ARGUMENT] | page_size < 0 or > 200 | ListReorderSuggestions | No |
 

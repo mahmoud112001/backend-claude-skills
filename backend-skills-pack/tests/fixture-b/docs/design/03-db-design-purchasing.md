@@ -12,6 +12,11 @@ Part of [03-db-design.md](03-db-design.md). The shared conventions are D3-1 to D
 | D3-P1 | The value objects AvailabilitySnapshot, TriggerSnapshot and SuggestionDecision are embedded columns, because each aggregate holds one of each. | DB-03: a single value object is embedded. | pur Entities |
 | D3-P2 | `is_below` is stored as 02 says. A CHECK ties it to `last_available < quantity`, so it can never drift from its definition. | pur Entities: is_below is derived. | REQ-13, pur D2-3 |
 | D3-P3 | `pur_reorder_suggestion.threshold_id` has an FK to `pur_low_stock_threshold` (same module) with ON DELETE RESTRICT. Thresholds are never deleted (pur Q2-6). | DB-04 inside a module. | pur Aggregates |
+| D3-P4 | The internal events LowStockThresholdSet, LowStockDetected and AvailabilityRecovered are written to `pur_outbox` with `subject` NULL (pur D2-10). The relay hands them to the in-process policy and never publishes them to NATS; only the ReorderSuggestion events get a `stockroom.pur.*` subject. | TAC-10: internal events stay inside the context and do not become a contract. | pur D2-10; 07-review F4 |
+| Fixed F1 | `pur_inbox` key is (`event_id`, `consumer`), because AvailabilityChanged has two consumers in Purchasing (TrackAvailabilityAgainstThreshold and the KnownAvailability projection). Each consumer dedups on its own row, so one no longer acks the event for the other (D3-9). | DB-05; a shared key made the second consumer skip the event. | 07-review F1; pur Policies, Queries |
+| Fixed F3 | `pur_known_availability` gains `source_event_id CHAR(26) NOT NULL`, so a new threshold can be seeded without breaking `ck_pur_threshold_snapshot`. | The seed of D2-9 needs an event id. | 07-review F3 |
+| Fixed F4 | Internal events keep `subject` NULL and are not relayed on integration subjects (D3-P4). The example subject is now `stockroom.pur.reorder_suggestion_raised`, and the inbox note says the internal LowStockDetected arrives in process. | TAC-10. | 07-review F4 |
+| Fixed F6 | Every column is named `sku`; the notes no longer cite the 02 field `sku_id` (D3-12). | DOC-04. | 07-review F6 |
 
 ## Open questions
 | Id | Question | Why it matters | Proposed default |
@@ -25,7 +30,7 @@ Aggregate: LowStockThreshold (root)
 | Column | Type | Null | Default | Constraint | Notes (invariant / REQ) |
 |---|---|---|---|---|---|
 | threshold_id | CHAR(26) | NOT NULL | - | PK | ULID (pur D2-12) |
-| sku | VARCHAR(64) ascii_bin | NOT NULL | - | UNIQUE with warehouse_id | 02 field `sku_id` (D3-12, Q3-1) |
+| sku | VARCHAR(64) ascii_bin | NOT NULL | - | UNIQUE with warehouse_id | Catalog SKU value (D3-12) |
 | warehouse_id | CHAR(26) | NOT NULL | - | - | Catalog warehouse |
 | quantity | BIGINT | NOT NULL | - | CHECK >= 0 | ThresholdQuantity. Zero disables suggestions (pur Q2-4, *proposed*) |
 | last_available | BIGINT | NULL | NULL | CHECK >= 0 | AvailabilitySnapshot.available. NULL means no availability is known yet |
@@ -106,6 +111,7 @@ Aggregate: read model KnownAvailability
 | warehouse_id | CHAR(26) | NOT NULL | - | PK | From AvailabilityChanged |
 | available | BIGINT | NOT NULL | - | CHECK >= 0 | Seeds a new threshold only (pur D2-9) |
 | source_version | BIGINT | NOT NULL | - | CHECK >= 1 | Upsert only if it is newer (D3-13) |
+| source_event_id | CHAR(26) | NOT NULL | - | - | event_id of the AvailabilityChanged that wrote the row. Seeds `last_source_event_id` of a new threshold (pur D2-9, Fixed F3) |
 | updated_at | DATETIME(6) | NOT NULL | - | - | UTC |
 - PK sku, warehouse_id
 - REF sku -> Catalog.Product (id only, no FK)
@@ -122,12 +128,12 @@ Aggregate: outbox
 | aggregate_type | ENUM('LowStockThreshold','ReorderSuggestion') | NOT NULL | - | - | Emitter |
 | aggregate_id | CHAR(26) | NOT NULL | - | - | threshold_id or suggestion_id |
 | event_type | ENUM('LowStockThresholdSet','LowStockDetected','AvailabilityRecovered','ReorderSuggestionRaised','ReorderSuggestionAccepted','ReorderSuggestionDismissed') | NOT NULL | - | - | 02 names. The first three are internal (pur D2-10) |
-| subject | VARCHAR(128) ascii_bin | NOT NULL | - | CHECK prefix | For example `stockroom.pur.low_stock_detected` (D3-7) |
+| subject | VARCHAR(128) ascii_bin | NULL | NULL | CHECK | For example `stockroom.pur.reorder_suggestion_raised` (D3-7). NULL means an internal event that is never published to NATS (D3-P4) |
 | payload | JSON | NOT NULL | - | CHECK JSON_VALID | Payload per pur Domain events |
 | occurred_at | DATETIME(6) | NOT NULL | - | - | UTC. Same transaction as the change (DB-05) |
 | published_at | DATETIME(6) | NULL | NULL | - | NULL means not yet relayed |
 - PK event_id
-- CHECK ck_pur_outbox_subject: subject LIKE 'stockroom.pur.%'
+- CHECK ck_pur_outbox_subject: (event_type IN ('LowStockThresholdSet','LowStockDetected','AvailabilityRecovered') AND subject IS NULL) OR (event_type NOT IN ('LowStockThresholdSet','LowStockDetected','AvailabilityRecovered') AND subject LIKE 'stockroom.pur.%')
 - CHECK ck_pur_outbox_payload: JSON_VALID(payload)
 - IDX ix_pur_outbox_pending (published_at, event_id): serves the relay scan and the purge (Q3-3)
 
@@ -136,10 +142,11 @@ Aggregate: inbox
 
 | Column | Type | Null | Default | Constraint | Notes (invariant / REQ) |
 |---|---|---|---|---|---|
-| event_id | CHAR(26) | NOT NULL | - | PK | Dedup of AvailabilityChanged, Catalog events and its own LowStockDetected (D3-9) |
-| subject | VARCHAR(128) ascii_bin | NOT NULL | - | - | Source subject |
+| event_id | CHAR(26) | NOT NULL | - | PK | Dedup of AvailabilityChanged, Catalog events and its own internal LowStockDetected (D3-9) |
+| consumer | ENUM('TrackAvailabilityAgainstThreshold','KnownAvailability','KnownProducts','KnownWarehouses','RaiseSuggestionOnLowStock') | NOT NULL | - | PK | The policy or read-model projection that handled the event. AvailabilityChanged has two consumers (D3-9) |
+| subject | VARCHAR(128) ascii_bin | NULL | NULL | - | Source NATS subject. NULL means an internal event handed over in process by the outbox relay (D3-P4) |
 | processed_at | DATETIME(6) | NOT NULL | - | - | UTC. Same transaction as the handler's change |
-- PK event_id
+- PK event_id, consumer
 - IDX ix_pur_inbox_processed (processed_at): serves the retention purge (Q3-3)
 
 ## Enforced in code

@@ -8,7 +8,7 @@
 ## Decisions
 | Id | Decision | Why | Source |
 |---|---|---|---|
-| D1-1 | Three bounded contexts: Catalog, Stock, Purchasing. | The language changes three times: describing what exists (product, warehouse, bin), counting and committing quantities, and deciding what to reorder. Different actors per group (staff registering, shipping system, purchasing). | brief Actors; REQ-1 to REQ-20; proposed cut |
+| D1-1 | Three bounded contexts: Catalog, Stock, Purchasing. | The language changes three times: describing what exists (product, warehouse, bin), counting and committing quantities, and deciding what to reorder. Different actors per group (staff registering, shipping system, purchasing). | brief Actors; REQ-1 to REQ-21; proposed cut |
 | D1-2 | Module codes: Catalog = `cat`, Stock = `stk`, Purchasing = `pur`. | R1 needs a three-letter prefix per module; these match the R1 examples. | ARCHITECTURE.md:5 |
 | D1-3 | One microservice per context (three deployables), all using the shared `stockroom` schema, each touching only its own prefixed tables. | Profile architecture_style is microservices (asked); R1 still binds. | project-profile.md D0-P2; ARCHITECTURE.md:5 |
 | D1-4 | Contexts integrate only by integration events through each module's outbox and NATS JetStream, subjects `stockroom.<code>.<event_name>`; consumers deduplicate by event id. No context calls another context synchronously. | Profile events_messaging; R1 forbids reading another module's tables, so data needed locally arrives as events. | ARCHITECTURE.md:8; proposed |
@@ -17,6 +17,7 @@
 | D1-7 | The outbound shipping system is an external client of Stock through Stock's gRPC open host service (StockService). | It is outside the system and calls reserve, release, pick. | REQ-5, REQ-9, REQ-10; proto:7 |
 | D1-8 | Identity and access is a generic subdomain, reused (platform auth / gRPC interceptor), not a bounded context in this design. | Roles are not defined (brief Q5); no REQ owns it. | brief Q5; proposed |
 | D1-9 | Pick (REQ-10) belongs to Stock: it removes reserved quantity from on hand. | Brief D0-3 keeps pick in scope as a stock-leaving behaviour. | brief D0-3; docs/context.puml:9 |
+| D1-10 | Fixed F5: Purchasing owns REQ-21 "Purchasing lists reorder suggestions" (public operation ListReorderSuggestions). | Listing suggestions is Purchasing's language and data (`pur_` tables); no other context holds suggestions. | docs/context.puml:8; 07-review.md F5 |
 
 ## Open questions
 | Id | Question | Why it matters | Proposed default |
@@ -40,7 +41,7 @@ Stockroom keeps an accurate count of SKUs across a few warehouses and bins and l
 |---|---|---|
 | Stock control | core | Safe reservation, pick and accurate counts are the product's purpose and the outside system depends on them (brief Goals; REQ-5 to REQ-10, REQ-18). |
 | Product and location catalog | supporting | Needed to name SKUs, warehouses and bins, specific to this business but not a differentiator (REQ-1 to REQ-3); proposed. |
-| Replenishment | supporting | Automatic reorder suggestions serve purchasing; useful but a simple threshold rule (REQ-12 to REQ-16); proposed. |
+| Replenishment | supporting | Automatic reorder suggestions serve purchasing; useful but a simple threshold rule (REQ-12 to REQ-16, REQ-21); proposed. |
 | Identity and access | generic | Same everywhere; reuse the platform's authentication and role checks rather than build (brief Q5); proposed. |
 
 ## Bounded contexts
@@ -48,7 +49,7 @@ Stockroom keeps an accurate count of SKUs across a few warehouses and bins and l
 |---|---|---|---|---|
 | Catalog | Product and location catalog | Registers products (SKU, code, name, unit), warehouses and bins; publishes them. Module code `cat`. | REQ-1, REQ-2, REQ-3 | catalog-service; tables `stockroom.cat_*` |
 | Stock | Stock control | Stock levels per SKU and bin: receipts, reservations, releases, picks, adjustments, expiry, availability; never negative. Module code `stk`. | REQ-4, REQ-5, REQ-6, REQ-7, REQ-8, REQ-9, REQ-10, REQ-11, REQ-17, REQ-18, REQ-19, REQ-20 | stock-service; tables `stockroom.stk_*` |
-| Purchasing | Replenishment | Low-stock thresholds per SKU and warehouse; raises reorder suggestions automatically; records accept or dismiss. Module code `pur`. | REQ-12, REQ-13, REQ-14, REQ-15, REQ-16 | purchasing-service; tables `stockroom.pur_*` |
+| Purchasing | Replenishment | Low-stock thresholds per SKU and warehouse; raises reorder suggestions automatically; records accept or dismiss. Module code `pur`. | REQ-12, REQ-13, REQ-14, REQ-15, REQ-16, REQ-21 | purchasing-service; tables `stockroom.pur_*` |
 
 ## Context map
 | Upstream | Downstream | Relationship | Mechanism | What flows |

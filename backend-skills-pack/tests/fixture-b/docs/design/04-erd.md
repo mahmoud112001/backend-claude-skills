@@ -13,6 +13,9 @@ Format: PlantUML (profile `diagram_format`). Drawn from 03-db-design.md and its 
 | D4-2 | Cross-module REFs are `<<REF>>` columns in the module diagrams, and dotted `ref` lines only in the overview. No relationship line crosses a module in a module diagram. | DB-01: no FK across modules. | 03 D3-1, Tables |
 | D4-3 | The shared schema `stockroom` (R1 overrides DB-02) is shown as the outer frame of the overview. | Override recorded in 03 D3-1. | 03 D3-1 |
 | D4-4 | `raised_marker` (generated column) and `pur_known_product.sku` (PK) are drawn as 03 states them. | Draw only what 03 says. | pur Tables |
+| D4-5 | Fixed F3: `pur_known_availability.source_event_id` (CHAR(26), not null) added. | Review F3. | 03-db-design-purchasing.md |
+| D4-6 | Fixed F1: `pur_inbox` shows PK (`event_id`, `consumer`). `stk_inbox` keeps PK `event_id` only (one consumer per Stock event, per 03). `cat_*` has no inbox. `pur_outbox.subject` is nullable. | Review F1. | 03 inbox tables |
+| D4-7 | Fixed F6: Purchasing columns are drawn as `sku` (never `sku_id`), as in 03. | Review F6. | 03-db-design-purchasing.md |
 
 ## Open questions
 - Q4-1 PlantUML entities cannot show CHECK, UNIQUE or index details. Those stay in 03. Proposed default: no action.
@@ -240,6 +243,7 @@ entity pur_known_availability {
   warehouse_id : C26 <<PK>> <<REF>>
   available : BI
   source_version : BI
+  source_event_id : C26
   updated_at : DT
 }
 entity pur_outbox {
@@ -247,13 +251,14 @@ entity pur_outbox {
   aggregate_type : ENUM
   aggregate_id : C26
   event_type : ENUM
-  subject : VC(128)
+  subject? : VC(128)
   payload : JSON
   occurred_at : DT
   published_at? : DT
 }
 entity pur_inbox {
   event_id : C26 <<PK>>
+  consumer : ENUM <<PK>>
   subject : VC(128)
   processed_at : DT
 }

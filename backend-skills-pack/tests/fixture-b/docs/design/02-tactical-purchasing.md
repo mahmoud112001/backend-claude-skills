@@ -3,7 +3,8 @@
 ## Inputs
 - docs/design/project-profile.md (Go 1.22 + gRPC; MariaDB 11.4; microservices; outbox + NATS JetStream; ULID ids; R3 error format).
 - docs/design/01-strategic.md: Decisions D1-1 to D1-9, Open questions Q1-1 to Q1-10, Purchasing row (module `pur`, REQ-12 to REQ-16), context map rows Catalog -> Purchasing and Stock -> Purchasing, Published language of Catalog, Stock and Purchasing, Ubiquitous language.
-- docs/design/00-project-brief.md: rows REQ-12, REQ-13, REQ-14, REQ-15, REQ-16; Actors; Q6, Q7.
+- docs/design/00-project-brief.md: rows REQ-12, REQ-13, REQ-14, REQ-15, REQ-16; Actors; Q6, Q7. REQ-21 (list reorder suggestions, docs/context.puml:8) is being added to the brief (07 F5).
+- docs/design/07-review.md: findings F1, F2, F4, F5, F6 and OQ-1.
 - Rules: default-rulebook.md; ARCHITECTURE.md R1 (overrides DB-02: one shared schema `stockroom`, tables `pur_*`, only Purchasing reads or writes them), R2 (ULID ids from the domain layer), R3 (gRPC status + ErrorInfo reason), R4 (outbox, subjects `stockroom.pur.<event_name>`, consumers deduplicate by event id).
 
 ## Decisions
@@ -17,10 +18,15 @@
 | D2-6 | ReorderSuggestion is created only by policy; no actor command creates one, and phase 6 must not expose RaiseReorderSuggestion. | REQ-14: staff cannot create suggestions by hand. | REQ-14 |
 | D2-7 | Accept and dismiss are terminal and recorded only; they create no purchase order. Repeating the same decision is a no-op success; the opposite decision fails with SUGGESTION_ALREADY_DECIDED. | Q1-7 default; the decision is kept (ubiquitous language "Dismiss"). Same-decision retry makes the operation safe to retry. | REQ-15, REQ-16; 01 Q1-7; proposed |
 | D2-8 | Purchasing validates SKU and warehouse against local read models KnownProducts and KnownWarehouses, fed by Catalog's ProductRegistered and WarehouseRegistered. An unknown id fails with NOT_FOUND (retryable). | R1 forbids reading `cat_` tables; context map Catalog -> Purchasing; same rule as Stock (Q1-9 default). | 01 context map; 01 Q1-9; proposed |
-| D2-9 | SetLowStockThreshold creates the threshold or replaces its quantity (upsert on SKU and warehouse). On creation it seeds last known available from the KnownAvailability read model and evaluates the crossing at once. | Makes the operation safe to retry by natural key; avoids waiting for a later stock movement when stock is already low (see Q2-2). | REQ-12; proposed |
-| D2-10 | Internal events (LowStockThresholdSet, LowStockDetected, AvailabilityRecovered) are written to the `pur` outbox in the same transaction, so the follow-up policy cannot be lost; they are not part of the published language and no other context subscribes to them. | R4 gives the outbox as the reliable channel; TAC-10 keeps internal events inside the context. | ARCHITECTURE.md:8; proposed |
+| D2-9 | SetLowStockThreshold creates the threshold or replaces its quantity (upsert on SKU and warehouse). On creation it seeds last known available from the KnownAvailability read model and evaluates the crossing at once. It reads the KnownAvailability row for the SKU and warehouse with a locking read inside its own transaction; the AvailabilityChanged handler (D2-13) takes the same row lock before it looks up the threshold, so a stock event and a new threshold are serialised and no crossing is lost. | Makes the operation safe to retry by natural key; avoids waiting for a later stock movement when stock is already low (see Q2-2). The row lock closes the seed race (07 F2). | REQ-12; proposed |
+| D2-10 | Internal events (LowStockThresholdSet, LowStockDetected, AvailabilityRecovered) are written to the `pur` outbox in the same transaction, so the follow-up policy cannot be lost; they are not part of the published language and no other context subscribes to them. The relay hands internal outbox rows to the in-process policy only and never publishes them to NATS or on any `stockroom.pur.*` subject; only the integration events in the Domain events table are published there. | R4 gives the outbox as the reliable channel; TAC-10 keeps internal events inside the context; matches Stock (internal events are not relayed). | ARCHITECTURE.md:8; proposed |
 | D2-11 | Both aggregate roots carry a version for optimistic concurrency; a concurrent AvailabilityChanged for the same SKU and warehouse retries the command. | Concurrent deliveries for one key must not lose a crossing. | DB-08; proposed |
 | D2-12 | Ids (threshold id, suggestion id) are ULID strings generated in the domain layer. | R2. | ARCHITECTURE.md:6 |
+| D2-13 | Fixed F1: deduplication is per consumer. The `pur` inbox is keyed by (event id, consumer name), so each consumer (KnownProducts, KnownWarehouses, the AvailabilityChanged handler, RaiseSuggestionOnLowStock) records and skips duplicates only for itself. AvailabilityChanged has one consumer in Purchasing: in one transaction with one inbox row it upserts KnownAvailability (newest only, row lock), then issues RecordAvailability if a threshold exists for the SKU and warehouse. | Two consumers sharing an inbox keyed by event id alone would make the second one ack the event as already handled, so either the projection or the threshold would miss it (07 F1). | R4; 07 F1; proposed |
+| D2-14 | Fixed F2: SetLowStockThreshold and the AvailabilityChanged handler take the same KnownAvailability row lock (see D2-9). | Closes the seed race in 07 F2. | 07 F2; proposed |
+| D2-15 | Fixed F4: internal events are never relayed on integration subjects (see D2-10). | TAC-10 (07 F4). | 07 F4 |
+| D2-16 | Fixed F5: ListReorderSuggestions traces to REQ-21 "Purchasing lists reorder suggestions" (source docs/context.puml:8), which is being added to the brief. Filters and order are Q2-10. | The query had no requirement (07 F5). | 07 F5; docs/context.puml:8 |
+| D2-17 | Fixed F6: the SKU field is named `sku` (the SKU value, not the product ULID) in every entity and event payload of this file, matching Stock's AvailabilityChanged, 03 and 06. This answers 03 Q3-1. | DOC-04 (07 F6). | 07 F6; 03 Q3-1 |
 
 ## Open questions
 | Id | Question | Why it matters | Proposed default |
@@ -34,6 +40,7 @@
 | Q2-7 | Who may set thresholds, and who may accept or dismiss (roles)? | Authorisation (brief Q5, 01 Q1-6). | SetLowStockThreshold: Warehouse staff; Accept, Dismiss, List: Purchasing. |
 | Q2-8 | Does a suggestion expire if left undecided? | An open suggestion blocks new ones (D2-5). | No expiry. |
 | Q2-9 | Which payload fields do ProductRegistered and WarehouseRegistered carry? Purchasing needs at least the SKU id and the warehouse id. | Purchasing must consume them exactly as Catalog publishes (01 lists names only). | SKU id for ProductRegistered; warehouse id for WarehouseRegistered; confirm in Catalog's 02. |
+| Q2-10 | Which filters and order does ListReorderSuggestions offer (REQ-21)? | The brief adds the need to list but not how (07 OQ-1). | Filter by status, optional SKU and warehouse; newest first. |
 
 ## Aggregates
 | Aggregate | Root entity | Contains (entities, value objects) | References by id | Invariants (REQ) | Created by |
@@ -44,10 +51,10 @@
 ## Entities and value objects
 | Name | Kind (entity / value object) | Belongs to | Fields | Rules |
 |---|---|---|---|---|
-| LowStockThreshold | entity | LowStockThreshold | threshold_id (ULID), sku_id, warehouse_id, quantity (ThresholdQuantity), last_available (AvailabilitySnapshot, absent until first known), is_below (bool), version, updated_at | Key (sku_id, warehouse_id) unique; is_below is derived from last_available < quantity and changes only through SetLowStockThreshold or RecordAvailability. |
+| LowStockThreshold | entity | LowStockThreshold | threshold_id (ULID), sku, warehouse_id, quantity (ThresholdQuantity), last_available (AvailabilitySnapshot, absent until first known), is_below (bool), version, updated_at | Key (sku, warehouse_id) unique; is_below is derived from last_available < quantity and changes only through SetLowStockThreshold or RecordAvailability. |
 | ThresholdQuantity | value object | LowStockThreshold | value (whole number) | value >= 0 (Q2-4); replaced, never edited. |
 | AvailabilitySnapshot | value object | LowStockThreshold | available, source_event_id, source_order (sequence or occurred-at, Q2-1), received_at | Immutable; replaced only by a snapshot with a newer source_order. |
-| ReorderSuggestion | entity | ReorderSuggestion | suggestion_id (ULID), sku_id, warehouse_id, threshold_id, status (SuggestionStatus), trigger (TriggerSnapshot), decision (SuggestionDecision, absent while Raised), raised_at, version | Created in status Raised; status changes only through AcceptReorderSuggestion or DismissReorderSuggestion. |
+| ReorderSuggestion | entity | ReorderSuggestion | suggestion_id (ULID), sku, warehouse_id, threshold_id, status (SuggestionStatus), trigger (TriggerSnapshot), decision (SuggestionDecision, absent while Raised), raised_at, version | Created in status Raised; status changes only through AcceptReorderSuggestion or DismissReorderSuggestion. |
 | SuggestionStatus | value object | ReorderSuggestion | one of Raised, Accepted, Dismissed | Enumerated; Accepted and Dismissed are terminal (REQ-15, REQ-16). |
 | TriggerSnapshot | value object | ReorderSuggestion | threshold_quantity, available_at_trigger, detected_at | Copy of the values that caused the suggestion; immutable. |
 | SuggestionDecision | value object | ReorderSuggestion | outcome (Accepted or Dismissed), decided_by (actor id from the identity subdomain), decided_at, note (optional free text; absent means no note given) | Set once; never edited (REQ-15, REQ-16). |
@@ -64,28 +71,28 @@
 ## Domain events
 | Event | Emitted by | Kind | Payload | Consumers |
 |---|---|---|---|---|
-| LowStockThresholdSet | LowStockThreshold | internal | event_id, threshold_id, sku_id, warehouse_id, quantity, occurred_at | none (audit only) |
-| LowStockDetected | LowStockThreshold | internal | event_id, threshold_id, sku_id, warehouse_id, threshold_quantity, available, occurred_at | RaiseSuggestionOnLowStock |
-| AvailabilityRecovered | LowStockThreshold | internal | event_id, threshold_id, sku_id, warehouse_id, threshold_quantity, available, occurred_at | none (re-arm is state inside LowStockThreshold) |
-| ReorderSuggestionRaised | ReorderSuggestion | integration | event_id, suggestion_id, sku_id, warehouse_id, threshold_quantity, available_at_trigger, raised_at | none in 01 (published on `stockroom.pur.reorder_suggestion_raised` for future subscribers) |
-| ReorderSuggestionAccepted | ReorderSuggestion | integration | event_id, suggestion_id, sku_id, warehouse_id, decided_by, decided_at | none in 01 (published on `stockroom.pur.reorder_suggestion_accepted`) |
-| ReorderSuggestionDismissed | ReorderSuggestion | integration | event_id, suggestion_id, sku_id, warehouse_id, decided_by, decided_at | none in 01 (published on `stockroom.pur.reorder_suggestion_dismissed`) |
+| LowStockThresholdSet | LowStockThreshold | internal | event_id, threshold_id, sku, warehouse_id, quantity, occurred_at | none (audit only; not relayed to NATS, D2-10) |
+| LowStockDetected | LowStockThreshold | internal | event_id, threshold_id, sku, warehouse_id, threshold_quantity, available, occurred_at | RaiseSuggestionOnLowStock (in process; not relayed to NATS, D2-10) |
+| AvailabilityRecovered | LowStockThreshold | internal | event_id, threshold_id, sku, warehouse_id, threshold_quantity, available, occurred_at | none (re-arm is state inside LowStockThreshold; not relayed to NATS, D2-10) |
+| ReorderSuggestionRaised | ReorderSuggestion | integration | event_id, suggestion_id, sku, warehouse_id, threshold_quantity, available_at_trigger, raised_at | none in 01 (published on `stockroom.pur.reorder_suggestion_raised` for future subscribers) |
+| ReorderSuggestionAccepted | ReorderSuggestion | integration | event_id, suggestion_id, sku, warehouse_id, decided_by, decided_at | none in 01 (published on `stockroom.pur.reorder_suggestion_accepted`) |
+| ReorderSuggestionDismissed | ReorderSuggestion | integration | event_id, suggestion_id, sku, warehouse_id, decided_by, decided_at | none in 01 (published on `stockroom.pur.reorder_suggestion_dismissed`) |
 
 ## Policies
 | Policy | When (event) | Then (command) | Context | On failure |
 |---|---|---|---|---|
-| TrackAvailabilityAgainstThreshold | AvailabilityChanged | RecordAvailability | Stock | Skip (ack) when no threshold exists for the SKU and warehouse; ack STALE_AVAILABILITY; retry version conflicts and transient errors via JetStream redelivery with backoff; after the retry limit, dead-letter and alert. Deduplicate by event id (R4). |
-| RaiseSuggestionOnLowStock | LowStockDetected | RaiseReorderSuggestion | Purchasing | Ack SUGGESTION_ALREADY_OPEN as done; retry transient errors with backoff; after the retry limit, dead-letter and alert. Deduplicate by event id. |
+| TrackAvailabilityAgainstThreshold | AvailabilityChanged | RecordAvailability | Stock | Skip (ack) when no threshold exists for the SKU and warehouse; ack STALE_AVAILABILITY; retry version conflicts and transient errors via JetStream redelivery with backoff; after the retry limit, dead-letter and alert. Runs in the single AvailabilityChanged handler after the KnownAvailability upsert, in the same transaction (D2-13). Deduplicate by (event id, consumer name) (R4, D2-13). |
+| RaiseSuggestionOnLowStock | LowStockDetected | RaiseReorderSuggestion | Purchasing | Ack SUGGESTION_ALREADY_OPEN as done; retry transient errors with backoff; after the retry limit, dead-letter and alert. Deduplicate by (event id, consumer name) (D2-13). |
 
 ## Queries and read models
 | Query / read model | Kind (query / read model / cache) | Source | Rebuild or invalidation | Staleness | REQ |
 |---|---|---|---|---|---|
-| ListReorderSuggestions | query | `pur_` reorder suggestion table (ReorderSuggestion) | Reads current state; nothing to rebuild | None (reads the source of truth) | REQ-13, REQ-15, REQ-16 |
-| KnownProducts | read model | Catalog ProductRegistered | Projected on each event, deduplicated by event id; rebuilt by replaying the `stockroom.cat.product_registered` stream | Event delivery lag (seconds); a missing SKU gives retryable NOT_FOUND | REQ-12 |
-| KnownWarehouses | read model | Catalog WarehouseRegistered | Projected on each event, deduplicated by event id; rebuilt by replaying the `stockroom.cat.warehouse_registered` stream | Event delivery lag (seconds); a missing warehouse gives retryable NOT_FOUND | REQ-12 |
-| KnownAvailability | read model | Stock AvailabilityChanged (all SKUs and warehouses, with or without a threshold) | Projected on each event, keeping only the newest per SKU and warehouse (Q2-1); rebuilt by replaying the `stockroom.stk.availability_changed` stream | Event delivery lag; used only to seed a new LowStockThreshold (D2-9), never as the truth of available | REQ-12, REQ-13 |
+| ListReorderSuggestions | query | `pur_` reorder suggestion table (ReorderSuggestion) | Reads current state; nothing to rebuild | None (reads the source of truth) | REQ-21 |
+| KnownProducts | read model | Catalog ProductRegistered | Projected on each event, deduplicated by (event id, consumer name); rebuilt by replaying the `stockroom.cat.product_registered` stream | Event delivery lag (seconds); a missing SKU gives retryable NOT_FOUND | REQ-12 |
+| KnownWarehouses | read model | Catalog WarehouseRegistered | Projected on each event, deduplicated by (event id, consumer name); rebuilt by replaying the `stockroom.cat.warehouse_registered` stream | Event delivery lag (seconds); a missing warehouse gives retryable NOT_FOUND | REQ-12 |
+| KnownAvailability | read model | Stock AvailabilityChanged (all SKUs and warehouses, with or without a threshold) | Projected on each event by the single AvailabilityChanged handler, before RecordAvailability and in the same transaction (D2-13), keeping only the newest per SKU and warehouse (Q2-1); rebuilt by replaying the `stockroom.stk.availability_changed` stream | Event delivery lag; used only to seed a new LowStockThreshold (D2-9), never as the truth of available | REQ-12, REQ-13 |
 
 ## Out of scope
 | REQ | Why |
 |---|---|
-| none | All Purchasing REQs (REQ-12, REQ-13, REQ-14, REQ-15, REQ-16) map to a command or query. |
+| none | All Purchasing REQs (REQ-12, REQ-13, REQ-14, REQ-15, REQ-16, REQ-21) map to a command or query. |

@@ -11,6 +11,7 @@ Part of [05-diagrams.md](05-diagrams.md). Use cases are in [05-diagrams-use-case
 | Id | Decision | Why |
 |---|---|---|
 | D5-3 | Flows use the 02 names. The relay (NATS JetStream subject) is a participant between outbox and consumer. | Profile events_messaging. |
+| D5-4 | Fixed F1: inbox dedup in FLOW-1 and FLOW-6 is per (event id, consumer). The projection step of FLOW-6 is not added; it awaits the 02 purchasing change. | Review F1. |
 
 ## Open questions
 | Id | Question | Why it matters | Proposed default |
@@ -38,7 +39,7 @@ else ok
   A -> O : ProductRegistered (same transaction)
   O -> N : relay
   N -> S : ProductRegistered (dedup by event id)
-  N -> P : ProductRegistered (dedup by event id)
+  N -> P : ProductRegistered (dedup by event id and consumer)
 end
 @enduml
 ```
@@ -146,7 +147,7 @@ participant "RaiseSuggestionOnLowStock" as P2
 participant "RaiseReorderSuggestion" as C2
 participant "ReorderSuggestion" as R
 SO -> N : AvailabilityChanged
-N -> P1 : AvailabilityChanged (dedup by event id)
+N -> P1 : AvailabilityChanged (dedup by event id and consumer)
 alt no threshold for SKU and warehouse
   P1 --> N : skip (ack)
 else threshold exists

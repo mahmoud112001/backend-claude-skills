@@ -9,6 +9,7 @@ D0-1 Requirements come from the README "What it must do" list, refined by the pr
 D0-2 The proto stub covers only ReserveStock and GetAvailability; the other operations are treated as in scope because the README lists them, and their API shape is left to phase 6. Why: the proto says "the rest of the API is not designed yet".
 D0-3 "Pick" (README item 6, context.puml:9) is in scope as a stock-leaving behaviour. Why: both files state it.
 D0-4 ARCHITECTURE.md rules are not copied here; they are in the profile.
+D0-5 Fixed F5: REQ-21 added (Purchasing lists reorder suggestions, docs/context.puml:8). Which filters apply stays an open question (Q9).
 
 ## Open questions
 | Id | Question | Why it matters | Proposed default |
@@ -21,6 +22,7 @@ D0-4 ARCHITECTURE.md rules are not copied here; they are in the profile.
 | Q6 | Is a low-stock threshold compared with available or on-hand, and is a suggestion raised once or each time quantity falls? | README:14 says "available quantity drops below" but not repetition | Compare available; one open suggestion per SKU and warehouse |
 | Q7 | What does accepting a suggestion do (create a purchase order)? | README:15 stops at accept or dismiss | Only records the decision; no order creation |
 | Q8 | Architecture style (profile field missing) | See profile Q1 | Modular monolith |
+| Q9 | Which filters does the suggestion list offer (status, SKU, warehouse)? | context.puml:8 shows listing but no filters | List by status, newest first, optional SKU and warehouse filter |
 
 ## Goals
 - Keep track of stock of SKUs across a few warehouses and bins (README:3).
@@ -31,7 +33,7 @@ D0-4 ARCHITECTURE.md rules are not copied here; they are in the profile.
 | Actor | Description | Source |
 |---|---|---|
 | Warehouse staff | Registers products, warehouses, bins; receives goods; adjusts counts | README:7-9, 13; docs/context.puml:3 |
-| Purchasing | Accepts or dismisses reorder suggestions | README:15; docs/context.puml:4 |
+| Purchasing | Lists, accepts or dismisses reorder suggestions | README:15; docs/context.puml:4, 8 |
 | Outbound shipping system | Outside system that reserves, releases and picks | README:10-12; docs/context.puml:5 |
 | Reader | Anyone with read access, asks availability | README:16 |
 | System | Raises reorder suggestions automatically | README:14 |
@@ -66,6 +68,7 @@ D0-4 ARCHITECTURE.md rules are not copied here; they are in the profile.
 | REQ-18 | Stock never goes negative | System | README:18 |
 | REQ-19 | A reservation expires after a time the business has yet to decide | System | README:18 (duration is Q1) |
 | REQ-20 | Available quantity equals on hand minus reserved | System | internal/stock/stock.go:16 |
+| REQ-21 | Purchasing lists reorder suggestions | Purchasing | docs/context.puml:8 |
 
 ## Data seen in the prototype
 | Data element | Where seen | Notes (type, format, rules shown) |
@@ -89,5 +92,6 @@ D0-4 ARCHITECTURE.md rules are not copied here; they are in the profile.
 | Whether a reservation can be partial or span bins | Business rule (Q4) |
 | Authorisation per operation | Role list (Q5) |
 | Suggestion repetition and accept effect | Business rule (Q6, Q7) |
+| Suggestion list filters | Business input (Q9) |
 | Pick operation details (partial pick, who triggers) | Further prototype or business input |
 | Unit of measure values and SKU format limits | Business input |

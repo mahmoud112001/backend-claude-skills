@@ -13,7 +13,7 @@ Updated: 2026-11-17 · Current phase: 7 · Status: running
 | 4 | ERD | passed | 0 / 0 | 0 | [04](04-erd.md) |
 | 5 | Diagrams | passed | 0 / 0 | 1 | [05](05-diagrams.md) + use-cases, flows parts |
 | 6 | API | passed | 0 / 0 | 0 | [06](06-api.md), [proto](06-api.proto) |
-| 7 | Review and fix (loop 0/2) | pending | | | |
+| 7 | Review and fix (loop 1/2) | running | loop 1: H1 M6 L7, all H/M fixed | 0 | [review-loop1](07-review-loop1.md), [fixes-loop1](07-fixes-loop1.md) |
 | 8 | Arrange | pending | | | |
 
 ## Waiting for user
@@ -31,5 +31,6 @@ Updated: 2026-11-17 · Current phase: 7 · Status: running
 ## Review loops
 | Loop | High | Medium | Low | Fixed | Left open |
 |---|---|---|---|---|---|
+| 1 | 1 | 6 | 7 | F1-F7 | 7 Low; business questions to open questions (REQ-21 filters) |
 
 ## Medium and Low gate findings carried forward
