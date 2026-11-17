@@ -1,0 +1,215 @@
+// 06 API contract: the single authoritative contract (design phase 6).
+// Generated from the Operations table in 06-api.md. Supersedes the prototype stub
+// proto/stockroom/v1/stockroom.proto and is wire-compatible with it: every field of the
+// stub keeps its number and type; only fields and services were added (D6-2).
+// Errors: canonical gRPC status + google.rpc.ErrorInfo, reason UPPER_SNAKE_CASE (R3).
+// Ids: ULID strings generated in the domain layer (R2).
+syntax = "proto3";
+
+package stockroom.v1;
+
+import "google/protobuf/timestamp.proto";
+
+// ---------------------------------------------------------------- Catalog (cat)
+service CatalogService {
+  rpc RegisterProduct(RegisterProductRequest) returns (RegisterProductResponse);
+  rpc RegisterWarehouse(RegisterWarehouseRequest) returns (RegisterWarehouseResponse);
+  rpc RegisterBin(RegisterBinRequest) returns (RegisterBinResponse);
+}
+
+message RegisterProductRequest {
+  string sku = 1;             // natural key; idempotent replay on identical data
+  string code = 2;
+  string name = 3;
+  string unit_of_measure = 4;
+}
+
+message RegisterProductResponse {
+  string product_id = 1;      // ULID
+}
+
+message RegisterWarehouseRequest {
+  string code = 1;            // natural key
+  string name = 2;
+}
+
+message RegisterWarehouseResponse {
+  string warehouse_id = 1;    // ULID
+}
+
+message RegisterBinRequest {
+  string warehouse_id = 1;    // natural key with code
+  string code = 2;
+}
+
+message RegisterBinResponse {
+  string bin_id = 1;          // ULID
+}
+
+// ---------------------------------------------------------------- Stock (stk)
+service StockService {
+  // Fields 1-5 of ReserveStockRequest and field 1 of ReserveStockResponse are from the stub.
+  rpc ReserveStock(ReserveStockRequest) returns (ReserveStockResponse);
+  rpc GetAvailability(GetAvailabilityRequest) returns (GetAvailabilityResponse);
+  rpc ReceiveGoods(ReceiveGoodsRequest) returns (ReceiveGoodsResponse);
+  rpc ReleaseReservation(ReleaseReservationRequest) returns (ReleaseReservationResponse);
+  rpc PickReservation(PickReservationRequest) returns (PickReservationResponse);
+  rpc AdjustStock(AdjustStockRequest) returns (AdjustStockResponse);
+}
+
+message ReserveStockRequest {
+  string request_id = 1;      // caller-generated, for retries
+  string sku = 2;
+  string warehouse_id = 3;
+  int64 quantity = 4;
+  string shipment_ref = 5;    // the caller's shipment reference
+}
+
+message ReserveStockResponse {
+  string reservation_id = 1;
+  google.protobuf.Timestamp expires_at = 2; // added in phase 6
+}
+
+message GetAvailabilityRequest {
+  string sku = 1;
+  string warehouse_id = 2;    // added in phase 6; optional filter, empty = all warehouses
+}
+
+message GetAvailabilityResponse {
+  repeated WarehouseAvailability warehouses = 1; // ordered by warehouse_id ascending
+}
+
+message WarehouseAvailability {
+  string warehouse_id = 1;
+  int64 on_hand = 2;
+  int64 reserved = 3;
+  int64 available = 4;
+}
+
+message ReceiveGoodsRequest {
+  string request_id = 1;      // caller-generated; repeat is a no-op
+  string sku = 2;
+  string bin_id = 3;          // warehouse is the bin's warehouse (KnownBins)
+  int64 quantity = 4;
+}
+
+message ReceiveGoodsResponse {
+  WarehouseAvailability availability = 1; // current state after the call
+  bool replayed = 2;                      // true when request_id was already applied
+}
+
+message ReleaseReservationRequest {
+  string reservation_id = 1;
+}
+
+message ReleaseReservationResponse {
+  ReservationStatus status = 1;           // RELEASED
+}
+
+message PickReservationRequest {
+  string reservation_id = 1;
+}
+
+message PickReservationResponse {
+  ReservationStatus status = 1;           // PICKED
+}
+
+message AdjustStockRequest {
+  string request_id = 1;      // caller-generated; repeat is a no-op
+  string sku = 2;
+  string bin_id = 3;
+  int64 counted_quantity = 4; // absolute count, may be zero (stk Q2-2 default)
+  string reason_code = 5;
+}
+
+message AdjustStockResponse {
+  int64 difference = 1;                   // counted minus previous on hand in the bin
+  WarehouseAvailability availability = 2;
+  bool replayed = 3;
+}
+
+enum ReservationStatus {
+  RESERVATION_STATUS_UNSPECIFIED = 0;
+  RESERVATION_STATUS_OPEN = 1;
+  RESERVATION_STATUS_RELEASED = 2;
+  RESERVATION_STATUS_PICKED = 3;
+  RESERVATION_STATUS_EXPIRED = 4;
+}
+
+// ---------------------------------------------------------------- Purchasing (pur)
+service PurchasingService {
+  rpc SetLowStockThreshold(SetLowStockThresholdRequest) returns (SetLowStockThresholdResponse);
+  rpc AcceptReorderSuggestion(AcceptReorderSuggestionRequest) returns (AcceptReorderSuggestionResponse);
+  rpc DismissReorderSuggestion(DismissReorderSuggestionRequest) returns (DismissReorderSuggestionResponse);
+  rpc ListReorderSuggestions(ListReorderSuggestionsRequest) returns (ListReorderSuggestionsResponse);
+}
+
+message SetLowStockThresholdRequest {
+  string sku = 1;             // natural key with warehouse_id (upsert)
+  string warehouse_id = 2;
+  int64 quantity = 3;         // >= 0; zero disables suggestions (pur Q2-4 default)
+}
+
+message SetLowStockThresholdResponse {
+  string threshold_id = 1;
+  int64 quantity = 2;
+  bool is_below = 3;          // last known available is below the threshold
+}
+
+message AcceptReorderSuggestionRequest {
+  string suggestion_id = 1;
+  optional string note = 2;   // absent means no note given
+}
+
+message AcceptReorderSuggestionResponse {
+  ReorderSuggestion suggestion = 1;
+}
+
+message DismissReorderSuggestionRequest {
+  string suggestion_id = 1;
+  optional string note = 2;
+}
+
+message DismissReorderSuggestionResponse {
+  ReorderSuggestion suggestion = 1;
+}
+
+message ListReorderSuggestionsRequest {
+  SuggestionStatus status = 1;  // UNSPECIFIED = all statuses
+  string sku = 2;               // optional filter
+  string warehouse_id = 3;      // optional filter
+  int32 page_size = 4;          // default 50, max 200 (proposed)
+  string page_token = 5;        // opaque; from next_page_token
+}
+
+message ListReorderSuggestionsResponse {
+  repeated ReorderSuggestion suggestions = 1; // raised_at desc, then suggestion_id desc
+  string next_page_token = 2;                 // empty on the last page
+}
+
+message ReorderSuggestion {
+  string suggestion_id = 1;
+  string sku = 2;
+  string warehouse_id = 3;
+  string threshold_id = 4;
+  SuggestionStatus status = 5;
+  int64 threshold_quantity = 6;
+  int64 available_at_trigger = 7;
+  google.protobuf.Timestamp detected_at = 8;
+  google.protobuf.Timestamp raised_at = 9;
+  SuggestionDecision decision = 10;           // unset while RAISED
+}
+
+message SuggestionDecision {
+  SuggestionStatus outcome = 1;               // ACCEPTED or DISMISSED
+  string decided_by = 2;                      // actor id from the caller's credentials
+  google.protobuf.Timestamp decided_at = 3;
+  optional string note = 4;
+}
+
+enum SuggestionStatus {
+  SUGGESTION_STATUS_UNSPECIFIED = 0;
+  SUGGESTION_STATUS_RAISED = 1;
+  SUGGESTION_STATUS_ACCEPTED = 2;
+  SUGGESTION_STATUS_DISMISSED = 3;
+}
