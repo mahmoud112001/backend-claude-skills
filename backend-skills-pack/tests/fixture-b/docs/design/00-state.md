@@ -1,20 +1,20 @@
 # Design state
 
 Profile: [project-profile.md](project-profile.md) · Rules: D:/I-fikra/backend-claude-skills/.claude/skills/backend-design-team/references/default-rulebook.md, D:/I-fikra/backend-claude-skills/backend-skills-pack/tests/fixture-b/ARCHITECTURE.md
-Updated: 2026-11-17 · Current phase: 8 · Status: running
+Updated: 2026-11-17 · Current phase: 8 · Status: done
 
 ## Phases
 | # | Phase | Status | Gate (script High / self-check MUST fails) | Retries | Files |
 |---|---|---|---|---|---|
-| 0 | Profile and brief | passed | 0 / 0 | 0 | [profile](project-profile.md), [brief](00-project-brief.md) |
-| 1 | Strategic | passed | 0 / 0 | 0 | [01](01-strategic.md) |
-| 2 | Tactical (cat, stk, pur) | passed | 0 / 0 | 0 | [cat](02-tactical-catalog.md), [stk](02-tactical-stock.md), [pur](02-tactical-purchasing.md) |
-| 3 | Database | passed | 0 / 0 | 0 | [03](03-db-design.md) + catalog, stock, purchasing parts |
-| 4 | ERD | passed | 0 / 0 | 0 | [04](04-erd.md) |
-| 5 | Diagrams | passed | 0 / 0 | 1 | [05](05-diagrams.md) + use-cases, flows parts |
-| 6 | API | passed | 0 / 0 | 0 | [06](06-api.md), [proto](06-api.proto) |
-| 7 | Review and fix (loop 2/2) | passed | loop 2: H0 M3 L11 (gate: no High) | 0 | [review-loop1](07-review-loop1.md), [fixes-loop1](07-fixes-loop1.md), [review loop 2](07-review.md) |
-| 8 | Arrange | running | | 0 | |
+| 0 | Profile and brief | passed | 0 / 0 | 0 | [profile](project-profile.md), [brief](brief/00-project-brief.md) |
+| 1 | Strategic | passed | 0 / 0 | 0 | [01](strategic/01-strategic.md) |
+| 2 | Tactical (cat, stk, pur) | passed | 0 / 0 | 0 | [cat](tactical/02-tactical-catalog.md), [stk](tactical/02-tactical-stock.md), [pur](tactical/02-tactical-purchasing.md) |
+| 3 | Database | passed | 0 / 0 | 0 | [03](data/03-db-design.md) + catalog, stock, purchasing parts |
+| 4 | ERD | passed | 0 / 0 | 0 | [04](data/04-erd.md) |
+| 5 | Diagrams | passed | 0 / 0 | 1 | [05](diagrams/05-diagrams.md) + use-cases, flows parts |
+| 6 | API | passed | 0 / 0 | 0 | [06](api/06-api.md), [proto](api/06-api.proto) |
+| 7 | Review and fix (loop 2/2) | passed | loop 2: H0 M3 L11 (gate: no High) | 0 | [review-loop1](review/07-review-loop1.md), [fixes-loop1](review/07-fixes-loop1.md), [review loop 2](review/07-review.md) |
+| 8 | Arrange | passed | organize check OK, lint 0 High, noloss OK | 0 | [README](README.md) |
 
 ## Waiting for user
 

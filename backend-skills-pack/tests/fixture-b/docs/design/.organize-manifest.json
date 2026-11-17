@@ -1,0 +1,78 @@
+{
+ "00-project-brief.md": {
+  "new": "brief/00-project-brief.md",
+  "sha256": "40a571f94a57d3935483221b9550ddd6d4764c4803eb6228846cd9e03e16c53a"
+ },
+ "01-strategic.md": {
+  "new": "strategic/01-strategic.md",
+  "sha256": "7c5074bd924aeed70c1faf3f339b8f647e1a728067cfc9a5f5a2583823f95948"
+ },
+ "02-tactical-catalog.md": {
+  "new": "tactical/02-tactical-catalog.md",
+  "sha256": "6107312006d949943384d5aa438da63579ba14b05ea7c3d0fbd927d338adbacd"
+ },
+ "02-tactical-purchasing.md": {
+  "new": "tactical/02-tactical-purchasing.md",
+  "sha256": "6390f268f1a622997d0b1361c046fcca5e0462e2a393ed77c77dee9519400969"
+ },
+ "02-tactical-stock.md": {
+  "new": "tactical/02-tactical-stock.md",
+  "sha256": "5ee7f3204d97922dc51c56d14a9b4322bb8c0fa0a0a7d5f1f92092d6f0447d9d"
+ },
+ "03-db-design-catalog.md": {
+  "new": "data/03-db-design-catalog.md",
+  "sha256": "0f7af3c695017ddf3c826a8cfde96df94abf38dc30b0d8158fb08d2f14ffb555"
+ },
+ "03-db-design-purchasing.md": {
+  "new": "data/03-db-design-purchasing.md",
+  "sha256": "69b3d78fa564b87db1e5af203c187bb6cf8d467ec0c9fb304d322a240243cf71"
+ },
+ "03-db-design-stock.md": {
+  "new": "data/03-db-design-stock.md",
+  "sha256": "11cc0d2d067f4be5f9f466ddfb31b2fd8741dc5aae470dd8e7dab09afb615a3d"
+ },
+ "03-db-design.md": {
+  "new": "data/03-db-design.md",
+  "sha256": "154b38ae127b6529b21b83a94e9e50743bb74b0e2cd005b2ca037df1a7b33f05"
+ },
+ "04-erd.md": {
+  "new": "data/04-erd.md",
+  "sha256": "d8ad4e9cd2b38205b2959cfcb1d9412e7d331c30de3e3a1114a74849677ef21a"
+ },
+ "05-diagrams-flows.md": {
+  "new": "diagrams/05-diagrams-flows.md",
+  "sha256": "1e6278506b03862d6a1fb3de4012786a56cca147de168bbf9742b57ecdee8b86"
+ },
+ "05-diagrams-use-cases.md": {
+  "new": "diagrams/05-diagrams-use-cases.md",
+  "sha256": "2d5020cfcc951be82ef5b71040aa4cfa21dfc87acb764ca08156184d84382a0a"
+ },
+ "05-diagrams.md": {
+  "new": "diagrams/05-diagrams.md",
+  "sha256": "8cd0a7c58e846b175223e17ed474e2d5730deaac478efc41df8fb65c48b2c51d"
+ },
+ "06-api.md": {
+  "new": "api/06-api.md",
+  "sha256": "1cb3eafc38d14c10a47a99a6de25dd23c602cee3cd230e02f41fba37211cd837"
+ },
+ "06-api.proto": {
+  "new": "api/06-api.proto",
+  "sha256": "b540d6390f23284aa80b5d7d6ce96797500e53ac9815bcdcbf977cb9818037d4"
+ },
+ "07-fixes-loop1.md": {
+  "new": "review/07-fixes-loop1.md",
+  "sha256": "fca4295355b6bb7d5a821cd6c0ade08dd81e380cdbb4a87331f4acc961568610"
+ },
+ "07-lint.md": {
+  "new": "review/07-lint.md",
+  "sha256": "33cb734311600b48a5b6762f4152a85dda4c07f93c6dcb3047234bba533ea0fc"
+ },
+ "07-review-loop1.md": {
+  "new": "review/07-review-loop1.md",
+  "sha256": "9027f29570d9b485dcadbabaca6f302842717e85e8279e14ceaca79e915f63ee"
+ },
+ "07-review.md": {
+  "new": "review/07-review.md",
+  "sha256": "36f8489e383416846fe882acb53b4fcd324b2e6e9f5d4db5559a344e596f8d96"
+ }
+}

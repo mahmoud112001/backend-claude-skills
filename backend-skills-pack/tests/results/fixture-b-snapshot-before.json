@@ -1,0 +1,311 @@
+{
+ "00-project-brief.md": {
+  "path": "00-project-brief.md",
+  "words": 1272,
+  "headings": [
+   "# 00 Project brief: Stockroom",
+   "## Inputs",
+   "## Decisions",
+   "## Open questions",
+   "## Goals",
+   "## Actors",
+   "## Screens / entry points",
+   "## Requirements",
+   "## Data seen in the prototype",
+   "## Unknowns"
+  ]
+ },
+ "00-state.md": {
+  "path": "00-state.md",
+  "words": 460,
+  "headings": [
+   "# Design state",
+   "## Phases",
+   "## Waiting for user",
+   "## Rule conflicts (the project rule overrides the default)",
+   "## Open questions (business decisions; workers never resolve these)",
+   "## Review loops",
+   "## Medium and Low gate findings carried forward"
+  ]
+ },
+ "01-strategic.md": {
+  "path": "01-strategic.md",
+  "words": 1915,
+  "headings": [
+   "# 01 Strategic design",
+   "## Inputs",
+   "## Decisions",
+   "## Open questions",
+   "## Domain",
+   "## Subdomains",
+   "## Bounded contexts",
+   "## Context map",
+   "## Published language",
+   "## Ubiquitous language"
+  ]
+ },
+ "02-tactical-catalog.md": {
+  "path": "02-tactical-catalog.md",
+  "words": 1444,
+  "headings": [
+   "# 02 Tactical design: Catalog",
+   "## Inputs",
+   "## Decisions",
+   "## Open questions",
+   "## Aggregates",
+   "## Entities and value objects",
+   "## Commands",
+   "## Domain events",
+   "## Policies",
+   "## Queries and read models",
+   "## Out of scope"
+  ]
+ },
+ "02-tactical-purchasing.md": {
+  "path": "02-tactical-purchasing.md",
+  "words": 2654,
+  "headings": [
+   "# 02 Tactical design: Purchasing",
+   "## Inputs",
+   "## Decisions",
+   "## Open questions",
+   "## Aggregates",
+   "## Entities and value objects",
+   "## Commands",
+   "## Domain events",
+   "## Policies",
+   "## Queries and read models",
+   "## Out of scope"
+  ]
+ },
+ "02-tactical-stock.md": {
+  "path": "02-tactical-stock.md",
+  "words": 2241,
+  "headings": [
+   "# 02 Tactical design: Stock",
+   "## Inputs",
+   "## Decisions",
+   "## Open questions",
+   "## Aggregates",
+   "## Entities and value objects",
+   "## Commands",
+   "## Domain events",
+   "## Policies",
+   "## Queries and read models",
+   "## Out of scope"
+  ]
+ },
+ "03-db-design-catalog.md": {
+  "path": "03-db-design-catalog.md",
+  "words": 989,
+  "headings": [
+   "# 03 Database design: Catalog (module `cat`)",
+   "## Inputs",
+   "## Decisions",
+   "## Open questions",
+   "## Tables",
+   "### Table: cat_product (module: Catalog)",
+   "### Table: cat_warehouse (module: Catalog)",
+   "### Table: cat_bin (module: Catalog)",
+   "### Table: cat_outbox (module: Catalog)",
+   "## Enforced in code",
+   "## Caches"
+  ]
+ },
+ "03-db-design-purchasing.md": {
+  "path": "03-db-design-purchasing.md",
+  "words": 2069,
+  "headings": [
+   "# 03 Database design: Purchasing (module `pur`)",
+   "## Inputs",
+   "## Decisions",
+   "## Open questions",
+   "## Tables",
+   "### Table: pur_low_stock_threshold (module: Purchasing)",
+   "### Table: pur_reorder_suggestion (module: Purchasing)",
+   "### Table: pur_known_product (module: Purchasing)",
+   "### Table: pur_known_warehouse (module: Purchasing)",
+   "### Table: pur_known_availability (module: Purchasing)",
+   "### Table: pur_outbox (module: Purchasing)",
+   "### Table: pur_inbox (module: Purchasing)",
+   "## Enforced in code",
+   "## Caches"
+  ]
+ },
+ "03-db-design-stock.md": {
+  "path": "03-db-design-stock.md",
+  "words": 2098,
+  "headings": [
+   "# 03 Database design: Stock (module `stk`)",
+   "## Inputs",
+   "## Decisions",
+   "## Open questions",
+   "## Tables",
+   "### Table: stk_warehouse_stock (module: Stock)",
+   "### Table: stk_stock_level (module: Stock)",
+   "### Table: stk_reservation (module: Stock)",
+   "### Table: stk_reservation_allocation (module: Stock)",
+   "### Table: stk_stock_movement (module: Stock)",
+   "### Table: stk_known_product (module: Stock)",
+   "### Table: stk_known_warehouse (module: Stock)",
+   "### Table: stk_known_bin (module: Stock)",
+   "### Table: stk_outbox (module: Stock)",
+   "### Table: stk_inbox (module: Stock)",
+   "## Enforced in code",
+   "## Caches"
+  ]
+ },
+ "03-db-design.md": {
+  "path": "03-db-design.md",
+  "words": 1642,
+  "headings": [
+   "# 03 Database design",
+   "## Inputs",
+   "## Decisions",
+   "## Open questions",
+   "## Modules",
+   "## Tables",
+   "## Enforced in code",
+   "## Caches"
+  ]
+ },
+ "04-erd.md": {
+  "path": "04-erd.md",
+  "words": 1045,
+  "headings": [
+   "# 04 ERD",
+   "## Inputs",
+   "## Decisions",
+   "## Open questions",
+   "## Overview",
+   "## Catalog (cat)",
+   "## Stock (stk)",
+   "## Purchasing (pur)"
+  ]
+ },
+ "05-diagrams-flows.md": {
+  "path": "05-diagrams-flows.md",
+  "words": 891,
+  "headings": [
+   "# 05 Diagrams: key flows",
+   "## Inputs",
+   "## Decisions",
+   "## Open questions",
+   "## Key flows",
+   "### FLOW-1 Register in Catalog and feed Stock and Purchasing",
+   "### FLOW-2 ReserveStock",
+   "### FLOW-3 ReleaseReservation and PickReservation",
+   "### FLOW-4 ReceiveGoods and AdjustStock",
+   "### FLOW-5 Reservation expiry",
+   "### FLOW-6 AvailabilityChanged to ReorderSuggestionRaised",
+   "### FLOW-7 Accept or dismiss a suggestion"
+  ]
+ },
+ "05-diagrams-use-cases.md": {
+  "path": "05-diagrams-use-cases.md",
+  "words": 430,
+  "headings": [
+   "# 05 Diagrams: use cases",
+   "## Inputs",
+   "## Decisions",
+   "## Open questions",
+   "## Use cases",
+   "### UC-Catalog",
+   "### UC-Stock",
+   "### UC-Purchasing"
+  ]
+ },
+ "05-diagrams.md": {
+  "path": "05-diagrams.md",
+  "words": 418,
+  "headings": [
+   "# 05 Diagrams",
+   "## Inputs",
+   "## Decisions",
+   "## Open questions",
+   "## Use cases",
+   "## Database modules",
+   "### DB-modules",
+   "## Key flows",
+   "## Context map",
+   "### CTX-map"
+  ]
+ },
+ "06-api.md": {
+  "path": "06-api.md",
+  "words": 2590,
+  "headings": [
+   "# 06 API design",
+   "## Inputs",
+   "## Decisions",
+   "## Open questions",
+   "## Conventions",
+   "## Operations",
+   "## Errors",
+   "## Not exposed"
+  ]
+ },
+ "06-api.proto": {
+  "path": "06-api.proto",
+  "words": 808,
+  "headings": []
+ },
+ "07-fixes-loop1.md": {
+  "path": "07-fixes-loop1.md",
+  "words": 193,
+  "headings": [
+   "# 07 Fixes, loop 1"
+  ]
+ },
+ "07-lint.md": {
+  "path": "07-lint.md",
+  "words": 49,
+  "headings": [
+   "# 07 Lint",
+   "## Inputs",
+   "## Decisions",
+   "## Open questions",
+   "## Findings"
+  ]
+ },
+ "07-review-loop1.md": {
+  "path": "07-review-loop1.md",
+  "words": 2221,
+  "headings": [
+   "# 07 Design review (loop 1)",
+   "## Inputs",
+   "## Decisions",
+   "## Open questions",
+   "## Findings",
+   "## Lint findings rejected",
+   "## Requirement trace",
+   "## Not checked"
+  ]
+ },
+ "07-review.md": {
+  "path": "07-review.md",
+  "words": 2479,
+  "headings": [
+   "# 07 Design review (loop 2)",
+   "## Inputs",
+   "## Decisions",
+   "## Open questions",
+   "## Findings",
+   "## Lint findings rejected",
+   "## Requirement trace",
+   "## Not checked"
+  ]
+ },
+ "project-profile.md": {
+  "path": "project-profile.md",
+  "words": 460,
+  "headings": [
+   "# Project profile: Stockroom",
+   "## Inputs",
+   "## Decisions",
+   "## Open questions",
+   "## Profile",
+   "## Rule overrides"
+  ]
+ }
+}

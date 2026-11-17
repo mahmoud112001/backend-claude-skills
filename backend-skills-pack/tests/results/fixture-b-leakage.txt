@@ -1,0 +1,11 @@
+brief/00-project-brief.md:9: 'rest': D0-2 The proto stub covers only ReserveStock and GetAvailability; the other operations are treated as in scope because the README lists them
+brief/00-project-brief.md:24: 'Modular monolith': | Q8 | Architecture style (profile field missing) | See profile Q1 | Modular monolith |
+project-profile.md:12: 'modular monolith': - Q1 What is the architecture style (modular monolith with one deployable and modules per context, or separate services)? Proposed default: 
+project-profile.md:12: 'modular monolith': - Q1 What is the architecture style (modular monolith with one deployable and modules per context, or separate services)? Proposed default: 
+review/07-review-loop1.md:42: 'modular monolith': | F14 | Low | BUG (stale) | 02-tactical-stock.md:37; 02-tactical-purchasing.md:28, :36, :49; project-profile.md:12; 00-project-brief.md:23 |
+review/07-review.md:34: 'rest': | F1 | Medium | BUG (contradiction) | 03-db-design.md:22; 03-db-design-purchasing.md:16, :146 against 02-tactical-purchasing.md:25 | 02 D2-1
+review/07-review.md:35: 'rest': | F2 | Medium | BUG | 05-diagrams-flows.md:14, :150-152 | D5-4 says "The projection step of FLOW-6 is not added; it awaits the 02 purchasing
+review/07-review.md:44: 'modular monolith': | F11 | Low | BUG (stale) | 02-tactical-stock.md:38; 02-tactical-purchasing.md:34, :42, :56; 03-db-design.md:25, :35; project-profile.md:12;
+strategic/01-strategic.md:32: 'modular monolith': | Q1-8 | Microservices with one shared schema couple the three services at the database (shared migrations, one instance). Keep this, or mov
+tactical/02-tactical-stock.md:55: 'Member': | ReasonCode | value object | WarehouseStock | code | Member of the configured set (Q2-8). |
+hits: 10
