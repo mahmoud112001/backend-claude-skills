@@ -1,0 +1,294 @@
+# ## Inputs
+# - docs/design/06-api.md (Operations: borrowBook to withdrawCopy, getBorrowRequest; D6-3, D6-8 to D6-13, D6-19, D6-20); 02-tactical-lending.md; 07-review-loop1.md F4, F6, F7.
+# ## Decisions
+# - Lending module paths and schemas (06-api.md D6-1). Enums are camelCase (D6-15); memberName in OverdueLoan is the Borrower ContactDetails copy (API-07).
+# - Fixed F4, F6, F7 (06-api.md Decisions).
+# ## Open questions
+# - LQ-1 to LQ-12 (02-tactical-lending.md); AQ-5, AQ-6, AQ-9, AQ-12, RQ-2 (06-api.md).
+paths:
+  /v1/loans:
+    post:
+      operationId: borrowBook
+      tags: [lending]
+      summary: BorrowBook (REQ-5, REQ-8, REQ-9, REQ-29, REQ-30 (RQ-1 default))
+      description: Reserves a loan slot, then waits up to 2 seconds for LendCopy (D6-3). 201 when LoanStarted arrived, 202 when still pending; read the outcome with getBorrowRequest.
+      x-actor: Member
+      x-idempotency: Idempotency-Key required; replay returns the same loanId (Lending D2-5); natural guard loan-for-book-exists
+      x-error-codes: [validation-failed, idempotency-key-required, unauthenticated, not-member, borrower-unknown, book-not-found, no-copy-available, owes-fines, loan-limit-reached, loan-for-book-exists, concurrency-conflict, idempotency-key-reused, idempotency-key-in-use, rate-limited]
+      parameters:
+        - $ref: './06-api.openapi-common.yaml#/components/parameters/IdempotencyKey'
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/BookIdRequest'}}}}
+      responses:
+        '201': {description: 'Loan started (LoanStarted); status active with dueDate and barcode.', headers: {Idempotent-Replayed: {$ref: './06-api.openapi-common.yaml#/components/headers/IdempotentReplayed'}}, content: {application/json: {schema: {$ref: '#/components/schemas/Loan'}}}}
+        '202': {description: 'Slot reserved, status pending; poll getBorrowRequest (GET /v1/loans/{loanId}) for active or refused (D6-3).', headers: {Idempotent-Replayed: {$ref: './06-api.openapi-common.yaml#/components/headers/IdempotentReplayed'}}, content: {application/json: {schema: {$ref: '#/components/schemas/Loan'}}}}
+        '400': {$ref: './06-api.openapi-common.yaml#/components/responses/BadRequest'}
+        '401': {$ref: './06-api.openapi-common.yaml#/components/responses/Unauthenticated'}
+        '403': {$ref: './06-api.openapi-common.yaml#/components/responses/Forbidden'}
+        '404': {$ref: './06-api.openapi-common.yaml#/components/responses/NotFound'}
+        '409': {$ref: './06-api.openapi-common.yaml#/components/responses/Conflict'}
+        '422': {$ref: './06-api.openapi-common.yaml#/components/responses/Unprocessable'}
+        '429': {$ref: './06-api.openapi-common.yaml#/components/responses/TooManyRequests'}
+  /v1/loans/{loanId}:
+    get:
+      operationId: getBorrowRequest
+      tags: [lending]
+      summary: GetBorrowRequest (REQ-5, REQ-29)
+      description: Outcome of a borrow for the signed-in member (Lending D2-15). The Loan row if present (active or ended), else the LoanSlot (pending or refused). Another member's loanId answers 404 (D6-20).
+      x-actor: Member (own loans only)
+      x-error-codes: [validation-failed, unauthenticated, not-member, loan-not-found, rate-limited]
+      parameters:
+        - {name: loanId, in: path, required: true, schema: {$ref: './06-api.openapi-common.yaml#/components/schemas/Uuid'}}
+      responses:
+        '200': {description: The loan or borrow request., content: {application/json: {schema: {$ref: '#/components/schemas/Loan'}}}}
+        '400': {$ref: './06-api.openapi-common.yaml#/components/responses/BadRequest'}
+        '401': {$ref: './06-api.openapi-common.yaml#/components/responses/Unauthenticated'}
+        '403': {$ref: './06-api.openapi-common.yaml#/components/responses/Forbidden'}
+        '404': {$ref: './06-api.openapi-common.yaml#/components/responses/NotFound'}
+        '429': {$ref: './06-api.openapi-common.yaml#/components/responses/TooManyRequests'}
+  /v1/loans/{loanId}/renew:
+    post:
+      operationId: renewLoan
+      tags: [lending]
+      summary: RenewLoan (REQ-12, REQ-13, REQ-29)
+      description: New dueDate is the current dueDate plus 14 days (LQ-3). loan-overdue only if LQ-2 answers no.
+      x-actor: Member (loan owner)
+      x-idempotency: Safe to retry because a loan is renewed at most once (D6-9); optional Idempotency-Key
+      x-error-codes: [validation-failed, unauthenticated, not-member, loan-not-found, not-loan-owner, loan-already-renewed, book-held, loan-overdue, concurrency-conflict, rate-limited]
+      parameters:
+        - {name: loanId, in: path, required: true, schema: {$ref: './06-api.openapi-common.yaml#/components/schemas/Uuid'}}
+        - $ref: './06-api.openapi-common.yaml#/components/parameters/IdempotencyKeyOptional'
+      responses:
+        '200': {description: Loan renewed., content: {application/json: {schema: {$ref: '#/components/schemas/Loan'}}}}
+        '400': {$ref: './06-api.openapi-common.yaml#/components/responses/BadRequest'}
+        '401': {$ref: './06-api.openapi-common.yaml#/components/responses/Unauthenticated'}
+        '403': {$ref: './06-api.openapi-common.yaml#/components/responses/Forbidden'}
+        '404': {$ref: './06-api.openapi-common.yaml#/components/responses/NotFound'}
+        '409': {$ref: './06-api.openapi-common.yaml#/components/responses/Conflict'}
+        '422': {$ref: './06-api.openapi-common.yaml#/components/responses/Unprocessable'}
+        '429': {$ref: './06-api.openapi-common.yaml#/components/responses/TooManyRequests'}
+  /v1/holds:
+    post:
+      operationId: placeHold
+      tags: [lending]
+      summary: PlaceHold (REQ-6, REQ-7, REQ-29)
+      x-actor: Member
+      x-idempotency: Idempotency-Key required; natural guard hold-already-placed (LQ-6)
+      x-error-codes: [validation-failed, idempotency-key-required, unauthenticated, not-member, borrower-unknown, book-not-found, copy-available, hold-already-placed, book-on-loan-to-member, concurrency-conflict, idempotency-key-reused, idempotency-key-in-use, rate-limited]
+      parameters:
+        - $ref: './06-api.openapi-common.yaml#/components/parameters/IdempotencyKey'
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/BookIdRequest'}}}}
+      responses:
+        '201': {description: 'Hold placed, state waiting (D6-17, no Location).', headers: {Idempotent-Replayed: {$ref: './06-api.openapi-common.yaml#/components/headers/IdempotentReplayed'}}, content: {application/json: {schema: {$ref: '#/components/schemas/Hold'}}}}
+        '400': {$ref: './06-api.openapi-common.yaml#/components/responses/BadRequest'}
+        '401': {$ref: './06-api.openapi-common.yaml#/components/responses/Unauthenticated'}
+        '403': {$ref: './06-api.openapi-common.yaml#/components/responses/Forbidden'}
+        '404': {$ref: './06-api.openapi-common.yaml#/components/responses/NotFound'}
+        '409': {$ref: './06-api.openapi-common.yaml#/components/responses/Conflict'}
+        '422': {$ref: './06-api.openapi-common.yaml#/components/responses/Unprocessable'}
+        '429': {$ref: './06-api.openapi-common.yaml#/components/responses/TooManyRequests'}
+  /v1/holds/{holdId}/cancel:
+    post:
+      operationId: cancelHold
+      tags: [lending]
+      summary: CancelHold (REQ-15)
+      x-actor: Member (hold owner, LQ-10)
+      x-idempotency: Safe to retry because a cancelled hold cannot reopen (D6-9); optional Idempotency-Key
+      x-error-codes: [validation-failed, unauthenticated, not-member, hold-not-found, not-hold-owner, hold-not-open, concurrency-conflict, rate-limited]
+      parameters:
+        - {name: holdId, in: path, required: true, schema: {$ref: './06-api.openapi-common.yaml#/components/schemas/Uuid'}}
+        - $ref: './06-api.openapi-common.yaml#/components/parameters/IdempotencyKeyOptional'
+      responses:
+        '200': {description: Hold cancelled., content: {application/json: {schema: {$ref: '#/components/schemas/Hold'}}}}
+        '400': {$ref: './06-api.openapi-common.yaml#/components/responses/BadRequest'}
+        '401': {$ref: './06-api.openapi-common.yaml#/components/responses/Unauthenticated'}
+        '403': {$ref: './06-api.openapi-common.yaml#/components/responses/Forbidden'}
+        '404': {$ref: './06-api.openapi-common.yaml#/components/responses/NotFound'}
+        '409': {$ref: './06-api.openapi-common.yaml#/components/responses/Conflict'}
+        '422': {$ref: './06-api.openapi-common.yaml#/components/responses/Unprocessable'}
+        '429': {$ref: './06-api.openapi-common.yaml#/components/responses/TooManyRequests'}
+  /v1/members/me/loans:
+    get:
+      operationId: listMyLoans
+      tags: [lending]
+      summary: ListMyLoans (REQ-11, REQ-29)
+      description: Active loans of the signed-in member, sorted by dueDate, then loanId (D6-13).
+      x-actor: Member
+      x-error-codes: [validation-failed, unauthenticated, not-member, rate-limited]
+      parameters:
+        - $ref: './06-api.openapi-common.yaml#/components/parameters/Cursor'
+        - $ref: './06-api.openapi-common.yaml#/components/parameters/Limit'
+      responses:
+        '200': {description: One page of loans., content: {application/json: {schema: {$ref: '#/components/schemas/LoanPage'}}}}
+        '400': {$ref: './06-api.openapi-common.yaml#/components/responses/BadRequest'}
+        '401': {$ref: './06-api.openapi-common.yaml#/components/responses/Unauthenticated'}
+        '403': {$ref: './06-api.openapi-common.yaml#/components/responses/Forbidden'}
+        '429': {$ref: './06-api.openapi-common.yaml#/components/responses/TooManyRequests'}
+  /v1/members/me/holds:
+    get:
+      operationId: listMyHolds
+      tags: [lending]
+      summary: ListMyHolds (REQ-14, REQ-29)
+      description: Waiting and onShelf holds of the signed-in member, sorted by placedAt, then holdId (D6-13).
+      x-actor: Member
+      x-error-codes: [validation-failed, unauthenticated, not-member, rate-limited]
+      parameters:
+        - $ref: './06-api.openapi-common.yaml#/components/parameters/Cursor'
+        - $ref: './06-api.openapi-common.yaml#/components/parameters/Limit'
+      responses:
+        '200': {description: One page of holds., content: {application/json: {schema: {$ref: '#/components/schemas/HoldPage'}}}}
+        '400': {$ref: './06-api.openapi-common.yaml#/components/responses/BadRequest'}
+        '401': {$ref: './06-api.openapi-common.yaml#/components/responses/Unauthenticated'}
+        '403': {$ref: './06-api.openapi-common.yaml#/components/responses/Forbidden'}
+        '429': {$ref: './06-api.openapi-common.yaml#/components/responses/TooManyRequests'}
+  /v1/overdue-loans:
+    get:
+      operationId: listOverdueLoans
+      tags: [lending]
+      summary: ListOverdueLoans (REQ-22)
+      description: Active loans with dueDate before today in the library time zone (DQ-1), sorted by dueDate, then loanId (D6-13).
+      x-actor: Librarian
+      x-error-codes: [validation-failed, unauthenticated, not-librarian, rate-limited]
+      parameters:
+        - $ref: './06-api.openapi-common.yaml#/components/parameters/Cursor'
+        - $ref: './06-api.openapi-common.yaml#/components/parameters/Limit'
+      responses:
+        '200': {description: One page of overdue loans., content: {application/json: {schema: {$ref: '#/components/schemas/OverdueLoanPage'}}}}
+        '400': {$ref: './06-api.openapi-common.yaml#/components/responses/BadRequest'}
+        '401': {$ref: './06-api.openapi-common.yaml#/components/responses/Unauthenticated'}
+        '403': {$ref: './06-api.openapi-common.yaml#/components/responses/Forbidden'}
+        '429': {$ref: './06-api.openapi-common.yaml#/components/responses/TooManyRequests'}
+  /v1/copies:
+    post:
+      operationId: addCopy
+      tags: [lending]
+      summary: AddCopy (REQ-25)
+      description: The copy goes to the hold shelf when a hold is waiting (LQ-4).
+      x-actor: Librarian
+      x-idempotency: Idempotency-Key required; natural key barcode (barcode-taken)
+      x-error-codes: [validation-failed, idempotency-key-required, unauthenticated, not-librarian, book-not-found, barcode-taken, concurrency-conflict, idempotency-key-reused, idempotency-key-in-use, rate-limited]
+      parameters:
+        - $ref: './06-api.openapi-common.yaml#/components/parameters/IdempotencyKey'
+      requestBody: {required: true, content: {application/json: {schema: {$ref: '#/components/schemas/AddCopyRequest'}}}}
+      responses:
+        '201': {description: 'Copy added (D6-17, no Location).', headers: {Idempotent-Replayed: {$ref: './06-api.openapi-common.yaml#/components/headers/IdempotentReplayed'}}, content: {application/json: {schema: {$ref: '#/components/schemas/Copy'}}}}
+        '400': {$ref: './06-api.openapi-common.yaml#/components/responses/BadRequest'}
+        '401': {$ref: './06-api.openapi-common.yaml#/components/responses/Unauthenticated'}
+        '403': {$ref: './06-api.openapi-common.yaml#/components/responses/Forbidden'}
+        '404': {$ref: './06-api.openapi-common.yaml#/components/responses/NotFound'}
+        '409': {$ref: './06-api.openapi-common.yaml#/components/responses/Conflict'}
+        '422': {$ref: './06-api.openapi-common.yaml#/components/responses/Unprocessable'}
+        '429': {$ref: './06-api.openapi-common.yaml#/components/responses/TooManyRequests'}
+  /v1/copies/{barcode}/check-in:
+    post:
+      operationId: checkInCopy
+      tags: [lending]
+      summary: CheckInCopy (REQ-17, REQ-20, REQ-21)
+      x-actor: Librarian
+      x-idempotency: Idempotency-Key required (D6-8); a late retry must not end a newer loan of the same copy
+      x-error-codes: [validation-failed, idempotency-key-required, unauthenticated, not-librarian, copy-not-found, copy-not-on-loan, concurrency-conflict, idempotency-key-reused, idempotency-key-in-use, rate-limited]
+      parameters:
+        - $ref: '#/components/parameters/BarcodePath'
+        - $ref: './06-api.openapi-common.yaml#/components/parameters/IdempotencyKey'
+      responses:
+        '200': {description: 'Loan ended; the copy is available or on the hold shelf (REQ-21).', headers: {Idempotent-Replayed: {$ref: './06-api.openapi-common.yaml#/components/headers/IdempotentReplayed'}}, content: {application/json: {schema: {$ref: '#/components/schemas/CheckInResult'}}}}
+        '400': {$ref: './06-api.openapi-common.yaml#/components/responses/BadRequest'}
+        '401': {$ref: './06-api.openapi-common.yaml#/components/responses/Unauthenticated'}
+        '403': {$ref: './06-api.openapi-common.yaml#/components/responses/Forbidden'}
+        '404': {$ref: './06-api.openapi-common.yaml#/components/responses/NotFound'}
+        '409': {$ref: './06-api.openapi-common.yaml#/components/responses/Conflict'}
+        '422': {$ref: './06-api.openapi-common.yaml#/components/responses/Unprocessable'}
+        '429': {$ref: './06-api.openapi-common.yaml#/components/responses/TooManyRequests'}
+  /v1/copies/{barcode}/withdraw:
+    post:
+      operationId: withdrawCopy
+      tags: [lending]
+      summary: WithdrawCopy (REQ-26, REQ-27)
+      x-actor: Librarian
+      x-idempotency: Safe to retry because Withdrawn is final (D6-9); optional Idempotency-Key
+      x-error-codes: [validation-failed, unauthenticated, not-librarian, copy-not-found, copy-on-loan, copy-already-withdrawn, concurrency-conflict, rate-limited]
+      parameters:
+        - $ref: '#/components/parameters/BarcodePath'
+        - $ref: './06-api.openapi-common.yaml#/components/parameters/IdempotencyKeyOptional'
+      responses:
+        '200': {description: Copy withdrawn (LQ-5 for a copy on the hold shelf)., content: {application/json: {schema: {$ref: '#/components/schemas/Copy'}}}}
+        '400': {$ref: './06-api.openapi-common.yaml#/components/responses/BadRequest'}
+        '401': {$ref: './06-api.openapi-common.yaml#/components/responses/Unauthenticated'}
+        '403': {$ref: './06-api.openapi-common.yaml#/components/responses/Forbidden'}
+        '404': {$ref: './06-api.openapi-common.yaml#/components/responses/NotFound'}
+        '409': {$ref: './06-api.openapi-common.yaml#/components/responses/Conflict'}
+        '422': {$ref: './06-api.openapi-common.yaml#/components/responses/Unprocessable'}
+        '429': {$ref: './06-api.openapi-common.yaml#/components/responses/TooManyRequests'}
+components:
+  parameters:
+    BarcodePath: {name: barcode, in: path, required: true, description: "Percent-encoded; no '/' (D6-12, AQ-9).", schema: {$ref: '#/components/schemas/Barcode'}}
+  schemas:
+    Barcode: {type: string, minLength: 1, maxLength: 64, pattern: '^[^/]+$'}
+    BookIdRequest:
+      type: object
+      required: [bookId]
+      additionalProperties: false
+      properties: {bookId: {$ref: './06-api.openapi-common.yaml#/components/schemas/Uuid'}}
+    AddCopyRequest:
+      type: object
+      required: [bookId, barcode]
+      additionalProperties: false
+      properties:
+        bookId: {$ref: './06-api.openapi-common.yaml#/components/schemas/Uuid'}
+        barcode: {$ref: '#/components/schemas/Barcode'}
+    Loan:
+      type: object
+      required: [loanId, bookId, title, status, barcode, borrowedAt, dueDate, renewed]
+      properties:
+        loanId: {$ref: './06-api.openapi-common.yaml#/components/schemas/Uuid'}
+        bookId: {$ref: './06-api.openapi-common.yaml#/components/schemas/Uuid'}
+        title: {type: string, description: From BibliographicSummary}
+        status: {type: string, enum: [pending, active, ended, refused], description: 'pending on a 202 borrow (D6-3); ended and refused only from getBorrowRequest (D2-15); listMyLoans returns active only'}
+        barcode: {oneOf: [{$ref: '#/components/schemas/Barcode'}, {type: 'null'}], description: 'Copy LendCopy assigned (Loan.copyId, F7); the member takes this copy (RQ-2). Null while pending or refused.'}
+        borrowedAt: {type: [string, 'null'], format: date-time, description: Null while pending or refused}
+        dueDate: {type: [string, 'null'], format: date, description: Null while pending or refused}
+        renewed: {type: boolean}
+        returnedAt: {type: [string, 'null'], format: date-time, description: Set only when ended}
+        refusedAt: {type: [string, 'null'], format: date-time, description: Set only when refused (D2-15)}
+        refusalReason: {type: [string, 'null'], enum: [noCopyAvailable, null], description: Set only when refused (LoanRefused reason)}
+    Hold:
+      type: object
+      required: [holdId, bookId, title, state, placedAt, queuePosition, pickupDeadline]
+      properties:
+        holdId: {$ref: './06-api.openapi-common.yaml#/components/schemas/Uuid'}
+        bookId: {$ref: './06-api.openapi-common.yaml#/components/schemas/Uuid'}
+        title: {type: string}
+        state: {type: string, enum: [waiting, onShelf, cancelled]}
+        placedAt: {type: string, format: date-time}
+        queuePosition: {type: [integer, 'null'], minimum: 1, description: Rank among waiting holds of the book; null unless waiting}
+        pickupDeadline: {type: [string, 'null'], format: date-time, description: Only when onShelf (REQ-17)}
+    OverdueLoan:
+      type: object
+      required: [loanId, bookId, title, memberId, memberName, dueDate, daysLate]
+      properties:
+        loanId: {$ref: './06-api.openapi-common.yaml#/components/schemas/Uuid'}
+        bookId: {$ref: './06-api.openapi-common.yaml#/components/schemas/Uuid'}
+        title: {type: string}
+        memberId: {$ref: './06-api.openapi-common.yaml#/components/schemas/Uuid'}
+        memberName: {type: string, description: Borrower ContactDetails copy}
+        dueDate: {type: string, format: date}
+        daysLate: {type: integer, minimum: 1, description: Calendar days (LQ-11)}
+    Copy:
+      type: object
+      required: [copyId, bookId, barcode, state, addedAt, withdrawnAt]
+      properties:
+        copyId: {$ref: './06-api.openapi-common.yaml#/components/schemas/Uuid'}
+        bookId: {$ref: './06-api.openapi-common.yaml#/components/schemas/Uuid'}
+        barcode: {$ref: '#/components/schemas/Barcode'}
+        state: {type: string, enum: [available, onLoan, onHoldShelf, withdrawn]}
+        addedAt: {type: string, format: date-time}
+        withdrawnAt: {type: [string, 'null'], format: date-time}
+    CheckInResult:
+      type: object
+      required: [loanId, returnedAt, copy]
+      properties:
+        loanId: {$ref: './06-api.openapi-common.yaml#/components/schemas/Uuid'}
+        returnedAt: {type: string, format: date-time}
+        copy: {$ref: '#/components/schemas/Copy'}
+    LoanPage: {type: object, required: [items, nextCursor], properties: {items: {type: array, items: {$ref: '#/components/schemas/Loan'}}, nextCursor: {$ref: './06-api.openapi-common.yaml#/components/schemas/NextCursor'}}}
+    HoldPage: {type: object, required: [items, nextCursor], properties: {items: {type: array, items: {$ref: '#/components/schemas/Hold'}}, nextCursor: {$ref: './06-api.openapi-common.yaml#/components/schemas/NextCursor'}}}
+    OverdueLoanPage: {type: object, required: [items, nextCursor], properties: {items: {type: array, items: {$ref: '#/components/schemas/OverdueLoan'}}, nextCursor: {$ref: './06-api.openapi-common.yaml#/components/schemas/NextCursor'}}}
